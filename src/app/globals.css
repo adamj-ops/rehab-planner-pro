@@ -1,0 +1,322 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Zinc-based background (slightly off-white for card contrast) */
+  --background: oklch(0.9765 0.0035 286.40);     /* Zinc-100 (off-white) */
+  --foreground: oklch(0.1647 0.0142 285.94);     /* Zinc-950 */
+  
+  /* Card & Popover (pure white - stands out from background) */
+  --card: oklch(1.0000 0 0);                     /* Pure White */
+  --card-foreground: oklch(0.1647 0.0142 285.94); /* Zinc-950 */
+  --popover: oklch(1.0000 0 0);                  /* Pure White */
+  --popover-foreground: oklch(0.1647 0.0142 285.94); /* Zinc-950 */
+  
+  /* Blue Primary (from your preset) */
+  --primary: oklch(0.5984 0.2201 263.74);        /* Blue-600 */
+  --primary-foreground: oklch(1.0000 0 0);       /* White */
+  
+  /* Zinc-based secondary/muted */
+  --secondary: oklch(0.9647 0.0047 286.57);      /* Zinc-100 */
+  --secondary-foreground: oklch(0.1647 0.0142 285.94); /* Zinc-950 */
+  --muted: oklch(0.9647 0.0047 286.57);          /* Zinc-100 */
+  --muted-foreground: oklch(0.5162 0.0152 285.75); /* Zinc-500 */
+  
+  /* Accent */
+  --accent: oklch(0.9647 0.0047 286.57);         /* Zinc-100 */
+  --accent-foreground: oklch(0.1647 0.0142 285.94); /* Zinc-950 */
+  
+  /* Destructive */
+  --destructive: oklch(0.5830 0.2387 28.4765);   /* Red-600 */
+  --destructive-foreground: oklch(1.0000 0 0);   /* White */
+  
+  /* Border/Input - DARKER for better definition */
+  --border: oklch(0.8585 0.0109 286.28);         /* Zinc-300 (darker!) */
+  --input: oklch(0.8585 0.0109 286.28);          /* Zinc-300 (match border) */
+  --ring: oklch(0.5984 0.2201 263.74);           /* Blue-600 (matches primary) */
+  
+  /* Chart colors (using blue shades) */
+  --chart-1: oklch(0.5984 0.2201 263.74);        /* Blue-600 */
+  --chart-2: oklch(0.7071 0.1666 254.62);        /* Blue-400 */
+  --chart-3: oklch(0.4588 0.2136 264.38);        /* Blue-700 */
+  --chart-4: oklch(0.8098 0.1145 251.34);        /* Blue-300 */
+  --chart-5: oklch(0.3667 0.1766 265.75);        /* Blue-800 */
+  
+  /* Sidebar (subtle zinc) */
+  --sidebar: oklch(0.9824 0.0019 286.37);        /* Zinc-50/White */
+  --sidebar-foreground: oklch(0.1647 0.0142 285.94); /* Zinc-950 */
+  --sidebar-primary: oklch(0.5984 0.2201 263.74); /* Blue-600 */
+  --sidebar-primary-foreground: oklch(1.0000 0 0); /* White */
+  --sidebar-accent: oklch(0.9647 0.0047 286.57); /* Zinc-100 */
+  --sidebar-accent-foreground: oklch(0.1647 0.0142 285.94); /* Zinc-950 */
+  --sidebar-border: oklch(0.8585 0.0109 286.28); /* Zinc-300 */
+  --sidebar-ring: oklch(0.5984 0.2201 263.74);   /* Blue-600 */
+  
+  /* Fonts - Roboto (applied via next/font) */
+  --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-roboto), ui-serif, Georgia, serif;
+  --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
+  
+  /* Border Radius - SUBTLE (Mira polish) */
+  --radius: 0.375rem;                            /* Subtle rounding for polish */
+  
+  /* Shadows - Refined for depth */
+  --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.03);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  /* Page background - VERY DARK (almost black) */
+  --background: oklch(0.0900 0.0050 286.00);     /* Very dark - darker than zinc-950 */
+  --foreground: oklch(0.9824 0.0019 286.37);     /* Zinc-50 */
+  
+  /* Card & Popover - MEDIUM DARK (visible pop from background!) */
+  --card: oklch(0.1800 0.0095 286.00);           /* Zinc-900 - noticeably lighter! */
+  --card-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  --popover: oklch(0.1800 0.0095 286.00);        /* Match card */
+  --popover-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  
+  /* Blue Primary (bright for dark mode) */
+  --primary: oklch(0.6984 0.1801 263.74);        /* Bright blue */
+  --primary-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  
+  /* Zinc-based secondary/muted */
+  --secondary: oklch(0.2400 0.0120 286.00);      /* Zinc-800 */
+  --secondary-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  --muted: oklch(0.2200 0.0110 286.00);          /* Between card and secondary */
+  --muted-foreground: oklch(0.6588 0.0108 286.75); /* Zinc-400 */
+  
+  /* Accent */
+  --accent: oklch(0.2400 0.0120 286.00);         /* Zinc-800 */
+  --accent-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  
+  /* Destructive */
+  --destructive: oklch(0.5768 0.2179 27.33);     /* Red */
+  --destructive-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  
+  /* Border/Input - Subtle but visible */
+  --border: oklch(0.2708 0.0123 286.11);         /* Zinc-800 - visible edge */
+  --input: oklch(0.2708 0.0123 286.11);          /* Match border */
+  --ring: oklch(0.6984 0.1801 263.74);           /* Bright blue ring */
+  
+  /* Chart colors (using blue shades) */
+  --chart-1: oklch(0.7071 0.1666 254.62);        /* Blue-400 */
+  --chart-2: oklch(0.8098 0.1145 251.34);        /* Blue-300 */
+  --chart-3: oklch(0.5984 0.2201 263.74);        /* Blue-600 */
+  --chart-4: oklch(0.8953 0.0755 252.07);        /* Blue-200 */
+  --chart-5: oklch(0.4588 0.2136 264.38);        /* Blue-700 */
+  
+  /* Sidebar - Match page background for seamless look */
+  --sidebar: oklch(0.1200 0.0070 286.00);        /* Slightly lighter than background */
+  --sidebar-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  --sidebar-primary: oklch(0.6984 0.1801 263.74); /* Bright blue */
+  --sidebar-primary-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  --sidebar-accent: oklch(0.2200 0.0110 286.00); /* Subtle accent */
+  --sidebar-accent-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  --sidebar-border: oklch(0.2708 0.0123 286.11); /* Visible border */
+  --sidebar-ring: oklch(0.6984 0.1801 263.74);   /* Bright blue */
+  
+  /* Fonts (same as light) */
+  --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-roboto), ui-serif, Georgia, serif;
+  --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
+  
+  /* Border Radius - SUBTLE (same as light) */
+  --radius: 0.375rem;
+  
+  /* Shadows - Stronger for dark mode depth */
+  --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.25);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+}
+
+@layer base {
+  /* Optimized base font size for data-dense dashboard applications */
+  html {
+    font-size: 14px; /* Reduces all typography proportionally for tighter, more professional UI */
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    letter-spacing: var(--tracking-normal);
+    line-height: 1.6; /* Optimal readability for smaller base font */
+  }
+  
+  /* Code elements use mono font */
+  code, pre, kbd, samp {
+    font-family: var(--font-mono);
+  }
+  
+  /* Better input borders and backgrounds */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="password"],
+  input[type="search"],
+  input[type="url"],
+  input[type="tel"],
+  textarea,
+  select {
+    @apply border-input bg-background;
+  }
+  
+  /* Better placeholder contrast */
+  ::placeholder {
+    @apply text-muted-foreground opacity-60;
+  }
+}
+
+/* Charging progress animations */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s ease-in-out;
+}
+
+/* Enhanced styling */
+@layer components {
+  /* Smooth transitions for all interactive elements */
+  button, input, textarea, select {
+    @apply transition-all duration-200;
+  }
+
+  /* Strong focus styles */
+  input:focus, textarea:focus, select:focus {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Disabled state styling */
+  input:disabled, button:disabled {
+    @apply opacity-60 cursor-not-allowed;
+  }
+
+  /* Password strength indicator animations */
+  @keyframes strength-fill {
+    from { width: 0%; }
+    to { width: 100%; }
+  }
+
+  .strength-bar {
+    animation: strength-fill 0.3s ease-in-out;
+  }
+
+  /* Enhanced card shadows for auth forms */
+  .auth-card {
+    @apply shadow-2xl border-0;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Compact mode for data-dense dashboard sections */
+  .compact {
+    font-size: 0.9em;
+    line-height: 1.4;
+  }
+
+  .compact * {
+    line-height: 1.4;
+  }
+
+  /* High-density table and list styles */
+  .data-dense {
+    @apply text-xs leading-tight;
+  }
+
+  /* Tighter spacing for dashboard cards */
+  .dashboard-card {
+    @apply space-y-2;
+  }
+
+  .dashboard-card * {
+    @apply leading-snug;
+  }
+  
+  /* Card hover effect for interactive cards */
+  .card-hover {
+    @apply transition-shadow duration-200 hover:shadow-md;
+  }
+  
+  /* Mira-style polished cards */
+  .mira-card {
+    @apply bg-card border border-border shadow-sm;
+  }
+}
