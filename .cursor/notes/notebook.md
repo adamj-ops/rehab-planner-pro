@@ -210,7 +210,7 @@ Successfully implemented all 5 focused improvements:
 
 ---
 
-## 2025-12-23 — Imported expansion documentation
+## 2024-12-23 — Imported expansion documentation
 
 Imported the latest product + expansion docs into `.cursor/docs/`:
 
@@ -224,3 +224,80 @@ Key decisions to make next:
 
 - Pick **Option B / Hybrid** (keep 7-step workflow, expand Step 4 with tabs) vs expanding to 10 steps.
 - Decide vendor packet generation approach (server-side HTML→PDF recommended) and storage (Supabase Storage + share links).
+
+---
+
+## 2024-12-23 — Mira Theme Implementation Session
+
+### Summary
+Completed full implementation of the custom Mira shadcn/ui theme with the following components:
+
+### Theme Configuration Implemented
+| Setting | Value |
+|---------|-------|
+| Style | new-york (CLI equivalent of Mira) |
+| Base Color | zinc |
+| Primary | blue (OKLCH) |
+| Border Radius | 0.375rem |
+| Icons | @tabler/icons-react |
+| Font | Roboto + Roboto Mono |
+
+### Key Files Modified
+1. `components.json` - Updated baseColor, iconLibrary
+2. `src/app/globals.css` - Full OKLCH color palette for light/dark modes
+3. `src/app/layout.tsx` - Roboto font imports via next/font/google
+4. `src/lib/icons.ts` - Centralized Tabler icon exports
+5. `src/components/ui/card.tsx` - Changed rounded-xl to rounded-lg
+
+### Dark Mode Contrast Fix
+The critical insight was creating proper visual hierarchy in dark mode:
+- Page background: 0.09 OKLCH (very dark, almost black)
+- Card background: 0.18 OKLCH (medium dark, pops off page)
+- Text: Zinc-50 (bright)
+
+This creates the "card pop" effect seen in Mira examples.
+
+### App Shell Implementation
+Installed and customized sidebar-07 template:
+- Custom navigation sections (Navigation, New Project, Tools, Settings)
+- User profile dropdown at bottom
+- Collapsible sidebar
+- Mobile-responsive
+
+### Wizard Structure
+Created 7-step horizontal wizard with tabbed Step 4:
+- Step 1: Property Details
+- Step 2: Condition Assessment
+- Step 3: Strategy Selection
+- Step 4: Design Intelligence (Color | Materials | Moodboard tabs)
+- Step 5: Priority Matrix
+- Step 6: Action Plan
+- Step 7: Final Review
+
+### Components Built
+- `ColorCard` - Individual color swatch display
+- `ColorGrid` - Grid of colors with loading/error states
+- `StepNavigation` - Horizontal step indicators
+- `WizardFooter` - Navigation buttons
+
+### Git Commit
+Committed as `ec2d56e` with 315 files changed:
+```
+feat(theme): implement Mira shadcn theme with Tabler icons and Roboto font
+```
+
+### Lessons Learned
+1. "mira" isn't a valid shadcn CLI style - use "new-york" as closest equivalent
+2. Tailwind v4 uses CSS-based config, no tailwind.config.ts needed
+3. OKLCH provides better perceptual uniformity than hex/hsl
+4. Dark mode needs explicit contrast between background and cards
+5. Tabler icon naming: `Icon` prefix (IconHome, IconSettings, etc.)
+
+---
+
+## Next Session Priorities
+
+1. **Complete Color Library** - Add search, filter, surface type selection
+2. **Material Library** - Build MaterialCard/Grid components
+3. **Moodboard Builder** - Implement drag-and-drop canvas
+4. **Test on mobile** - Verify responsive behavior
