@@ -9,9 +9,57 @@
 
 ---
 
-## Current Project State (Updated Dec 23, 2024)
+## Current Project State (Updated Dec 26, 2024)
 
-### ✅ Recently Completed: Mira Theme Implementation
+### ✅ Recently Completed: Theme Switcher (Dec 26, 2024)
+
+Added a light/dark mode theme switcher to the sidebar footer:
+
+- **Component**: `src/components/shadcn-studio/switch/switch-11.tsx`
+- **Location**: Sidebar footer (above user menu)
+- **Features**: 
+  - Sun/Moon icons for visual clarity
+  - Toggle switch for quick theme change
+  - Uses `next-themes` for persistence
+  - Proper hydration handling to avoid SSR mismatches
+  - Uses Tabler icons (project standard)
+
+**Shadcn Studio Registry**: Added to `components.json` for access to extended components:
+- `@shadcn-studio` - Free content
+- `@ss-components` - Components  
+- `@ss-blocks` - Blocks
+- `@ss-themes` - Themes
+
+---
+
+### ✅ Previously Completed: Database Migration (Dec 26, 2024)
+
+The complete database schema has been deployed to Supabase:
+
+**Phase 1 Foundation Tables:**
+| Table | Purpose | Rows |
+|-------|---------|------|
+| `users` | User profiles linked to auth.users | 0 |
+| `projects` | Full project schema with wizard tracking | 0 |
+| `scope_items` | Renovation work items | 0 |
+| `vendors` | Contractor/supplier management | 0 |
+| `project_rooms` | Room-by-room details | 0 |
+| `project_transactions` | Financial tracking | 0 |
+
+**Phase 2A Design Tables:**
+| Table | Purpose | Rows |
+|-------|---------|------|
+| `color_library` | Sherwin Williams catalog | 20 |
+| `material_library` | Flooring, countertops, etc. | 19 |
+| `moodboards` | Design boards | 0 |
+| `moodboard_elements` | Board elements | 0 |
+| `moodboard_shares` | Sharing config | 0 |
+
+**TypeScript Types:** Updated in `src/types/supabase.ts`
+
+---
+
+### ✅ Previously Completed: Mira Theme Implementation
 
 The application now uses a custom **Mira shadcn/ui theme** with the following configuration:
 
