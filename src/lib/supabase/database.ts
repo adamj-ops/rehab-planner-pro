@@ -1,5 +1,17 @@
 import { supabase } from './client'
 import { RehabProject, PropertyAssessment, ScopeItem, MarketComparable, Recommendation } from '@/types/rehab'
+import { RehabProject as RehabProjectDB, ProjectStatus } from '@/types/database'
+
+// Filter options for projects list
+export interface ProjectFilters {
+  status?: ProjectStatus | 'all'
+  strategy?: string | 'all'
+  dateFrom?: string
+  dateTo?: string
+  search?: string
+  includeDeleted?: boolean
+  includeArchived?: boolean
+}
 
 // Project operations
 export const projectService = {
@@ -57,16 +69,55 @@ export const projectService = {
     }
   },
 
-  // Get all projects for a user
-  async getAll(): Promise<RehabProject[]> {
+  // Get all projects for a user (excludes deleted by default)
+  async getAll(filters?: ProjectFilters): Promise<RehabProjectDB[]> {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('rehab_projects')
         .select('*')
-        .order('created_at', { ascending: false })
+
+      // Exclude deleted projects unless explicitly requested
+      if (!filters?.includeDeleted) {
+        query = query.is('deleted_at', null)
+      }
+
+      // Exclude archived projects unless explicitly requested
+      if (!filters?.includeArchived) {
+        query = query.neq('status', 'archived')
+      }
+
+      // Apply status filter
+      if (filters?.status && filters.status !== 'all') {
+        query = query.eq('status', filters.status)
+      }
+
+      // Apply strategy filter
+      if (filters?.strategy && filters.strategy !== 'all') {
+        query = query.eq('investment_strategy', filters.strategy)
+      }
+
+      // Apply date range filter
+      if (filters?.dateFrom) {
+        query = query.gte('created_at', filters.dateFrom)
+      }
+      if (filters?.dateTo) {
+        query = query.lte('created_at', filters.dateTo)
+      }
+
+      // Apply search filter (uses full-text search on project_name and address)
+      if (filters?.search && filters.search.trim()) {
+        const searchTerm = filters.search.trim()
+        query = query.or(
+          `project_name.ilike.%${searchTerm}%,address_street.ilike.%${searchTerm}%,address_city.ilike.%${searchTerm}%,address_state.ilike.%${searchTerm}%,address_zip.ilike.%${searchTerm}%`
+        )
+      }
+
+      query = query.order('updated_at', { ascending: false })
+
+      const { data, error } = await query
 
       if (error) throw error
-      return data as RehabProject[]
+      return data as RehabProjectDB[]
     } catch (error) {
       console.error('Error getting projects:', error)
       return []
@@ -116,8 +167,24 @@ export const projectService = {
     }
   },
 
-  // Delete a project
-  async delete(id: string): Promise<boolean> {
+  // Soft delete a project (sets deleted_at timestamp)
+  async softDelete(id: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('rehab_projects')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error soft deleting project:', error)
+      return false
+    }
+  },
+
+  // Hard delete a project (permanent - use with caution)
+  async hardDelete(id: string): Promise<boolean> {
     try {
       const { error } = await supabase
         .from('rehab_projects')
@@ -127,9 +194,100 @@ export const projectService = {
       if (error) throw error
       return true
     } catch (error) {
-      console.error('Error deleting project:', error)
+      console.error('Error hard deleting project:', error)
       return false
     }
+  },
+
+  // Archive a project (sets status to 'archived')
+  async archive(id: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('rehab_projects')
+        .update({ status: 'archived', updated_at: new Date().toISOString() })
+        .eq('id', id)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error archiving project:', error)
+      return false
+    }
+  },
+
+  // Unarchive a project (sets status back to 'draft')
+  async unarchive(id: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('rehab_projects')
+        .update({ status: 'draft', updated_at: new Date().toISOString() })
+        .eq('id', id)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error unarchiving project:', error)
+      return false
+    }
+  },
+
+  // Restore a soft-deleted project
+  async restore(id: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('rehab_projects')
+        .update({ deleted_at: null, updated_at: new Date().toISOString() })
+        .eq('id', id)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error restoring project:', error)
+      return false
+    }
+  },
+
+  // Duplicate a project
+  async duplicate(id: string): Promise<RehabProjectDB | null> {
+    try {
+      // First, get the original project
+      const { data: original, error: fetchError } = await supabase
+        .from('rehab_projects')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+      if (!original) throw new Error('Project not found')
+
+      // Create a copy with modified fields
+      const { id: _id, created_at: _created, updated_at: _updated, deleted_at: _deleted, ...projectData } = original
+
+      const duplicatedProject = {
+        ...projectData,
+        project_name: `${original.project_name} (Copy)`,
+        status: 'draft',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+
+      const { data: newProject, error: insertError } = await supabase
+        .from('rehab_projects')
+        .insert(duplicatedProject)
+        .select()
+        .single()
+
+      if (insertError) throw insertError
+      return newProject as RehabProjectDB
+    } catch (error) {
+      console.error('Error duplicating project:', error)
+      return null
+    }
+  },
+
+  // Legacy delete method (now calls softDelete for backward compatibility)
+  async delete(id: string): Promise<boolean> {
+    return this.softDelete(id)
   }
 }
 
