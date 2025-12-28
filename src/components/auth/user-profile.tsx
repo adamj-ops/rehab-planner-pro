@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/auth-context'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -17,6 +18,7 @@ import { LogOut, User, Settings } from 'lucide-react'
 export function UserProfile() {
   const { user, signOut } = useAuth()
   const [isSigningOut, setIsSigningOut] = useState(false)
+  const router = useRouter()
 
   if (!user) {
     return null
@@ -33,8 +35,22 @@ export function UserProfile() {
     }
   }
 
-  const getUserInitials = (email: string) => {
-    return email.substring(0, 2).toUpperCase()
+  const getUserInitials = () => {
+    const firstName = user.user_metadata?.first_name || ''
+    const lastName = user.user_metadata?.last_name || ''
+    if (firstName || lastName) {
+      return (firstName[0] || '') + (lastName[0] || '').toUpperCase()
+    }
+    return user.email?.substring(0, 2).toUpperCase() || 'U'
+  }
+
+  const getDisplayName = () => {
+    const firstName = user.user_metadata?.first_name
+    const lastName = user.user_metadata?.last_name
+    if (firstName || lastName) {
+      return `${firstName || ''} ${lastName || ''}`.trim()
+    }
+    return user.user_metadata?.full_name || 'User'
   }
 
   return (
@@ -44,7 +60,7 @@ export function UserProfile() {
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email || 'User'} />
             <AvatarFallback>
-              {getUserInitials(user.email || '')}
+              {getUserInitials()}
             </AvatarFallback>
           </Avatar>
         </Button>
@@ -53,7 +69,7 @@ export function UserProfile() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {user.user_metadata?.full_name || 'User'}
+              {getDisplayName()}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
@@ -61,11 +77,11 @@ export function UserProfile() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/settings/profile')}>
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/settings')}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>

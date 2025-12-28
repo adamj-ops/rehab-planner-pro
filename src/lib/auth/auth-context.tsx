@@ -8,12 +8,13 @@ interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
-  signUp: (email: string, password: string) => Promise<{ user: User | null; error: AuthError | null }>
+  signUp: (email: string, password: string, metadata?: { firstName: string; lastName: string }) => Promise<{ user: User | null; error: AuthError | null }>
   signIn: (email: string, password: string) => Promise<{ user: User | null; error: AuthError | null }>
   signInWithOAuth: (provider: 'google' | 'github' | 'microsoft') => Promise<{ error: AuthError | null }>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>
   updatePassword: (password: string) => Promise<{ error: AuthError | null }>
+  resendVerificationEmail: (email: string) => Promise<{ error: AuthError | null }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -68,17 +69,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, metadata?: { firstName: string; lastName: string }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: metadata ? {
+          first_name: metadata.firstName,
+          last_name: metadata.lastName,
+        } : undefined,
+      },
     })
-    
-    if (data.user) {
-      setUser(data.user)
-      setSession(data.session)
-    }
-    
+
+    // Don't set user/session immediately - wait for email verification
+    // The user will need to verify their email before they can sign in
+
     return { user: data.user, error }
   }
 
@@ -87,22 +92,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
     })
-    
+
+    // Check if email is verified
+    if (data.user && !data.user.email_confirmed_at) {
+      // Email not verified - sign out and return error
+      await supabase.auth.signOut()
+      return {
+        user: null,
+        error: {
+          message: 'Please verify your email before signing in. Check your inbox for the verification link.',
+          name: 'EmailNotVerifiedError',
+        } as AuthError,
+      }
+    }
+
     if (data.user) {
       setUser(data.user)
       setSession(data.session)
     }
-    
+
     return { user: data.user, error }
   }
 
   const signInWithOAuth = async (provider: 'google' | 'github' | 'microsoft') => {
     const { error } = await supabase.auth.signInWithOAuth({
+      provider: provider,
       options: {
-        provider: provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`, // Adjust redirect URL as needed
-        },
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     })
     return { error }
@@ -115,12 +131,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+    })
     return { error }
   }
 
   const updatePassword = async (password: string) => {
     const { error } = await supabase.auth.updateUser({ password })
+    return { error }
+  }
+
+  const resendVerificationEmail = async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+    })
     return { error }
   }
 
@@ -134,6 +160,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     resetPassword,
     updatePassword,
+    resendVerificationEmail,
   }
 
   return (

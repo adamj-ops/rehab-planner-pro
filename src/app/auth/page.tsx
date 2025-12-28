@@ -1,22 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { AuthForm } from '@/components/auth/auth-form'
 import { useAuth } from '@/lib/auth/auth-context'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 
 export default function AuthPage() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const { user, loading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirectTo') || '/dashboard'
 
   useEffect(() => {
     if (user && !loading) {
-      router.push('/rehab-estimator')
+      router.push(redirectTo)
     }
-  }, [user, loading, router])
+  }, [user, loading, router, redirectTo])
 
   if (loading) {
     return (
