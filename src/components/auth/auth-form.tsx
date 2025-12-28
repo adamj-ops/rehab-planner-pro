@@ -91,8 +91,11 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
     setSuccess(null)
 
     try {
-      const { user, error } = await signUp(data.email, data.password)
-      
+      const { user, error } = await signUp(data.email, data.password, {
+        firstName: data.firstName,
+        lastName: data.lastName,
+      })
+
       if (error) {
         setError(error.message)
       } else if (user) {
