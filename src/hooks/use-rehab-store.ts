@@ -10,10 +10,14 @@ import {
   PriorityMatrixItem,
   ActionPlanPhase
 } from '@/types/rehab'
+import type { WizardData } from '@/lib/validations/project-wizard'
 
 interface RehabStore {
   // Project state
   project: Partial<RehabProject>
+  
+  // Wizard step data (new typed structure)
+  wizardData: Partial<WizardData>
   
   // Step management
   currentStep: number
@@ -35,6 +39,11 @@ interface RehabStore {
   goToNextStep: () => void
   goToPreviousStep: () => void
   resetProject: () => void
+  
+  // Wizard-specific actions
+  setWizardStepData: (step: number, data: Record<string, unknown>) => void
+  getWizardStepData: (step: number) => Record<string, unknown> | undefined
+  getCompletedSteps: () => number[]
   
   // Project actions
   saveProject: (userId: string) => Promise<RehabProject | null>
@@ -87,6 +96,7 @@ export const useRehabStore = create<RehabStore>()(
     (set, get) => ({
       // Initial state
       project: {},
+      wizardData: { currentStep: 1, completedSteps: [] },
       currentStep: 1,
       steps: defaultSteps,
       loading: false,
@@ -103,18 +113,33 @@ export const useRehabStore = create<RehabStore>()(
       },
       
       setCurrentStep: (step) => {
-        set({ currentStep: step })
+        set((state) => ({ 
+          currentStep: step,
+          wizardData: { ...state.wizardData, currentStep: step }
+        }))
       },
       
       completeStep: (stepId, data) => {
-        set((state) => ({
-          steps: state.steps.map(step => 
-            step.id === stepId 
-              ? { ...step, completed: true, data }
-              : step
-          ),
-          project: { ...state.project, ...data }
-        }))
+        set((state) => {
+          const completedSteps = state.wizardData?.completedSteps || []
+          const newCompletedSteps = completedSteps.includes(stepId) 
+            ? completedSteps 
+            : [...completedSteps, stepId]
+          
+          return {
+            steps: state.steps.map(step => 
+              step.id === stepId 
+                ? { ...step, completed: true, data }
+                : step
+            ),
+            project: { ...state.project, ...data },
+            wizardData: {
+              ...state.wizardData,
+              completedSteps: newCompletedSteps,
+              [`step${stepId}`]: data,
+            }
+          }
+        })
       },
       
       goToNextStep: () => {
@@ -134,6 +159,7 @@ export const useRehabStore = create<RehabStore>()(
       resetProject: () => {
         set({
           project: {},
+          wizardData: { currentStep: 1, completedSteps: [] },
           currentStep: 1,
           steps: defaultSteps,
           estimateSummary: defaultEstimateSummary,
@@ -141,6 +167,32 @@ export const useRehabStore = create<RehabStore>()(
           actionPlan: [],
           error: null
         })
+      },
+      
+      // Wizard-specific actions
+      setWizardStepData: (step, data) => {
+        set((state) => ({
+          wizardData: {
+            ...state.wizardData,
+            [`step${step}`]: { 
+              ...(state.wizardData?.[`step${step}` as keyof typeof state.wizardData] as Record<string, unknown> || {}),
+              ...data 
+            }
+          }
+        }))
+      },
+      
+      getWizardStepData: (step) => {
+        const { wizardData } = get()
+        return wizardData?.[`step${step}` as keyof typeof wizardData] as Record<string, unknown> | undefined
+      },
+      
+      getCompletedSteps: () => {
+        const { wizardData, steps } = get()
+        // Combine both sources for completed steps
+        const fromWizardData = wizardData?.completedSteps || []
+        const fromSteps = steps.filter(s => s.completed).map(s => s.id)
+        return [...new Set([...fromWizardData, ...fromSteps])]
       },
       
       // Project actions
@@ -425,6 +477,7 @@ export const useRehabStore = create<RehabStore>()(
       name: 'rehab-estimator-store',
       partialize: (state) => ({
         project: state.project,
+        wizardData: state.wizardData,
         currentStep: state.currentStep,
         steps: state.steps
       })
@@ -463,3 +516,10 @@ export const usePriorityMatrix = () => useRehabStore((state) => state.priorityMa
 export const useActionPlan = () => useRehabStore((state) => state.actionPlan)
 export const useLoading = () => useRehabStore((state) => state.loading)
 export const useError = () => useRehabStore((state) => state.error)
+
+// Wizard-specific selectors
+export const useWizardData = () => useRehabStore((state) => state.wizardData)
+export const useCompletedSteps = () => useRehabStore((state) => state.getCompletedSteps())
+export const useWizardStepData = (step: number) => useRehabStore((state) => 
+  state.wizardData?.[`step${step}` as keyof typeof state.wizardData]
+)

@@ -821,3 +821,17 @@ export interface MoodboardWithElements extends Moodboard {
   elements: MoodboardElement[]
 }
 
+// ----------------------------------------------------------------------------
+// CONVENIENCE TYPE ALIASES
+// ----------------------------------------------------------------------------
+
+/**
+ * Alias for MaterialLibraryItem - used by UI components
+ */
+export type Material = MaterialLibraryItem
+
+/**
+ * Alias for ColorLibraryItem - used by UI components
+ */
+export type Color = ColorLibraryItem
+

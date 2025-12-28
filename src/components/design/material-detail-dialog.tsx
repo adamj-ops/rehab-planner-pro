@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 import {
   Dialog,
@@ -13,16 +14,16 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
-  Copy,
-  Check,
-  ExternalLink,
-  Heart,
-  Plus,
-  DollarSign,
-  Ruler,
-  Package,
-  Star,
-} from "lucide-react"
+  IconCopy,
+  IconCheck,
+  IconExternalLink,
+  IconHeart,
+  IconPlus,
+  IconCurrencyDollar,
+  IconRuler,
+  IconPackage,
+  IconStar,
+} from "@/lib/icons"
 import { toast } from "sonner"
 import type { Material } from "@/types/design"
 
@@ -86,14 +87,16 @@ export function MaterialDetailDialog({
         {/* Material image */}
         <div className="relative w-full aspect-video overflow-hidden rounded-lg bg-muted">
           {material.imageUrl ? (
-            <img
+            <Image
               src={material.imageUrl}
               alt={material.productName}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 500px"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Package className="h-16 w-16 text-muted-foreground/50" />
+              <IconPackage className="h-16 w-16 text-muted-foreground/50" />
             </div>
           )}
 
@@ -101,7 +104,7 @@ export function MaterialDetailDialog({
           <div className="absolute top-2 left-2 flex gap-2">
             {material.popular && (
               <Badge className="bg-yellow-500/90 text-white border-0">
-                <Star className="w-3 h-3 mr-1 fill-current" />
+                <IconStar className="w-3 h-3 mr-1 fill-current" />
                 Popular
               </Badge>
             )}
@@ -118,7 +121,7 @@ export function MaterialDetailDialog({
           {priceDisplay && (
             <div className="p-3 rounded-md bg-muted">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <DollarSign className="h-4 w-4" />
+                <IconCurrencyDollar className="h-4 w-4" />
                 <span className="text-xs">Price</span>
               </div>
               <p className="font-semibold">{priceDisplay}</p>
@@ -128,7 +131,7 @@ export function MaterialDetailDialog({
           {material.dimensions && (
             <div className="p-3 rounded-md bg-muted">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Ruler className="h-4 w-4" />
+                <IconRuler className="h-4 w-4" />
                 <span className="text-xs">Dimensions</span>
               </div>
               <p className="font-semibold">{material.dimensions}</p>
@@ -138,7 +141,7 @@ export function MaterialDetailDialog({
           {material.qualityTier && (
             <div className="p-3 rounded-md bg-muted">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Star className="h-4 w-4" />
+                <IconStar className="h-4 w-4" />
                 <span className="text-xs">Quality Tier</span>
               </div>
               <p className="font-semibold capitalize">{material.qualityTier}</p>
@@ -147,15 +150,16 @@ export function MaterialDetailDialog({
 
           {material.modelNumber && (
             <button
-              onClick={() => copyToClipboard(material.modelNumber!, "Model")}
+              type="button"
+              onClick={() => copyToClipboard(material.modelNumber ?? "", "Model")}
               className="p-3 rounded-md bg-muted text-left hover:bg-muted/80 transition-colors group"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Model #</span>
                 {copiedField === "Model" ? (
-                  <Check className="h-3 w-3 text-green-500" />
+                  <IconCheck className="h-3 w-3 text-green-500" />
                 ) : (
-                  <Copy className="h-3 w-3 opacity-0 group-hover:opacity-50" />
+                  <IconCopy className="h-3 w-3 opacity-0 group-hover:opacity-50" />
                 )}
               </div>
               <p className="font-mono text-sm">{material.modelNumber}</p>
@@ -201,9 +205,9 @@ export function MaterialDetailDialog({
             <div className="space-y-2">
               <h4 className="text-sm font-medium">Available Colors</h4>
               <div className="flex flex-wrap gap-2">
-                {material.colorVariants.map((color, i) => (
+                {material.colorVariants.map((color) => (
                   <div
-                    key={i}
+                    key={`${material.id}-color-${color}`}
                     className="w-8 h-8 rounded-md border shadow-sm"
                     style={{ backgroundColor: color }}
                     title={color}
@@ -245,12 +249,12 @@ export function MaterialDetailDialog({
             >
               {isSelected ? (
                 <>
-                  <Check className="h-4 w-4 mr-2" />
+                  <IconCheck className="h-4 w-4 mr-2" />
                   Selected
                 </>
               ) : (
                 <>
-                  <Plus className="h-4 w-4 mr-2" />
+                  <IconPlus className="h-4 w-4 mr-2" />
                   Add to Project
                 </>
               )}
@@ -263,13 +267,13 @@ export function MaterialDetailDialog({
               onClick={() => onFavorite(material)}
               className={cn(isFavorite && "text-red-500")}
             >
-              <Heart className={cn("h-4 w-4", isFavorite && "fill-current")} />
+              <IconHeart className={cn("h-4 w-4", isFavorite && "fill-current")} />
             </Button>
           )}
           {material.sourceUrl && (
             <Button variant="outline" size="icon" asChild>
               <a href={material.sourceUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-4 w-4" />
+                <IconExternalLink className="h-4 w-4" />
               </a>
             </Button>
           )}

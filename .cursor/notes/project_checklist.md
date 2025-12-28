@@ -2,9 +2,9 @@
 
 ## Current Status: Phase 2A Design Intelligence
 
-**Last Updated**: December 23, 2024  
-**Current Sprint**: UI Theme Implementation  
-**Overall Progress**: 65%
+**Last Updated**: December 26, 2024  
+**Current Sprint**: Moodboard Builder  
+**Overall Progress**: 85%
 
 ---
 
@@ -46,6 +46,7 @@
   - [x] Tools section (Color, Materials, Vendors)
   - [x] Settings section
   - [x] User profile dropdown
+  - [x] Theme Switcher (light/dark toggle)
 - [x] **Icon Migration** - Lucide → Tabler
   - [x] Created `src/lib/icons.ts` for centralized exports
   - [x] Updated all navigation components
@@ -58,28 +59,57 @@
 - [x] Footer navigation (Back/Next/Save)
 - [x] Step 4 tabbed layout (Color/Materials/Moodboard)
 
-### 2A.3 Color Library 🔄 IN PROGRESS
-- [x] ColorCard component (Mira styled)
-- [x] ColorGrid component with loading/error states
-- [x] Basic Step 4 Colors page
-- [ ] Search/filter functionality
-- [ ] Surface type assignment
-- [ ] Save selections to project
+### 2A.3 Color Library ✅ COMPLETE
+- [x] **ColorWall** - Main container with search, filters, view toggle
+- [x] **ColorWallView** - Dense spectrum wall view
+- [x] **ColorGridView** - Rich card grid view
+- [x] **ColorCard** - Individual color cards with details
+- [x] **ColorSwatch** - Compact color swatches
+- [x] **ColorFamilyPills** - Horizontal filter pills
+- [x] **ColorDetailSheet** - Full color information sheet
+- [x] **FilterSheet** - Design styles and popular filters
+- [x] **AddToProjectDialog** - Configure surface/room/finish
+- [x] **EditSelectionDialog** - Edit existing selections
+- [x] **ProjectPaletteBar** - Show selected colors with edit/remove
+- [x] Search functionality with debouncing
+- [x] Color family filter pills
+- [x] Design style filters
+- [x] Popular colors toggle
+- [x] Favorites with localStorage persistence
+- [x] Surface type assignment (walls, trim, accent, etc.)
+- [x] Room type assignment
+- [x] Paint finish selection with auto-suggest
+- [x] Save selections to project (via Zustand store)
+- [x] Max 5 colors limit with full palette warning
+- [x] Dual view modes (Wall/Grid)
 
-### 2A.4 Material Library ⏳ PENDING
-- [ ] MaterialCard component
-- [ ] MaterialGrid component
-- [ ] Category filtering
-- [ ] Step 4 Materials page integration
-- [ ] Save selections to project
+### 2A.4 Material Library ✅ COMPLETE
+- [x] **MaterialCard** - Card with image, price, dimensions, color variants
+- [x] **MaterialGrid** - Responsive grid layout
+- [x] **MaterialLibraryBrowser** - Full browser with search, filters, sorting
+- [x] **MaterialDetailDialog** - Detailed material view
+- [x] **material-service.ts** - Service layer
+- [x] **material-adapter.ts** - Type adapter for DB → UI
+- [x] API routes (`/api/materials`, `/api/materials/[id]`)
+- [x] Search functionality
+- [x] Category filter (flooring, tile, countertops, etc.)
+- [x] Price range filter (budget/mid/premium/luxury)
+- [x] Quality tier filter
+- [x] Sorting options (name, price low/high, category)
+- [x] Favorites system
+- [x] Selection system
+- [x] All/Popular/Favorites tabs
 
 ### 2A.5 Moodboard Builder ⏳ PENDING
-- [ ] Canvas with drag-and-drop
-- [ ] Element inspector
-- [ ] Color/material element types
-- [ ] Image upload
+- [ ] Set up @dnd-kit for drag-and-drop
+- [ ] Create MoodboardCanvas component
+- [ ] Element types (color swatch, material, image, text)
+- [ ] Element inspector/toolbar
+- [ ] Image upload functionality
 - [ ] Text annotations
-- [ ] Share functionality
+- [ ] Zoom/pan controls
+- [ ] Undo/redo (store ready)
+- [ ] Share functionality via unique URL
 
 ### 2A.6 Database Schema ✅ COMPLETE
 - [x] Migration file created
@@ -88,6 +118,15 @@
 - [x] Seed data for materials
 - [x] RLS policies configured
 - [x] TypeScript types generated
+
+### 2A.7 Design Store ✅ COMPLETE
+- [x] Color selection state and actions
+- [x] Material selection state and actions
+- [x] Moodboard state (ready for implementation)
+- [x] Favorites persistence
+- [x] Undo/redo for moodboard
+- [x] Room design summaries
+- [x] Completion percentage calculation
 
 ---
 
@@ -140,39 +179,46 @@
 | Phase 1: Infrastructure | 100% | ✅ Complete |
 | Phase 2A: UI Theme | 100% | ✅ Complete |
 | Phase 2A: Wizard Structure | 100% | ✅ Complete |
-| Phase 2A: Color Library | 60% | 🔄 In Progress |
-| Phase 2A: Material Library | 10% | ⏳ Pending |
+| Phase 2A: Color Library | 100% | ✅ Complete |
+| Phase 2A: Material Library | 100% | ✅ Complete |
+| Phase 2A: Design Store | 100% | ✅ Complete |
 | Phase 2A: Moodboard | 0% | ⏳ Pending |
 | Phase 3: Advanced Features | 0% | ⏳ Future |
 | Phase 4: Polish & Export | 0% | ⏳ Future |
 | Phase 5: Testing | 0% | ⏳ Future |
 
-**Overall**: ~65% complete through Phase 2A
+**Overall**: ~85% complete through Phase 2A
 
 ---
 
 ## 🔄 Immediate Next Steps
 
-### Priority 1: Complete Color Library
-1. [ ] Add search input to ColorGrid
-2. [ ] Add color family filter
-3. [ ] Implement surface type dropdown (walls, trim, accent, etc.)
-4. [ ] Save color selections to `project_color_selections` table
-5. [ ] Show selected colors summary
+### Priority 1: Moodboard Builder
+The only remaining Phase 2A feature:
 
-### Priority 2: Material Library
-1. [ ] Create MaterialCard component (match ColorCard styling)
-2. [ ] Create MaterialGrid component
-3. [ ] Build Materials page in Step 4
-4. [ ] Implement category/room filtering
-5. [ ] Save material selections
+1. [ ] Install @dnd-kit packages (`@dnd-kit/core`, `@dnd-kit/utilities`)
+2. [ ] Create `MoodboardCanvas` component with drag-and-drop
+3. [ ] Implement element types:
+   - [ ] Color swatch element (from color selections)
+   - [ ] Material element (from material selections)
+   - [ ] Image element (with upload)
+   - [ ] Text annotation element
+4. [ ] Build element toolbar (add, delete, duplicate, z-order)
+5. [ ] Add zoom/pan controls
+6. [ ] Connect undo/redo from design store
+7. [ ] Implement moodboard save to Supabase
+8. [ ] Add share functionality via unique URL
 
-### Priority 3: Moodboard Builder
-1. [ ] Set up @dnd-kit for drag-and-drop
-2. [ ] Create MoodboardCanvas component
-3. [ ] Implement element types (color swatch, material, image, text)
-4. [ ] Build toolbar with add/delete/zoom controls
-5. [ ] Implement sharing via unique URL
+### Priority 2: Integration & Polish
+1. [ ] Connect color selections to database persistence
+2. [ ] Connect material selections to database persistence
+3. [ ] Test complete wizard flow end-to-end
+4. [ ] Mobile responsiveness check
+
+### Priority 3: Phase 3 Planning
+1. [ ] Define AI integration approach for smart scope
+2. [ ] Design contractor management schema
+3. [ ] Research market data API options
 
 ---
 
@@ -183,6 +229,7 @@
 - ✅ Dark mode card contrast (fixed with OKLCH adjustments)
 - ✅ Font rendering (Roboto now applied correctly)
 - ✅ Icon consistency (all Tabler now)
+- ✅ Theme switcher hydration (proper SSR handling)
 
 ### Active
 - None currently
@@ -199,10 +246,20 @@
 | 2024-12-23 | OKLCH for all colors | Better perceptual uniformity |
 | 2024-12-23 | Sidebar-07 template | Modern app shell with collapsible sidebar |
 | 2024-12-23 | 7-step wizard | Comprehensive project creation flow |
+| 2024-12-26 | localStorage for favorites | Simple persistence without auth requirement |
+| 2024-12-26 | Zustand for design state | Consistent with existing state management |
+| 2024-12-26 | Wall/Grid dual views | Support different browsing preferences |
 
 ---
 
 ## 📅 Sprint History
+
+### Sprint 5 (Dec 26, 2024) - Color & Material Libraries ✅
+- Completed full Color Library with all features
+- Completed full Material Library with all features
+- Added theme switcher to sidebar
+- Built comprehensive design store
+- Implemented favorites and selections
 
 ### Sprint 4 (Dec 23, 2024) - UI Theme ✅
 - Implemented Mira shadcn theme
@@ -231,13 +288,18 @@
 
 ## 🎉 Recent Achievements
 
-- ✅ Full Mira theme implementation with proper dark mode
-- ✅ Sidebar-07 app shell with custom navigation
-- ✅ 7-step wizard structure with tabbed Step 4
-- ✅ Tabler icons migration complete
-- ✅ ColorCard and ColorGrid components built
-- ✅ All Phase 2A database tables deployed
-- ✅ Git commit and push to main
+- ✅ **Color Library COMPLETE** with 11 components
+  - ColorWall, ColorWallView, ColorGridView
+  - ColorCard, ColorSwatch, ColorFamilyPills
+  - ColorDetailSheet, FilterSheet
+  - AddToProjectDialog, EditSelectionDialog, ProjectPaletteBar
+- ✅ **Material Library COMPLETE** with full browser
+  - MaterialCard, MaterialGrid, MaterialLibraryBrowser
+  - MaterialDetailDialog, API routes
+  - Search, filters, favorites, selections
+- ✅ **Design Store** fully implemented with Zustand
+- ✅ **Theme Switcher** added to sidebar
+- ✅ All Phase 2A database tables deployed and seeded
 
 ---
 

@@ -5,6 +5,7 @@ import { AppLogo } from "@/components/app-logo";
 import { NavSimple } from "@/components/nav-simple";
 import { NavAction } from "@/components/nav-action";
 import { NavUser } from "@/components/nav-user";
+import { ThemeSwitch } from "@/components/shadcn-studio/switch/switch-11";
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +13,8 @@ import {
   SidebarHeader,
   SidebarRail,
   SidebarSeparator,
+  SidebarGroup,
+  SidebarGroupContent,
 } from "@/components/ui/sidebar";
 import {
   mainNavItems,
@@ -53,6 +56,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       
       <SidebarFooter>
+        <SidebarGroup>
+          <SidebarGroupContent className="flex justify-center py-2">
+            <ThemeSwitch />
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarSeparator />
         <NavUser user={userData} />
       </SidebarFooter>
       

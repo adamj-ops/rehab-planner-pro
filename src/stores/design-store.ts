@@ -20,11 +20,17 @@ import type {
 // ----------------------------------------------------------------------------
 
 interface DesignUIState {
-  // Active selections
+  // Active selections (single)
   selectedColorId: string | null
   selectedMaterialId: string | null
   selectedMoodboardId: string | null
   selectedElementId: string | null
+  
+  // Multi-selection for browser (UI state)
+  selectedColorIds: string[]
+  selectedMaterialIds: string[]
+  favoriteColorIds: string[]
+  favoriteMaterialIds: string[]
   
   // Active room for color/material selection
   activeRoom: RoomType | null
@@ -139,6 +145,17 @@ interface DesignActions {
   setSelectedMaterialId: (id: string | null) => void
   setSelectedMoodboardId: (id: string | null) => void
   setSelectedElementId: (id: string | null) => void
+  
+  // Multi-selection toggle actions (for browser UI)
+  toggleColorSelection: (id: string) => void
+  toggleMaterialSelection: (id: string) => void
+  toggleColorFavorite: (id: string) => void
+  toggleMaterialFavorite: (id: string) => void
+  clearColorSelections: () => void
+  clearMaterialSelections: () => void
+  setSelectedColorIds: (ids: string[]) => void
+  setSelectedMaterialIds: (ids: string[]) => void
+  
   setActiveRoom: (room: RoomType | null) => void
   setColorBrowserOpen: (open: boolean) => void
   setMaterialBrowserOpen: (open: boolean) => void
@@ -170,6 +187,10 @@ const initialUIState: DesignUIState = {
   selectedMaterialId: null,
   selectedMoodboardId: null,
   selectedElementId: null,
+  selectedColorIds: [],
+  selectedMaterialIds: [],
+  favoriteColorIds: [],
+  favoriteMaterialIds: [],
   activeRoom: null,
   isColorBrowserOpen: false,
   isMaterialBrowserOpen: false,
@@ -384,6 +405,33 @@ export const useDesignStore = create<DesignStore>()(
         setSelectedMaterialId: (selectedMaterialId) => set({ selectedMaterialId }),
         setSelectedMoodboardId: (selectedMoodboardId) => set({ selectedMoodboardId }),
         setSelectedElementId: (selectedElementId) => set({ selectedElementId }),
+        
+        // Multi-selection toggle actions
+        toggleColorSelection: (id) => set((state) => ({
+          selectedColorIds: state.selectedColorIds.includes(id)
+            ? state.selectedColorIds.filter((cid) => cid !== id)
+            : [...state.selectedColorIds, id],
+        })),
+        toggleMaterialSelection: (id) => set((state) => ({
+          selectedMaterialIds: state.selectedMaterialIds.includes(id)
+            ? state.selectedMaterialIds.filter((mid) => mid !== id)
+            : [...state.selectedMaterialIds, id],
+        })),
+        toggleColorFavorite: (id) => set((state) => ({
+          favoriteColorIds: state.favoriteColorIds.includes(id)
+            ? state.favoriteColorIds.filter((cid) => cid !== id)
+            : [...state.favoriteColorIds, id],
+        })),
+        toggleMaterialFavorite: (id) => set((state) => ({
+          favoriteMaterialIds: state.favoriteMaterialIds.includes(id)
+            ? state.favoriteMaterialIds.filter((mid) => mid !== id)
+            : [...state.favoriteMaterialIds, id],
+        })),
+        clearColorSelections: () => set({ selectedColorIds: [] }),
+        clearMaterialSelections: () => set({ selectedMaterialIds: [] }),
+        setSelectedColorIds: (selectedColorIds) => set({ selectedColorIds }),
+        setSelectedMaterialIds: (selectedMaterialIds) => set({ selectedMaterialIds }),
+        
         setActiveRoom: (activeRoom) => set({ activeRoom }),
         setColorBrowserOpen: (isColorBrowserOpen) => set({ isColorBrowserOpen }),
         setMaterialBrowserOpen: (isMaterialBrowserOpen) => set({ isMaterialBrowserOpen }),
@@ -473,11 +521,13 @@ export const useDesignStore = create<DesignStore>()(
       {
         name: 'design-store',
         partialize: (state) => ({
-          // Only persist UI preferences, not data
+          // Persist UI preferences and favorites
           colorViewMode: state.colorViewMode,
           materialViewMode: state.materialViewMode,
           showColorNames: state.showColorNames,
           showColorCodes: state.showColorCodes,
+          favoriteColorIds: state.favoriteColorIds,
+          favoriteMaterialIds: state.favoriteMaterialIds,
         }),
       }
     ),
