@@ -2,9 +2,9 @@
 
 ## Current Status: Phase 2A Design Intelligence
 
-**Last Updated**: December 23, 2024  
-**Current Sprint**: UI Theme Implementation  
-**Overall Progress**: 65%
+**Last Updated**: December 28, 2024
+**Current Sprint**: Color Library Completion
+**Overall Progress**: 75%
 
 ---
 
@@ -58,13 +58,14 @@
 - [x] Footer navigation (Back/Next/Save)
 - [x] Step 4 tabbed layout (Color/Materials/Moodboard)
 
-### 2A.3 Color Library 🔄 IN PROGRESS
+### 2A.3 Color Library ✅ COMPLETE
 - [x] ColorCard component (Mira styled)
 - [x] ColorGrid component with loading/error states
 - [x] Basic Step 4 Colors page
-- [ ] Search/filter functionality
-- [ ] Surface type assignment
-- [ ] Save selections to project
+- [x] Search/filter functionality (search by name/code, filter by color family)
+- [x] Surface type assignment (ColorSelectionDialog with room, surface, finish selection)
+- [x] Save selections to project (database integration with project_color_selections)
+- [x] ColorSelectionsSummary component (grouped by room with surface/finish display)
 
 ### 2A.4 Material Library ⏳ PENDING
 - [ ] MaterialCard component
@@ -140,39 +141,39 @@
 | Phase 1: Infrastructure | 100% | ✅ Complete |
 | Phase 2A: UI Theme | 100% | ✅ Complete |
 | Phase 2A: Wizard Structure | 100% | ✅ Complete |
-| Phase 2A: Color Library | 60% | 🔄 In Progress |
+| Phase 2A: Color Library | 100% | ✅ Complete |
 | Phase 2A: Material Library | 10% | ⏳ Pending |
 | Phase 2A: Moodboard | 0% | ⏳ Pending |
 | Phase 3: Advanced Features | 0% | ⏳ Future |
 | Phase 4: Polish & Export | 0% | ⏳ Future |
 | Phase 5: Testing | 0% | ⏳ Future |
 
-**Overall**: ~65% complete through Phase 2A
+**Overall**: ~75% complete through Phase 2A
 
 ---
 
 ## 🔄 Immediate Next Steps
 
-### Priority 1: Complete Color Library
-1. [ ] Add search input to ColorGrid
-2. [ ] Add color family filter
-3. [ ] Implement surface type dropdown (walls, trim, accent, etc.)
-4. [ ] Save color selections to `project_color_selections` table
-5. [ ] Show selected colors summary
-
-### Priority 2: Material Library
+### Priority 1: Material Library
 1. [ ] Create MaterialCard component (match ColorCard styling)
-2. [ ] Create MaterialGrid component
+2. [ ] Create MaterialGrid component with search/filter
 3. [ ] Build Materials page in Step 4
 4. [ ] Implement category/room filtering
-5. [ ] Save material selections
+5. [ ] Create MaterialSelectionDialog component
+6. [ ] Save material selections to database
 
-### Priority 3: Moodboard Builder
+### Priority 2: Moodboard Builder
 1. [ ] Set up @dnd-kit for drag-and-drop
 2. [ ] Create MoodboardCanvas component
 3. [ ] Implement element types (color swatch, material, image, text)
 4. [ ] Build toolbar with add/delete/zoom controls
 5. [ ] Implement sharing via unique URL
+
+### ✅ Completed: Color Library (Dec 28, 2024)
+1. [x] ColorGrid with search input and color family filter
+2. [x] ColorSelectionDialog for room/surface/finish assignment
+3. [x] ColorSelectionsSummary grouped by room
+4. [x] Database integration with project_color_selections table
 
 ---
 
@@ -199,10 +200,18 @@
 | 2024-12-23 | OKLCH for all colors | Better perceptual uniformity |
 | 2024-12-23 | Sidebar-07 template | Modern app shell with collapsible sidebar |
 | 2024-12-23 | 7-step wizard | Comprehensive project creation flow |
+| 2024-12-28 | Color selection dialog flow | Separate dialog for room/surface assignment |
+| 2024-12-28 | Group colors by room | Better UX for viewing selections by location |
 
 ---
 
 ## 📅 Sprint History
+
+### Sprint 5 (Dec 28, 2024) - Color Library Completion ✅
+- Completed ColorSelectionDialog component for room/surface/finish assignment
+- Created ColorSelectionsSummary component with grouped-by-room display
+- Integrated with Supabase project_color_selections table
+- Updated Step 4 Colors page with full database persistence
 
 ### Sprint 4 (Dec 23, 2024) - UI Theme ✅
 - Implemented Mira shadcn theme
