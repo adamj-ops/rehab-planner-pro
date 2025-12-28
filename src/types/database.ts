@@ -104,11 +104,12 @@ export interface RehabProject {
   estimated_days: number | null;
   priority_score: number | null;
   roi_score: number | null;
+  deleted_at: Timestamp | null;
   created_at: Timestamp | null;
   updated_at: Timestamp | null;
 }
 
-export type ProjectStatus = 'draft' | 'active' | 'in_progress' | 'completed' | 'on_hold';
+export type ProjectStatus = 'draft' | 'active' | 'in_progress' | 'completed' | 'on_hold' | 'archived';
 
 export type RehabProjectInsert = Omit<RehabProject, 'id' | 'created_at' | 'updated_at'> & {
   id?: UUID;

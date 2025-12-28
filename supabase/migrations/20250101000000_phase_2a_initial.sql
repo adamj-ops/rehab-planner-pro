@@ -121,7 +121,7 @@ CREATE TRIGGER update_color_palettes_updated_at
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS project_color_selections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id UUID NOT NULL REFERENCES rehab_projects(id) ON DELETE CASCADE,
   
   -- Location in Property
   room_type VARCHAR(50) NOT NULL, -- 'kitchen', 'primary_bedroom', 'exterior'
@@ -236,7 +236,7 @@ CREATE TRIGGER update_material_library_updated_at
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS project_material_selections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id UUID NOT NULL REFERENCES rehab_projects(id) ON DELETE CASCADE,
   
   -- Location
   room_type VARCHAR(50), -- 'kitchen', 'bathroom', etc.
@@ -296,7 +296,7 @@ CREATE TRIGGER update_project_material_selections_updated_at
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS moodboards (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  project_id UUID NOT NULL REFERENCES rehab_projects(id) ON DELETE CASCADE,
   
   -- Basic Info
   name VARCHAR(100) NOT NULL, -- 'Kitchen Inspiration', 'Overall Design'
@@ -538,7 +538,7 @@ CREATE POLICY "Users can view their project color selections"
   TO authenticated
   USING (
     project_id IN (
-      SELECT id FROM projects WHERE user_id = auth.uid()
+      SELECT id FROM rehab_projects WHERE user_id = auth.uid()
     )
   );
 
@@ -547,7 +547,7 @@ CREATE POLICY "Users can insert color selections to their projects"
   TO authenticated
   WITH CHECK (
     project_id IN (
-      SELECT id FROM projects WHERE user_id = auth.uid()
+      SELECT id FROM rehab_projects WHERE user_id = auth.uid()
     )
   );
 
@@ -556,7 +556,7 @@ CREATE POLICY "Users can update their project color selections"
   TO authenticated
   USING (
     project_id IN (
-      SELECT id FROM projects WHERE user_id = auth.uid()
+      SELECT id FROM rehab_projects WHERE user_id = auth.uid()
     )
   );
 
@@ -565,7 +565,7 @@ CREATE POLICY "Users can delete their project color selections"
   TO authenticated
   USING (
     project_id IN (
-      SELECT id FROM projects WHERE user_id = auth.uid()
+      SELECT id FROM rehab_projects WHERE user_id = auth.uid()
     )
   );
 
@@ -594,7 +594,7 @@ CREATE POLICY "Users can view their project material selections"
   TO authenticated
   USING (
     project_id IN (
-      SELECT id FROM projects WHERE user_id = auth.uid()
+      SELECT id FROM rehab_projects WHERE user_id = auth.uid()
     )
   );
 
@@ -603,7 +603,7 @@ CREATE POLICY "Users can insert material selections to their projects"
   TO authenticated
   WITH CHECK (
     project_id IN (
-      SELECT id FROM projects WHERE user_id = auth.uid()
+      SELECT id FROM rehab_projects WHERE user_id = auth.uid()
     )
   );
 
@@ -612,7 +612,7 @@ CREATE POLICY "Users can update their project material selections"
   TO authenticated
   USING (
     project_id IN (
-      SELECT id FROM projects WHERE user_id = auth.uid()
+      SELECT id FROM rehab_projects WHERE user_id = auth.uid()
     )
   );
 
@@ -621,7 +621,7 @@ CREATE POLICY "Users can delete their project material selections"
   TO authenticated
   USING (
     project_id IN (
-      SELECT id FROM projects WHERE user_id = auth.uid()
+      SELECT id FROM rehab_projects WHERE user_id = auth.uid()
     )
   );
 
@@ -633,7 +633,7 @@ CREATE POLICY "Users can view their own moodboards"
   TO authenticated
   USING (
     project_id IN (
-      SELECT id FROM projects WHERE user_id = auth.uid()
+      SELECT id FROM rehab_projects WHERE user_id = auth.uid()
     )
   );
 
@@ -646,7 +646,7 @@ CREATE POLICY "Users can insert moodboards to their projects"
   TO authenticated
   WITH CHECK (
     project_id IN (
-      SELECT id FROM projects WHERE user_id = auth.uid()
+      SELECT id FROM rehab_projects WHERE user_id = auth.uid()
     )
   );
 
@@ -655,7 +655,7 @@ CREATE POLICY "Users can update their moodboards"
   TO authenticated
   USING (
     project_id IN (
-      SELECT id FROM projects WHERE user_id = auth.uid()
+      SELECT id FROM rehab_projects WHERE user_id = auth.uid()
     )
   );
 
@@ -664,7 +664,7 @@ CREATE POLICY "Users can delete their moodboards"
   TO authenticated
   USING (
     project_id IN (
-      SELECT id FROM projects WHERE user_id = auth.uid()
+      SELECT id FROM rehab_projects WHERE user_id = auth.uid()
     )
   );
 
@@ -677,7 +677,7 @@ CREATE POLICY "Users can view their moodboard elements"
   USING (
     moodboard_id IN (
       SELECT m.id FROM moodboards m
-      JOIN projects p ON m.project_id = p.id
+      JOIN rehab_projects p ON m.project_id = p.id
       WHERE p.user_id = auth.uid()
     )
   );
@@ -696,7 +696,7 @@ CREATE POLICY "Users can insert elements to their moodboards"
   WITH CHECK (
     moodboard_id IN (
       SELECT m.id FROM moodboards m
-      JOIN projects p ON m.project_id = p.id
+      JOIN rehab_projects p ON m.project_id = p.id
       WHERE p.user_id = auth.uid()
     )
   );
@@ -707,7 +707,7 @@ CREATE POLICY "Users can update their moodboard elements"
   USING (
     moodboard_id IN (
       SELECT m.id FROM moodboards m
-      JOIN projects p ON m.project_id = p.id
+      JOIN rehab_projects p ON m.project_id = p.id
       WHERE p.user_id = auth.uid()
     )
   );
@@ -718,7 +718,7 @@ CREATE POLICY "Users can delete their moodboard elements"
   USING (
     moodboard_id IN (
       SELECT m.id FROM moodboards m
-      JOIN projects p ON m.project_id = p.id
+      JOIN rehab_projects p ON m.project_id = p.id
       WHERE p.user_id = auth.uid()
     )
   );
@@ -732,7 +732,7 @@ CREATE POLICY "Users can view their moodboard shares"
   USING (
     moodboard_id IN (
       SELECT m.id FROM moodboards m
-      JOIN projects p ON m.project_id = p.id
+      JOIN rehab_projects p ON m.project_id = p.id
       WHERE p.user_id = auth.uid()
     )
   );
@@ -747,7 +747,7 @@ CREATE POLICY "Users can create shares for their moodboards"
   WITH CHECK (
     moodboard_id IN (
       SELECT m.id FROM moodboards m
-      JOIN projects p ON m.project_id = p.id
+      JOIN rehab_projects p ON m.project_id = p.id
       WHERE p.user_id = auth.uid()
     )
   );
@@ -758,7 +758,7 @@ CREATE POLICY "Users can update their moodboard shares"
   USING (
     moodboard_id IN (
       SELECT m.id FROM moodboards m
-      JOIN projects p ON m.project_id = p.id
+      JOIN rehab_projects p ON m.project_id = p.id
       WHERE p.user_id = auth.uid()
     )
   );
@@ -769,7 +769,7 @@ CREATE POLICY "Users can delete their moodboard shares"
   USING (
     moodboard_id IN (
       SELECT m.id FROM moodboards m
-      JOIN projects p ON m.project_id = p.id
+      JOIN rehab_projects p ON m.project_id = p.id
       WHERE p.user_id = auth.uid()
     )
   );
