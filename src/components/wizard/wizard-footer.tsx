@@ -1,17 +1,28 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { UseFormReturn, FieldValues } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { IconChevronLeft, IconChevronRight, IconDeviceFloppy } from "@tabler/icons-react";
+import { IconChevronLeft, IconChevronRight, IconDeviceFloppy, IconCheck } from "@tabler/icons-react";
 import { wizardSteps } from "@/lib/navigation";
 
-interface WizardFooterProps {
+interface WizardFooterProps<T extends FieldValues = FieldValues> {
   onSave?: () => void;
   isSaving?: boolean;
   canProceed?: boolean;
+  form?: UseFormReturn<T>;
+  onSubmit?: () => void;
+  isSubmitting?: boolean;
 }
 
-export function WizardFooter({ onSave, isSaving = false, canProceed = true }: WizardFooterProps) {
+export function WizardFooter<T extends FieldValues = FieldValues>({ 
+  onSave, 
+  isSaving = false, 
+  canProceed = true,
+  form,
+  onSubmit,
+  isSubmitting = false,
+}: WizardFooterProps<T>) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -29,20 +40,20 @@ export function WizardFooter({ onSave, isSaving = false, canProceed = true }: Wi
     }
   };
 
-  const handleNext = () => {
-    if (nextStep) {
-      router.push(nextStep.path);
-    }
-  };
-
   const handleSave = () => {
     onSave?.();
   };
 
+  // If form is provided, the Next button submits the form
+  // Otherwise, it directly navigates (for non-form steps like Step 4)
+  const isFormStep = !!form;
+  const formIsSubmitting = form?.formState?.isSubmitting || isSubmitting;
+
   return (
     <div className="flex items-center justify-between pt-6 border-t border-zinc-200 dark:border-zinc-700 mt-6">
-      {/* All buttons with rounded-none for Mira theme */}
+      {/* Back button */}
       <Button
+        type="button"
         variant="outline"
         onClick={handleBack}
         disabled={!prevStep}
@@ -53,7 +64,9 @@ export function WizardFooter({ onSave, isSaving = false, canProceed = true }: Wi
       </Button>
 
       <div className="flex items-center gap-2">
+        {/* Save Draft button */}
         <Button
+          type="button"
           variant="ghost"
           onClick={handleSave}
           disabled={isSaving}
@@ -63,17 +76,25 @@ export function WizardFooter({ onSave, isSaving = false, canProceed = true }: Wi
           {isSaving ? "Saving..." : "Save Draft"}
         </Button>
 
+        {/* Next / Complete button */}
         {isLastStep ? (
-          <Button disabled={!canProceed} className="rounded-none">
-            Complete & Export
+          <Button 
+            type={isFormStep ? "submit" : "button"}
+            disabled={!canProceed || formIsSubmitting}
+            onClick={!isFormStep ? onSubmit : undefined}
+            className="rounded-none"
+          >
+            <IconCheck className="mr-2 h-4 w-4" />
+            {formIsSubmitting ? "Submitting..." : "Complete & Export"}
           </Button>
         ) : (
           <Button 
-            onClick={handleNext} 
-            disabled={!canProceed || !nextStep}
+            type={isFormStep ? "submit" : "button"}
+            onClick={!isFormStep ? () => nextStep && router.push(nextStep.path) : undefined}
+            disabled={!canProceed || !nextStep || formIsSubmitting}
             className="rounded-none"
           >
-            {nextStep?.shortTitle || "Next"}
+            {formIsSubmitting ? "Validating..." : nextStep?.shortTitle || "Next"}
             <IconChevronRight className="ml-2 h-4 w-4" />
           </Button>
         )}

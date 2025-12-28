@@ -1,19 +1,18 @@
 "use client";
 
 import { StepNavigation } from "@/components/wizard/step-navigation";
+import { WizardProvider, useWizard } from "@/components/wizard/wizard-context";
 import { Card, CardContent } from "@/components/ui/card";
 
-export default function WizardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function WizardLayoutContent({ children }: { children: React.ReactNode }) {
+  const { completedSteps } = useWizard();
+  
   return (
     <div className="space-y-6">
       {/* Step Navigation Header */}
       <Card>
         <CardContent className="pt-6">
-          <StepNavigation />
+          <StepNavigation completedSteps={completedSteps} />
         </CardContent>
       </Card>
 
@@ -22,6 +21,18 @@ export default function WizardLayout({
         {children}
       </div>
     </div>
+  );
+}
+
+export default function WizardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <WizardProvider>
+      <WizardLayoutContent>{children}</WizardLayoutContent>
+    </WizardProvider>
   );
 }
 

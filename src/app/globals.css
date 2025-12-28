@@ -329,4 +329,13 @@
   .mira-card {
     @apply bg-card border border-border shadow-sm;
   }
+
+  /* Hidden scrollbar utility for horizontal scroll areas */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

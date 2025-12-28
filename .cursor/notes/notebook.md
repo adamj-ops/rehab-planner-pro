@@ -295,9 +295,131 @@ feat(theme): implement Mira shadcn theme with Tabler icons and Roboto font
 
 ---
 
+---
+
+## 2024-12-26 — Puppeteer MCP Server Added
+
+### Summary
+Added the Puppeteer MCP server to Cursor configuration for visual testing and browser automation.
+
+### Configuration Added to `~/.cursor/mcp.json`
+```json
+"puppeteer": {
+  "command": "npx",
+  "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
+}
+```
+
+### Capabilities Enabled
+- **Navigate** to URLs and take screenshots
+- **Click** elements, fill forms, and interact with the page
+- **Take screenshots** for visual testing and debugging
+- **Inspect page content** and DOM structure
+- **Automate browser workflows** for end-to-end testing
+
+### Use Cases for Rehab Planner Pro
+1. Visual regression testing of wizard steps
+2. Screenshot-based documentation generation
+3. End-to-end testing of user flows
+4. Mobile viewport testing
+5. Automated UI verification after deployments
+
+---
+
 ## Next Session Priorities
 
-1. **Complete Color Library** - Add search, filter, surface type selection
-2. **Material Library** - Build MaterialCard/Grid components
-3. **Moodboard Builder** - Implement drag-and-drop canvas
-4. **Test on mobile** - Verify responsive behavior
+1. **Moodboard Builder** - Only remaining Phase 2A feature
+   - Install @dnd-kit packages
+   - Create MoodboardCanvas with drag-and-drop
+   - Implement element types (color, material, image, text)
+   - Build toolbar controls
+   - Add share functionality
+2. **Database Persistence** - Connect selections to Supabase
+3. **Test on mobile** - Verify responsive behavior
+4. **Visual Testing** - Use Puppeteer MCP to verify UI across wizard steps
+
+---
+
+## 2024-12-26 — Color Library & Material Library Complete
+
+### Summary
+Both design libraries in Step 4 of the wizard are now **fully complete**:
+
+### Color Library (11 Components)
+```
+src/components/color-library/
+├── ColorWall.tsx            # Main container
+├── ColorWallView.tsx        # Dense spectrum view
+├── ColorGridView.tsx        # Card grid view
+├── ColorCard.tsx            # Individual color cards
+├── ColorSwatch.tsx          # Compact swatches
+├── ColorFamilyPills.tsx     # Filter pills
+├── ColorDetailSheet.tsx     # Full info sheet
+├── FilterSheet.tsx          # Design style filters
+├── AddToProjectDialog.tsx   # Add color to project
+├── EditSelectionDialog.tsx  # Edit selections
+├── ProjectPaletteBar.tsx    # Selected colors display
+└── index.ts                 # Exports
+```
+
+**Key Features Implemented:**
+- Dual view modes (Wall/Grid toggle)
+- Search with 300ms debounce
+- Color family filter pills (horizontal scroll)
+- Design style filters (sheet)
+- Popular colors toggle
+- Favorites with localStorage
+- Surface type selection (walls, trim, accent, etc.)
+- Room type selection
+- Paint finish with auto-suggest based on surface
+- Max 5 colors with full palette warning
+- Edit and remove existing selections
+
+### Material Library (6 Components)
+```
+src/components/design/
+├── material-card.tsx           # Card component
+├── material-library-browser.tsx # Full browser
+├── material-detail-dialog.tsx  # Detail view
+├── material-service.ts         # Service layer
+└── material-adapter.ts         # Type adapter
+
+src/app/api/materials/
+├── route.ts                    # GET all materials
+└── [id]/route.ts              # GET single material
+```
+
+**Key Features Implemented:**
+- Search by name, manufacturer, model
+- Category filter (flooring, tile, countertops, etc.)
+- Price range filter (budget/mid/premium/luxury)
+- Quality tier filter
+- Sorting (name, price low/high, category)
+- Favorites system
+- Selection system with toggle
+- All/Popular/Favorites tabs
+- Detail dialog with full info
+
+### Design Store
+The `src/stores/design-store.ts` now includes:
+- Full color selection CRUD
+- Full material selection CRUD
+- Moodboard state (ready for implementation)
+- Favorites persistence
+- Undo/redo for moodboard (50 snapshots)
+- Room design summaries
+- Completion percentage calculation
+
+### Lessons Learned
+1. Use `useHydration` hook to prevent SSR mismatches with localStorage
+2. Type adapters help bridge database types to UI types cleanly
+3. Zustand persist middleware is great for favorites
+4. Wall view (dense spectrum) is more visually impactful than grid for colors
+
+### Remaining for Phase 2A
+Only the **Moodboard Builder** remains:
+- @dnd-kit for drag-and-drop
+- MoodboardCanvas component
+- Element types (color, material, image, text)
+- Toolbar controls
+- Share via unique URL
