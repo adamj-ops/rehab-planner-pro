@@ -5,13 +5,125 @@
 **Type**: Fix & Flip Real Estate Investment Analysis Tool  
 **Tech Stack**: Next.js 15, TypeScript, Tailwind CSS v4, shadcn/ui (Mira theme), Supabase, Zustand  
 **Repository**: https://github.com/adamj-ops/rehab-planner-pro  
-**Status**: Phase 2A Design Intelligence - UI Complete
+**Status**: Phase 2A Design Intelligence - 85% Complete (Moodboard remaining)
 
 ---
 
-## Current Project State (Updated Dec 23, 2024)
+## Current Project State (Updated Dec 26, 2024)
 
-### ✅ Recently Completed: Mira Theme Implementation
+### ✅ Recently Completed: Color Library & Material Library (Dec 26, 2024)
+
+Both design libraries are now **fully complete** with comprehensive features:
+
+#### Color Library Components (`src/components/color-library/`)
+| Component | Purpose |
+|-----------|---------|
+| `ColorWall` | Main container with search, view toggle, filters |
+| `ColorWallView` | Dense spectrum wall view |
+| `ColorGridView` | Rich card grid view |
+| `ColorCard` | Individual color cards with details |
+| `ColorSwatch` | Compact color swatches |
+| `ColorFamilyPills` | Horizontal filter pills |
+| `ColorDetailSheet` | Full color information sheet |
+| `FilterSheet` | Design styles and popular filters |
+| `AddToProjectDialog` | Configure surface/room/finish when adding |
+| `EditSelectionDialog` | Edit existing color selections |
+| `ProjectPaletteBar` | Show selected colors with edit/remove |
+
+**Color Library Features:**
+- ✅ Search with debouncing
+- ✅ Color family filter pills
+- ✅ Design style filters
+- ✅ Popular colors toggle
+- ✅ Favorites with localStorage persistence
+- ✅ Surface type assignment (walls, trim, accent, etc.)
+- ✅ Room type assignment
+- ✅ Paint finish selection with auto-suggest
+- ✅ Max 5 colors limit with warnings
+- ✅ Dual view modes (Wall/Grid)
+
+#### Material Library Components (`src/components/design/`)
+| Component | Purpose |
+|-----------|---------|
+| `MaterialCard` | Card with image, price, dimensions, variants |
+| `MaterialGrid` | Responsive grid layout |
+| `MaterialLibraryBrowser` | Full browser with search, filters, sorting |
+| `MaterialDetailDialog` | Detailed material view |
+| `material-service.ts` | Service layer |
+| `material-adapter.ts` | Type adapter for DB → UI |
+
+**Material Library Features:**
+- ✅ Search functionality
+- ✅ Category filter (flooring, tile, countertops, etc.)
+- ✅ Price range filter (budget/mid/premium/luxury)
+- ✅ Quality tier filter
+- ✅ Sorting options (name, price, category)
+- ✅ Favorites system
+- ✅ Selection system
+- ✅ All/Popular/Favorites tabs
+- ✅ API routes at `/api/materials`
+
+#### Design Store (`src/stores/design-store.ts`)
+Full Zustand store with:
+- Color selection state and CRUD actions
+- Material selection state and CRUD actions
+- Moodboard state (ready for implementation)
+- Favorites persistence
+- Undo/redo for moodboard
+- Room design summaries
+- Completion percentage calculation
+
+---
+
+### ✅ Previously Completed: Theme Switcher (Dec 26, 2024)
+
+Added a light/dark mode theme switcher to the sidebar footer:
+
+- **Component**: `src/components/shadcn-studio/switch/switch-11.tsx`
+- **Location**: Sidebar footer (above user menu)
+- **Features**: 
+  - Sun/Moon icons for visual clarity
+  - Toggle switch for quick theme change
+  - Uses `next-themes` for persistence
+  - Proper hydration handling to avoid SSR mismatches
+  - Uses Tabler icons (project standard)
+
+**Shadcn Studio Registry**: Added to `components.json` for access to extended components:
+- `@shadcn-studio` - Free content
+- `@ss-components` - Components  
+- `@ss-blocks` - Blocks
+- `@ss-themes` - Themes
+
+---
+
+### ✅ Previously Completed: Database Migration (Dec 26, 2024)
+
+The complete database schema has been deployed to Supabase:
+
+**Phase 1 Foundation Tables:**
+| Table | Purpose | Rows |
+|-------|---------|------|
+| `users` | User profiles linked to auth.users | 0 |
+| `projects` | Full project schema with wizard tracking | 0 |
+| `scope_items` | Renovation work items | 0 |
+| `vendors` | Contractor/supplier management | 0 |
+| `project_rooms` | Room-by-room details | 0 |
+| `project_transactions` | Financial tracking | 0 |
+
+**Phase 2A Design Tables:**
+| Table | Purpose | Rows |
+|-------|---------|------|
+| `color_library` | Sherwin Williams catalog | 20 |
+| `material_library` | Flooring, countertops, etc. | 19 |
+| `moodboards` | Design boards | 0 |
+| `moodboard_elements` | Board elements | 0 |
+| `moodboard_shares` | Sharing config | 0 |
+
+**TypeScript Types:** Updated in `src/types/supabase.ts`
+
+---
+
+### ✅ Previously Completed: Mira Theme Implementation
 
 The application now uses a custom **Mira shadcn/ui theme** with the following configuration:
 

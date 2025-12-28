@@ -1,18 +1,23 @@
 "use client"
 
-import * as React from "react"
+import type * as React from "react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { Check, Copy, ExternalLink, Heart, Info, Ruler, DollarSign } from "lucide-react"
+import {
+  IconCheck,
+  IconHeart,
+  IconInfoCircle,
+  IconRuler,
+  IconCurrencyDollar,
+} from "@/lib/icons"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { toast } from "sonner"
 import type { Material } from "@/types/design"
 
 interface MaterialCardProps {
@@ -74,14 +79,16 @@ export function MaterialCard({
         {/* Material image */}
         <div className="relative aspect-square overflow-hidden bg-muted">
           {material.imageUrl ? (
-            <img
+            <Image
               src={material.imageUrl}
               alt={material.productName}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <Ruler className="h-12 w-12 text-muted-foreground/50" />
+              <IconRuler className="h-12 w-12 text-muted-foreground/50" />
             </div>
           )}
 
@@ -94,6 +101,7 @@ export function MaterialCard({
           >
             {onFavorite && (
               <button
+                type="button"
                 onClick={handleFavorite}
                 className={cn(
                   "p-1.5 rounded-full transition-all",
@@ -104,18 +112,19 @@ export function MaterialCard({
                 )}
                 aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
               >
-                <Heart
+                <IconHeart
                   className={cn("w-4 h-4", isFavorite && "fill-current")}
                 />
               </button>
             )}
             {onInfo && (
               <button
+                type="button"
                 onClick={handleInfo}
                 className="p-1.5 rounded-full bg-white/80 hover:bg-white text-black opacity-0 group-hover:opacity-100 transition-all"
                 aria-label="View material details"
               >
-                <Info className="w-4 h-4" />
+                <IconInfoCircle className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -123,7 +132,7 @@ export function MaterialCard({
           {/* Selected indicator */}
           {selected && (
             <div className="absolute bottom-2 right-2 p-1.5 rounded-full bg-primary text-primary-foreground">
-              <Check className="w-4 h-4" />
+              <IconCheck className="w-4 h-4" />
             </div>
           )}
 
@@ -163,13 +172,13 @@ export function MaterialCard({
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               {material.pricePerUnit && (
                 <span className="flex items-center gap-1">
-                  <DollarSign className="h-3 w-3" />
+                  <IconCurrencyDollar className="h-3 w-3" />
                   {formatPrice(material.pricePerUnit, material.pricingUnit)}
                 </span>
               )}
               {material.dimensions && (
                 <span className="flex items-center gap-1">
-                  <Ruler className="h-3 w-3" />
+                  <IconRuler className="h-3 w-3" />
                   {material.dimensions}
                 </span>
               )}
@@ -178,8 +187,8 @@ export function MaterialCard({
             {/* Available colors */}
             {material.colorVariants && material.colorVariants.length > 0 && (
               <div className="flex items-center gap-1 pt-1">
-                {material.colorVariants.slice(0, 5).map((color, i) => (
-                  <Tooltip key={i}>
+                {material.colorVariants.slice(0, 5).map((color) => (
+                  <Tooltip key={`${material.id}-${color}`}>
                     <TooltipTrigger asChild>
                       <div
                         className="w-4 h-4 rounded-full border shadow-sm"

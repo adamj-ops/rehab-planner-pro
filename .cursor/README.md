@@ -8,6 +8,7 @@ This `.cursor/` folder is **internal developer/agent documentation** for this re
 - `tools/`: Helper scripts and utilities that make agent work more productive.
 - `docs/`: Technical specs / design docs (non end-user facing).
 - `notes/`: Ongoing working notes and checklists (living documents).
+- `skills/`: Specialized agent skills for frontend design and project development.
 
 ## Required notes
 

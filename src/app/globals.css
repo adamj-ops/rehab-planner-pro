@@ -4,55 +4,59 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Zinc-based background (slightly off-white for card contrast) */
-  --background: oklch(0.9765 0.0035 286.40);     /* Zinc-100 (off-white) */
-  --foreground: oklch(0.1647 0.0142 285.94);     /* Zinc-950 */
+  /* Light mode - Warm gray palette (inverted from dark) */
+  --background: oklch(0.97 0.003 85);            /* Warm off-white #f5f5f4 */
+  --foreground: oklch(0.21 0.005 85);            /* Warm charcoal #262624 */
   
-  /* Card & Popover (pure white - stands out from background) */
+  /* Card & Popover */
   --card: oklch(1.0000 0 0);                     /* Pure White */
-  --card-foreground: oklch(0.1647 0.0142 285.94); /* Zinc-950 */
+  --card-foreground: oklch(0.21 0.005 85);       /* Warm charcoal */
   --popover: oklch(1.0000 0 0);                  /* Pure White */
-  --popover-foreground: oklch(0.1647 0.0142 285.94); /* Zinc-950 */
+  --popover-foreground: oklch(0.21 0.005 85);    /* Warm charcoal */
   
-  /* Blue Primary (from your preset) */
-  --primary: oklch(0.5984 0.2201 263.74);        /* Blue-600 */
-  --primary-foreground: oklch(1.0000 0 0);       /* White */
+  /* Neutral Primary (warm gray accent) */
+  --primary: oklch(0.35 0.005 85);               /* Dark warm gray */
+  --primary-foreground: oklch(0.95 0.002 85);    /* #f0f0f0 off-white */
   
-  /* Zinc-based secondary/muted */
-  --secondary: oklch(0.9647 0.0047 286.57);      /* Zinc-100 */
-  --secondary-foreground: oklch(0.1647 0.0142 285.94); /* Zinc-950 */
-  --muted: oklch(0.9647 0.0047 286.57);          /* Zinc-100 */
-  --muted-foreground: oklch(0.5162 0.0152 285.75); /* Zinc-500 */
+  /* Secondary/muted */
+  --secondary: oklch(0.93 0.003 85);             /* Light warm gray */
+  --secondary-foreground: oklch(0.21 0.005 85);  /* Warm charcoal */
+  --muted: oklch(0.93 0.003 85);                 /* Light warm gray */
+  --muted-foreground: oklch(0.55 0.005 85);      /* Medium gray */
   
-  /* Accent */
-  --accent: oklch(0.9647 0.0047 286.57);         /* Zinc-100 */
-  --accent-foreground: oklch(0.1647 0.0142 285.94); /* Zinc-950 */
+  /* Accent - Soft green */
+  --accent: oklch(0.75 0.10 145);                /* #90c695 soft green */
+  --accent-foreground: oklch(0.21 0.005 85);     /* Warm charcoal */
   
-  /* Destructive */
-  --destructive: oklch(0.5830 0.2387 28.4765);   /* Red-600 */
-  --destructive-foreground: oklch(1.0000 0 0);   /* White */
+  /* Destructive - Soft coral */
+  --destructive: oklch(0.70 0.18 25);            /* #ff6b6b soft coral */
+  --destructive-foreground: oklch(0.95 0.002 85); /* Off-white */
   
-  /* Border/Input - DARKER for better definition */
-  --border: oklch(0.8585 0.0109 286.28);         /* Zinc-300 (darker!) */
-  --input: oklch(0.8585 0.0109 286.28);          /* Zinc-300 (match border) */
-  --ring: oklch(0.5984 0.2201 263.74);           /* Blue-600 (matches primary) */
+  /* Success - Soft green */
+  --success: oklch(0.75 0.10 145);               /* #90c695 soft green */
+  --success-foreground: oklch(0.21 0.005 85);    /* Warm charcoal */
   
-  /* Chart colors (using blue shades) */
-  --chart-1: oklch(0.5984 0.2201 263.74);        /* Blue-600 */
-  --chart-2: oklch(0.7071 0.1666 254.62);        /* Blue-400 */
-  --chart-3: oklch(0.4588 0.2136 264.38);        /* Blue-700 */
-  --chart-4: oklch(0.8098 0.1145 251.34);        /* Blue-300 */
-  --chart-5: oklch(0.3667 0.1766 265.75);        /* Blue-800 */
+  /* Border/Input */
+  --border: oklch(0.85 0.005 85);                /* Light warm gray border */
+  --input: oklch(0.85 0.005 85);                 /* Match border */
+  --ring: oklch(0.75 0.10 145);                  /* Soft green ring */
   
-  /* Sidebar (subtle zinc) */
-  --sidebar: oklch(0.9824 0.0019 286.37);        /* Zinc-50/White */
-  --sidebar-foreground: oklch(0.1647 0.0142 285.94); /* Zinc-950 */
-  --sidebar-primary: oklch(0.5984 0.2201 263.74); /* Blue-600 */
-  --sidebar-primary-foreground: oklch(1.0000 0 0); /* White */
-  --sidebar-accent: oklch(0.9647 0.0047 286.57); /* Zinc-100 */
-  --sidebar-accent-foreground: oklch(0.1647 0.0142 285.94); /* Zinc-950 */
-  --sidebar-border: oklch(0.8585 0.0109 286.28); /* Zinc-300 */
-  --sidebar-ring: oklch(0.5984 0.2201 263.74);   /* Blue-600 */
+  /* Chart colors (warm neutral palette with green/coral accents) */
+  --chart-1: oklch(0.75 0.10 145);               /* Soft green */
+  --chart-2: oklch(0.70 0.18 25);                /* Soft coral */
+  --chart-3: oklch(0.55 0.005 85);               /* Medium gray */
+  --chart-4: oklch(0.65 0.08 160);               /* Teal-ish */
+  --chart-5: oklch(0.35 0.005 85);               /* Dark warm gray */
+  
+  /* Sidebar */
+  --sidebar: oklch(0.97 0.003 85);               /* Warm off-white */
+  --sidebar-foreground: oklch(0.21 0.005 85);    /* Warm charcoal */
+  --sidebar-primary: oklch(0.35 0.005 85);       /* Dark warm gray */
+  --sidebar-primary-foreground: oklch(0.95 0.002 85); /* Off-white */
+  --sidebar-accent: oklch(0.93 0.003 85);        /* Light warm gray */
+  --sidebar-accent-foreground: oklch(0.21 0.005 85); /* Warm charcoal */
+  --sidebar-border: oklch(0.85 0.005 85);        /* Light border */
+  --sidebar-ring: oklch(0.75 0.10 145);          /* Soft green */
   
   /* Fonts - Roboto (applied via next/font) */
   --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
@@ -60,7 +64,7 @@
   --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
   
   /* Border Radius - SUBTLE (Mira polish) */
-  --radius: 0.375rem;                            /* Subtle rounding for polish */
+  --radius: 0.375rem;
   
   /* Shadows - Refined for depth */
   --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.03);
@@ -76,55 +80,59 @@
 }
 
 .dark {
-  /* Page background - VERY DARK (almost black) */
-  --background: oklch(0.0900 0.0050 286.00);     /* Very dark - darker than zinc-950 */
-  --foreground: oklch(0.9824 0.0019 286.37);     /* Zinc-50 */
+  /* Page background - Warm charcoal #262624 */
+  --background: oklch(0.21 0.005 85);            /* #262624 warm charcoal */
+  --foreground: oklch(0.95 0.002 85);            /* #f0f0f0 off-white */
   
-  /* Card & Popover - MEDIUM DARK (visible pop from background!) */
-  --card: oklch(0.1800 0.0095 286.00);           /* Zinc-900 - noticeably lighter! */
-  --card-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
-  --popover: oklch(0.1800 0.0095 286.00);        /* Match card */
-  --popover-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  /* Card & Popover - Elevated surface #333333 */
+  --card: oklch(0.27 0.003 85);                  /* #333333 elevated */
+  --card-foreground: oklch(0.95 0.002 85);       /* #f0f0f0 off-white */
+  --popover: oklch(0.27 0.003 85);               /* Match card */
+  --popover-foreground: oklch(0.95 0.002 85);    /* Off-white */
   
-  /* Blue Primary (bright for dark mode) */
-  --primary: oklch(0.6984 0.1801 263.74);        /* Bright blue */
-  --primary-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  /* Primary - Off-white text on dark, or accent for buttons */
+  --primary: oklch(0.95 0.002 85);               /* #f0f0f0 off-white */
+  --primary-foreground: oklch(0.21 0.005 85);    /* #262624 charcoal */
   
-  /* Zinc-based secondary/muted */
-  --secondary: oklch(0.2400 0.0120 286.00);      /* Zinc-800 */
-  --secondary-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
-  --muted: oklch(0.2200 0.0110 286.00);          /* Between card and secondary */
-  --muted-foreground: oklch(0.6588 0.0108 286.75); /* Zinc-400 */
+  /* Secondary/muted - Sidebar color #30302e */
+  --secondary: oklch(0.25 0.004 85);             /* #30302e sidebar tone */
+  --secondary-foreground: oklch(0.95 0.002 85);  /* Off-white */
+  --muted: oklch(0.25 0.004 85);                 /* #30302e */
+  --muted-foreground: oklch(0.65 0.003 85);      /* #999999 muted text */
   
-  /* Accent */
-  --accent: oklch(0.2400 0.0120 286.00);         /* Zinc-800 */
-  --accent-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  /* Accent - Soft green */
+  --accent: oklch(0.75 0.10 145);                /* #90c695 soft green */
+  --accent-foreground: oklch(0.21 0.005 85);     /* Charcoal */
   
-  /* Destructive */
-  --destructive: oklch(0.5768 0.2179 27.33);     /* Red */
-  --destructive-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
+  /* Destructive - Soft coral #ff6b6b */
+  --destructive: oklch(0.70 0.18 25);            /* #ff6b6b soft coral */
+  --destructive-foreground: oklch(0.95 0.002 85); /* Off-white */
   
-  /* Border/Input - Subtle but visible */
-  --border: oklch(0.2708 0.0123 286.11);         /* Zinc-800 - visible edge */
-  --input: oklch(0.2708 0.0123 286.11);          /* Match border */
-  --ring: oklch(0.6984 0.1801 263.74);           /* Bright blue ring */
+  /* Success - Soft green #90c695 */
+  --success: oklch(0.75 0.10 145);               /* #90c695 soft green */
+  --success-foreground: oklch(0.21 0.005 85);    /* Charcoal */
   
-  /* Chart colors (using blue shades) */
-  --chart-1: oklch(0.7071 0.1666 254.62);        /* Blue-400 */
-  --chart-2: oklch(0.8098 0.1145 251.34);        /* Blue-300 */
-  --chart-3: oklch(0.5984 0.2201 263.74);        /* Blue-600 */
-  --chart-4: oklch(0.8953 0.0755 252.07);        /* Blue-200 */
-  --chart-5: oklch(0.4588 0.2136 264.38);        /* Blue-700 */
+  /* Border/Input - #3d3d3d */
+  --border: oklch(0.30 0.003 85);                /* #3d3d3d border */
+  --input: oklch(0.30 0.003 85);                 /* Match border */
+  --ring: oklch(0.75 0.10 145);                  /* Soft green ring */
   
-  /* Sidebar - Match page background for seamless look */
-  --sidebar: oklch(0.1200 0.0070 286.00);        /* Slightly lighter than background */
-  --sidebar-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
-  --sidebar-primary: oklch(0.6984 0.1801 263.74); /* Bright blue */
-  --sidebar-primary-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
-  --sidebar-accent: oklch(0.2200 0.0110 286.00); /* Subtle accent */
-  --sidebar-accent-foreground: oklch(0.9824 0.0019 286.37); /* Zinc-50 */
-  --sidebar-border: oklch(0.2708 0.0123 286.11); /* Visible border */
-  --sidebar-ring: oklch(0.6984 0.1801 263.74);   /* Bright blue */
+  /* Chart colors (warm palette with green/coral accents) */
+  --chart-1: oklch(0.75 0.10 145);               /* Soft green */
+  --chart-2: oklch(0.70 0.18 25);                /* Soft coral */
+  --chart-3: oklch(0.65 0.003 85);               /* Medium gray */
+  --chart-4: oklch(0.60 0.08 160);               /* Teal accent */
+  --chart-5: oklch(0.50 0.003 85);               /* Darker gray */
+  
+  /* Sidebar - #30302e */
+  --sidebar: oklch(0.25 0.004 85);               /* #30302e sidebar */
+  --sidebar-foreground: oklch(0.95 0.002 85);    /* Off-white */
+  --sidebar-primary: oklch(0.75 0.10 145);       /* Soft green accent */
+  --sidebar-primary-foreground: oklch(0.21 0.005 85); /* Charcoal */
+  --sidebar-accent: oklch(0.30 0.003 85);        /* Slightly elevated */
+  --sidebar-accent-foreground: oklch(0.95 0.002 85); /* Off-white */
+  --sidebar-border: oklch(0.30 0.003 85);        /* #3d3d3d */
+  --sidebar-ring: oklch(0.75 0.10 145);          /* Soft green */
   
   /* Fonts (same as light) */
   --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
@@ -161,6 +169,9 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -177,7 +188,6 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --color-destructive-foreground: var(--destructive-foreground);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
@@ -318,5 +328,14 @@
   /* Mira-style polished cards */
   .mira-card {
     @apply bg-card border border-border shadow-sm;
+  }
+
+  /* Hidden scrollbar utility for horizontal scroll areas */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
