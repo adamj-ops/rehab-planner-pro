@@ -123,7 +123,7 @@ export {
   IconProgress,
   
   // Measurement
-  IconRuler,
+  // IconRuler already exported in Building & Construction
   IconRuler2,
   
   // Misc
