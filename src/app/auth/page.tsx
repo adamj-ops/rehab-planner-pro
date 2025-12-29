@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-// Redirect old /auth route to new /login route
-// Preserves redirectTo parameter for post-login navigation
-export default function AuthPage() {
+// Inner component that uses useSearchParams
+function AuthRedirect() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -18,4 +17,14 @@ export default function AuthPage() {
   }, [router, searchParams]);
 
   return null;
+}
+
+// Redirect old /auth route to new /login route
+// Preserves redirectTo parameter for post-login navigation
+export default function AuthPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuthRedirect />
+    </Suspense>
+  );
 }
