@@ -139,36 +139,58 @@
 
 ---
 
-## 🔧 PHASE 3: Advanced Features ⏳ FUTURE
+## 🔧 PHASE 3: Advanced Features ⏳ SPECS READY
 
-### 3.1 Smart Scope Generation
-- [ ] AI service integration
-- [ ] Market-based suggestions
-- [ ] ROI optimization algorithms
+**All technical specifications complete!** See `.cursor/docs/technical/`
 
-### 3.2 Contractor Management
-- [ ] Contractor database
-- [ ] Bid management
-- [ ] Scheduling tools
+### 3.1 AI Recommendations & Smart Scope Generation
+**Spec**: `AI_RECOMMENDATIONS_SPEC.md` | Est: 12-14 days
+- [ ] Rule-based recommendation engine (Layer 1)
+- [ ] OpenAI enhancement integration (Layer 2)
+- [ ] 6 recommendation types with confidence scoring
+- [ ] Smart scope auto-generation from assessments
+- [ ] Accept/reject recommendation workflow
 
-### 3.3 Market Intelligence
-- [ ] Real estate data integration
-- [ ] Comparable property analysis
-- [ ] Trend analysis
+### 3.2 ROI Calculator Engine
+**Spec**: `ROI_CALCULATOR_SPEC.md` | Est: 8-10 days
+- [ ] Flip ROI calculator (net profit, annualized ROI)
+- [ ] Rental cash flow calculator (cap rate, cash-on-cash)
+- [ ] BRRRR calculator (infinite ROI tracking)
+- [ ] Scenario analysis (conservative/realistic/optimistic)
+- [ ] Real-time calculation hooks
+
+### 3.3 Contractor Management
+**Spec**: `CONTRACTOR_MANAGEMENT_SPEC.md` | Est: 12-14 days
+- [ ] Contractor directory with compliance tracking
+- [ ] License & insurance expiration alerts
+- [ ] Bid request and comparison workflow
+- [ ] Performance ratings and reviews
+- [ ] Project assignment integration
+
+### 3.4 Market Intelligence
+**Spec**: `MARKET_INTELLIGENCE_SPEC.md` | Est: 12-15 days
+- [ ] Comparable sales analysis with map view
+- [ ] Market trends and seasonal patterns
+- [ ] Renovation ROI data by neighborhood
+- [ ] Neighborhood investment scoring (0-100)
 
 ---
 
-## 📱 PHASE 4: Polish & Export ⏳ FUTURE
+## 📱 PHASE 4: Polish & Export ⏳ SPECS READY
 
-### 4.1 Enhanced UX
+### 4.1 Export & Reporting System
+**Spec**: `EXPORT_REPORTING_SPEC.md` | Est: 10-12 days
+- [ ] PDF generation with @react-pdf/renderer
+- [ ] Executive Summary report
+- [ ] Scope of Work report
+- [ ] Budget & Draw Schedule report
+- [ ] ROI Analysis report
+- [ ] Excel/CSV multi-sheet export
+
+### 4.2 Enhanced UX
 - [ ] Animations and micro-interactions
 - [ ] Mobile responsiveness improvements
 - [ ] Onboarding flow
-
-### 4.2 Reporting
-- [ ] PDF report generation
-- [ ] Excel export
-- [ ] Vendor packet generation
 
 ---
 
@@ -295,6 +317,27 @@
 
 ## 📅 Sprint History
 
+### Sprint 10 (Dec 28, 2025) - Technical Specifications for Phase 2-4 ✅
+- Created comprehensive technical specification for AI Recommendations (~450 lines)
+  - Hybrid rule-based + OpenAI architecture
+  - 6 recommendation types with confidence scoring
+  - Smart scope auto-generation logic
+- Created ROI Calculator Engine spec (~400 lines)
+  - Flip, Rental, BRRRR calculation models
+  - Scenario analysis with weighted probabilities
+- Created Contractor Management System spec (~450 lines)
+  - Vendor directory with compliance tracking
+  - Bid request and comparison workflow
+- Created Export & Reporting System spec (~500 lines)
+  - @react-pdf/renderer PDF generation
+  - Excel/CSV multi-sheet exports
+- Created Market Intelligence Module spec (~400 lines)
+  - Comparable sales with map view
+  - Neighborhood investment scoring
+- Updated Linear issues (EVE-15 through EVE-21) with detailed specs
+- Updated project documentation (notebook.md, project_checklist.md)
+- Committed and pushed all changes
+
 ### Sprint 9 (Dec 28, 2025) - Auth Integration & Login/Signup ✅
 - Integrated login page with useAuth hook for Supabase signIn
 - Integrated signup page with useAuth hook for Supabase signUp
@@ -384,6 +427,14 @@
 
 ## 🎉 Recent Achievements (December 28, 2025)
 
+- ✅ **COMPREHENSIVE TECHNICAL SPECIFICATIONS COMPLETE!** (Dec 28, 2025)
+  - AI Recommendations & Smart Scope Generation spec
+  - ROI Calculator Engine spec
+  - Contractor Management System spec
+  - Export & Reporting System spec
+  - Market Intelligence Module spec
+  - Total: 6,500+ lines of detailed technical documentation
+- ✅ **LINEAR ISSUES UPDATED!** All Epic 2 wizard steps have detailed specs
 - ✅ **EPIC 2.1 PROJECT DASHBOARD COMPLETE!** Full project management implemented
   - Projects list with card/table views, filtering, search
   - Project detail page with tabbed interface

@@ -415,3 +415,100 @@ Each issue now includes:
 Epic 3 (EVE-22, EVE-23, EVE-24) was already marked as "Done" in Linear - no updates needed.
 
 ---
+
+## 2025-12-28 — Technical Specifications for Phase 2-4 Features
+
+### Summary
+Created comprehensive technical specifications for all major upcoming features. These specs provide complete context for agents to implement each feature independently, including architecture decisions, data models, API designs, component structures, and implementation timelines.
+
+### Specifications Created
+
+| Spec | File | Pages | Key Highlights |
+|------|------|-------|----------------|
+| **AI Recommendations** | `AI_RECOMMENDATIONS_SPEC.md` | ~450 lines | Hybrid rule-based + OpenAI architecture, 6 recommendation types, smart scope auto-generation |
+| **ROI Calculator** | `ROI_CALCULATOR_SPEC.md` | ~400 lines | Flip/Rental/BRRRR calculators, scenario analysis, real-time hooks |
+| **Contractor Management** | `CONTRACTOR_MANAGEMENT_SPEC.md` | ~450 lines | Vendor directory, bid comparison, performance tracking, compliance alerts |
+| **Export & Reporting** | `EXPORT_REPORTING_SPEC.md` | ~500 lines | @react-pdf/renderer, 4 report types, Excel/CSV exports |
+| **Market Intelligence** | `MARKET_INTELLIGENCE_SPEC.md` | ~400 lines | Comparable sales, market trends, renovation ROI, neighborhood scoring |
+
+### What Each Spec Includes
+
+1. **Architecture Overview**
+   - System diagrams (ASCII art)
+   - Technology stack decisions
+   - Data flow visualizations
+
+2. **Data Models**
+   - Complete TypeScript interfaces
+   - Database schema with SQL
+   - RLS policies
+
+3. **API Design**
+   - Full endpoint definitions
+   - Request/response schemas
+   - Zod validation examples
+
+4. **Component Architecture**
+   - File structure organization
+   - React component code samples
+   - Hook implementations
+
+5. **Implementation Plan**
+   - Phased approach with tasks
+   - Time estimates per task
+   - Dependencies identified
+
+6. **Testing Strategy**
+   - Unit test examples
+   - Integration test approach
+   - Success metrics
+
+### Key Technical Decisions Documented
+
+**AI Recommendations**
+- Hybrid approach: Rule engine (Layer 1) + OpenAI enhancement (Layer 2)
+- Fallback to rules if API fails
+- Confidence scoring for each recommendation
+- 6 recommendation types: missing_critical, cost_savings, roi_optimization, bundle_opportunity, timeline_conflict, budget_alert
+
+**ROI Calculator**
+- Three calculation models: Flip, Rental, BRRRR
+- Scenario analysis with weighted probabilities
+- 70% rule validation
+- Break-even analysis
+
+**Contractor Management**
+- Compliance tracking (license, insurance expiration)
+- Bid request workflow with side-by-side comparison
+- Performance ratings with multi-factor scoring
+- Assignment to project timeline phases
+
+**Export & Reporting**
+- @react-pdf/renderer for PDF generation
+- ExcelJS for multi-sheet workbooks
+- 4 report types: Executive Summary, Scope of Work, Budget Schedule, ROI Analysis
+- Server-side generation via API routes
+
+**Market Intelligence**
+- Multi-source data aggregation (Zillow, Redfin, Census)
+- Caching strategy with 24-hour freshness
+- Comparable sales with adjustments
+- Neighborhood investment scoring (0-100)
+
+### Total Effort Estimates
+
+| Feature | Estimated Days |
+|---------|----------------|
+| AI Recommendations | 12-14 days |
+| ROI Calculator | 8-10 days |
+| Contractor Management | 12-14 days |
+| Export & Reporting | 10-12 days |
+| Market Intelligence | 12-15 days |
+| **TOTAL** | **54-65 days** |
+
+### Git Commit
+```
+5030e3a docs(specs): add comprehensive technical specifications for Phase 2-4 features
+```
+
+---
