@@ -4,7 +4,7 @@ import * as React from "react";
 import { AppLogo } from "@/components/app-logo";
 import { NavSimple } from "@/components/nav-simple";
 import { NavAction } from "@/components/nav-action";
-import { NavUser } from "@/components/nav-user";
+import { NavUserAuth } from "@/components/nav-user-auth";
 import { ThemeSwitch } from "@/components/shadcn-studio/switch/switch-11";
 import {
   Sidebar,
@@ -22,13 +22,6 @@ import {
   toolNavItems,
   settingsNavItems,
 } from "@/lib/navigation";
-
-// Placeholder user data - will be replaced with auth context
-const userData = {
-  name: "Property Investor",
-  email: "investor@example.com",
-  avatar: "",
-};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -62,7 +55,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarSeparator />
-        <NavUser user={userData} />
+        <NavUserAuth />
       </SidebarFooter>
       
       <SidebarRail />
