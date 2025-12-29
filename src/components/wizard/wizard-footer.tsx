@@ -2,8 +2,8 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { UseFormReturn, FieldValues } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { IconChevronLeft, IconChevronRight, IconDeviceFloppy, IconCheck } from "@tabler/icons-react";
+import { AnimatedButton } from "@/components/animation";
+import { IconChevronLeft, IconChevronRight, IconDeviceFloppy, IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { wizardSteps } from "@/lib/navigation";
 
 interface WizardFooterProps<T extends FieldValues = FieldValues> {
@@ -52,7 +52,7 @@ export function WizardFooter<T extends FieldValues = FieldValues>({
   return (
     <div className="flex items-center justify-between pt-6 border-t border-zinc-200 dark:border-zinc-700 mt-6">
       {/* Back button */}
-      <Button
+      <AnimatedButton
         type="button"
         variant="outline"
         onClick={handleBack}
@@ -61,42 +61,69 @@ export function WizardFooter<T extends FieldValues = FieldValues>({
       >
         <IconChevronLeft className="mr-2 h-4 w-4" />
         Back
-      </Button>
+      </AnimatedButton>
 
       <div className="flex items-center gap-2">
         {/* Save Draft button */}
-        <Button
+        <AnimatedButton
           type="button"
           variant="ghost"
           onClick={handleSave}
           disabled={isSaving}
           className="rounded-none"
         >
-          <IconDeviceFloppy className="mr-2 h-4 w-4" />
-          {isSaving ? "Saving..." : "Save Draft"}
-        </Button>
+          {isSaving ? (
+            <>
+              <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <IconDeviceFloppy className="mr-2 h-4 w-4" />
+              Save Draft
+            </>
+          )}
+        </AnimatedButton>
 
         {/* Next / Complete button */}
         {isLastStep ? (
-          <Button 
+          <AnimatedButton
             type={isFormStep ? "submit" : "button"}
             disabled={!canProceed || formIsSubmitting}
             onClick={!isFormStep ? onSubmit : undefined}
-            className="rounded-none"
+            className="rounded-none min-w-[180px]"
           >
-            <IconCheck className="mr-2 h-4 w-4" />
-            {formIsSubmitting ? "Submitting..." : "Complete & Export"}
-          </Button>
+            {formIsSubmitting ? (
+              <>
+                <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <IconCheck className="mr-2 h-4 w-4" />
+                Complete & Export
+              </>
+            )}
+          </AnimatedButton>
         ) : (
-          <Button 
+          <AnimatedButton
             type={isFormStep ? "submit" : "button"}
             onClick={!isFormStep ? () => nextStep && router.push(nextStep.path) : undefined}
             disabled={!canProceed || !nextStep || formIsSubmitting}
-            className="rounded-none"
+            className="rounded-none min-w-[120px]"
           >
-            {formIsSubmitting ? "Validating..." : nextStep?.shortTitle || "Next"}
-            <IconChevronRight className="ml-2 h-4 w-4" />
-          </Button>
+            {formIsSubmitting ? (
+              <>
+                <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                Validating...
+              </>
+            ) : (
+              <>
+                {nextStep?.shortTitle || "Next"}
+                <IconChevronRight className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </AnimatedButton>
         )}
       </div>
     </div>

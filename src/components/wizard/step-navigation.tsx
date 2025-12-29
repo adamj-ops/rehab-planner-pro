@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { IconCheck } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { wizardSteps } from "@/lib/navigation";
+import { motion } from "framer-motion";
 
 interface StepNavigationProps {
   currentStep?: number;
@@ -40,14 +41,24 @@ export function StepNavigation({ currentStep, completedSteps = [] }: StepNavigat
                 <div className="flex items-center w-full">
                   {/* Line before */}
                   {index > 0 && (
-                    <div
+                    <motion.div
                       className={cn(
-                        "h-0.5 flex-1 transition-colors",
+                        "h-0.5 flex-1",
                         isCompleted || isActive ? "bg-primary" : "bg-zinc-200 dark:bg-zinc-700"
                       )}
+                      initial={{ scaleX: 0 }}
+                      animate={{
+                        scaleX: (isCompleted || isActive) && wizardSteps[index - 1] && (completedSteps.includes(wizardSteps[index - 1].number) || wizardSteps[index - 1].number < activeStep) ? 1 : 0
+                      }}
+                      transition={{
+                        duration: 0.4,
+                        delay: 0.3,
+                        ease: "easeOut"
+                      }}
+                      style={{ transformOrigin: "left" }}
                     />
                   )}
-                  
+
                   {/* Circle - NO rounded-full, using sharp square per Mira theme */}
                   <div
                     className={cn(
@@ -57,20 +68,55 @@ export function StepNavigation({ currentStep, completedSteps = [] }: StepNavigat
                       !isActive && !isCompleted && "border-zinc-300 dark:border-zinc-600 bg-background text-zinc-500"
                     )}
                   >
+                    {/* Pulse ring for active step */}
+                    {isActive && (
+                      <motion.div
+                        className="absolute inset-0 border-2 border-primary"
+                        animate={{
+                          scale: [1, 1.15, 1],
+                          opacity: [0.5, 0, 0.5]
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    )}
+
                     {isCompleted && !isActive ? (
-                      <IconCheck className="h-5 w-5" />
+                      <motion.div
+                        initial={{ scale: 0, rotate: -10 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 15,
+                          delay: 0.1
+                        }}
+                      >
+                        <IconCheck className="h-5 w-5" />
+                      </motion.div>
                     ) : (
                       <span className="text-sm font-semibold">{step.number}</span>
                     )}
                   </div>
-                  
+
                   {/* Line after */}
                   {index < wizardSteps.length - 1 && (
-                    <div
+                    <motion.div
                       className={cn(
-                        "h-0.5 flex-1 transition-colors",
+                        "h-0.5 flex-1",
                         completedSteps.includes(step.number) ? "bg-primary" : "bg-zinc-200 dark:bg-zinc-700"
                       )}
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: completedSteps.includes(step.number) ? 1 : 0 }}
+                      transition={{
+                        duration: 0.4,
+                        delay: 0.3,
+                        ease: "easeOut"
+                      }}
+                      style={{ transformOrigin: "left" }}
                     />
                   )}
                 </div>

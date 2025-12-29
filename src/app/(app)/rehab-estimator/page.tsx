@@ -7,21 +7,24 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
-import { 
-  Home, 
-  ClipboardCheck, 
-  Target, 
-  Hammer, 
-  ListOrdered, 
-  Calendar, 
+import {
+  Home,
+  ClipboardCheck,
+  Target,
+  Hammer,
+  ListOrdered,
+  Calendar,
   FileCheck,
   ArrowLeft,
   ArrowRight,
   Save,
   Download,
   Sparkles,
-  Palette
+  Palette,
+  CheckCircle
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import confetti from 'canvas-confetti'
 import { useRehabStore, useCurrentStep, useProject, useEstimateSummary, useLoading, useError } from '@/hooks/use-rehab-store'
 import { PropertyDetailsForm } from '@/components/rehab-estimator/property-details-form'
 import { PropertyAssessment } from '@/components/rehab-estimator/assessment/property-assessment'
@@ -114,9 +117,25 @@ export default function RehabEstimatorPage() {
 
   const [isSaving, setIsSaving] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [hasShownConfetti, setHasShownConfetti] = useState(false)
+  const [showSuccessCard, setShowSuccessCard] = useState(false)
 
   const CurrentStepComponent = steps[currentStep - 1]?.component
   const progress = (currentStep / steps.length) * 100
+
+  // Trigger confetti when all steps are complete
+  useEffect(() => {
+    if (currentStep === steps.length && !hasShownConfetti) {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981']
+      })
+      setHasShownConfetti(true)
+      setShowSuccessCard(true)
+    }
+  }, [currentStep, hasShownConfetti])
 
   const handleNext = async (data: any) => {
     try {
@@ -225,14 +244,69 @@ export default function RehabEstimatorPage() {
       <div className="flex gap-6 p-6 flex-1">
         {/* Step Content - Clean form without duplicate headers */}
         <div className="flex-1">
-          {CurrentStepComponent && (
-            <CurrentStepComponent
-              project={project}
-              onNext={handleNext}
-              onBack={handleBack}
-              currentStep={currentStep}
-              totalSteps={steps.length}
-            />
+          {showSuccessCard ? (
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="text-center space-y-6 p-12 bg-white rounded-lg shadow-lg border-2 border-green-200"
+            >
+              <motion.div
+                animate={{
+                  scale: [1, 1.2, 1],
+                  rotate: [0, -10, 10, -10, 0]
+                }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <CheckCircle className="h-20 w-20 text-green-500 mx-auto" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <h2 className="text-3xl font-bold text-gray-900">Estimate Complete!</h2>
+                <p className="text-lg text-gray-600 mt-2">
+                  Your detailed rehab plan is ready to review and export
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="flex gap-4 justify-center"
+              >
+                <Button size="lg" className="rounded-none">
+                  <Download className="mr-2 h-5 w-5" />
+                  Export PDF
+                </Button>
+                <Button size="lg" variant="outline" className="rounded-none">
+                  View Dashboard
+                </Button>
+              </motion.div>
+            </motion.div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentStep}
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -20, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+              >
+                {CurrentStepComponent && (
+                  <CurrentStepComponent
+                    project={project}
+                    onNext={handleNext}
+                    onBack={handleBack}
+                    currentStep={currentStep}
+                    totalSteps={steps.length}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
           )}
         </div>
 

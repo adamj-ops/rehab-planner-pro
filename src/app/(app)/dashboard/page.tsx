@@ -12,6 +12,10 @@ import { Progress } from '@/components/ui/progress'
 import { projectService } from '@/lib/supabase/database'
 import { useRehabStore } from '@/hooks/use-rehab-store'
 import { RehabProject, ProjectStatus } from '@/types/database'
+import { useSpring, animated } from '@react-spring/web'
+import { useInView } from 'react-intersection-observer'
+import { motion } from 'framer-motion'
+import { StaggerChildren } from '@/components/animation'
 
 // Status badge color mapping
 const statusColors: Record<ProjectStatus, string> = {
@@ -39,6 +43,22 @@ interface DashboardStats {
   totalBudget: number
   totalEstimatedCost: number
   avgRoi: number | null
+}
+
+// Animated counter component
+function AnimatedCounter({ value, formatFn }: { value: number; formatFn?: (val: number) => string }) {
+  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 })
+  const springProps = useSpring({
+    from: { val: 0 },
+    to: { val: inView ? value : 0 },
+    config: { tension: 280, friction: 60 },
+  })
+
+  return (
+    <animated.div ref={ref} className="text-2xl font-bold">
+      {springProps.val.to((val) => formatFn ? formatFn(val) : Math.floor(val).toLocaleString())}
+    </animated.div>
+  )
 }
 
 export default function DashboardPage() {
@@ -144,14 +164,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <StaggerChildren staggerDelay={0.1} className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="rounded-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
             <IconHome className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.activeProjects}</div>
+            <AnimatedCounter value={stats.activeProjects} />
             <p className="text-xs text-muted-foreground">Currently in progress</p>
           </CardContent>
         </Card>
@@ -162,7 +182,7 @@ export default function DashboardPage() {
             <IconClock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.completedProjects}</div>
+            <AnimatedCounter value={stats.completedProjects} />
             <p className="text-xs text-muted-foreground">Projects finished</p>
           </CardContent>
         </Card>
@@ -173,7 +193,15 @@ export default function DashboardPage() {
             <IconCash className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalBudget)}</div>
+            <AnimatedCounter
+              value={stats.totalBudget}
+              formatFn={(val) => new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              }).format(Math.floor(val))}
+            />
             <p className="text-xs text-muted-foreground">Across all projects</p>
           </CardContent>
         </Card>
@@ -184,13 +212,21 @@ export default function DashboardPage() {
             <IconTrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${stats.avgRoi && stats.avgRoi >= 0 ? 'text-green-600' : ''}`}>
-              {stats.avgRoi !== null ? `${stats.avgRoi.toFixed(1)}%` : '-'}
-            </div>
+            {stats.avgRoi !== null ? (
+              <AnimatedCounter
+                value={stats.avgRoi}
+                formatFn={(val) => {
+                  const formatted = val.toFixed(1);
+                  return `${formatted}%`;
+                }}
+              />
+            ) : (
+              <div className="text-2xl font-bold">-</div>
+            )}
             <p className="text-xs text-muted-foreground">On completed projects</p>
           </CardContent>
         </Card>
-      </div>
+      </StaggerChildren>
 
       {/* Recent Projects */}
       <Card className="rounded-none">
@@ -228,9 +264,15 @@ export default function DashboardPage() {
                   const progress = progressMap[status]
 
                   return (
-                    <div
+                    <motion.div
                       key={project.id}
-                      className="flex items-center justify-between p-4 border rounded-none hover:bg-muted/50 transition-colors"
+                      className="flex items-center justify-between p-4 border rounded-none"
+                      whileHover={{
+                        y: -4,
+                        scale: 1.01,
+                        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                      }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
                       <div className="flex items-center gap-4">
                         <div className="h-10 w-10 bg-primary/10 flex items-center justify-center rounded-none">
@@ -239,12 +281,46 @@ export default function DashboardPage() {
                         <div>
                           <p className="font-medium">{project.project_name}</p>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Badge
-                              variant="secondary"
-                              className={`rounded-none text-xs ${statusColors[status]}`}
-                            >
-                              {statusLabels[status]}
-                            </Badge>
+                            {status === 'in_progress' ? (
+                              <motion.div
+                                animate={{
+                                  scale: [1, 1.05, 1],
+                                  opacity: [0.8, 1, 0.8]
+                                }}
+                                transition={{
+                                  duration: 2,
+                                  repeat: Infinity,
+                                  ease: "easeInOut"
+                                }}
+                              >
+                                <Badge
+                                  variant="secondary"
+                                  className={`rounded-none text-xs ${statusColors[status]}`}
+                                >
+                                  {statusLabels[status]}
+                                </Badge>
+                              </motion.div>
+                            ) : status === 'completed' ? (
+                              <motion.div
+                                initial={{ scale: 0.8 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                              >
+                                <Badge
+                                  variant="secondary"
+                                  className={`rounded-none text-xs ${statusColors[status]}`}
+                                >
+                                  ✓ {statusLabels[status]}
+                                </Badge>
+                              </motion.div>
+                            ) : (
+                              <Badge
+                                variant="secondary"
+                                className={`rounded-none text-xs ${statusColors[status]}`}
+                              >
+                                {statusLabels[status]}
+                              </Badge>
+                            )}
                             {project.max_budget && (
                               <span>• {formatCurrency(project.max_budget)} budget</span>
                             )}
@@ -262,7 +338,7 @@ export default function DashboardPage() {
                           <Link href={`/projects/${project.id}`}>View</Link>
                         </Button>
                       </div>
-                    </div>
+                    </motion.div>
                   )
                 })}
               </div>
