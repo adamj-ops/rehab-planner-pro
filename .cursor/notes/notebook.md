@@ -364,3 +364,54 @@ d4d5fda feat(moodboard): complete React Flow moodboard builder - Phase 2A comple
 3. Testing Framework (unit, integration, E2E tests)
 
 ---
+
+## 2025-12-28 — Linear Issue Technical Specification Session
+
+### Summary
+Added comprehensive technical specifications to all Epic 2 wizard step issues in Linear. These specs are designed to give any agent complete context to implement each step without needing additional guidance.
+
+### Issues Updated
+
+| Issue | Title | Spec Highlights |
+|-------|-------|-----------------|
+| EVE-15 | Epic 2.2: Property Details (Step 1) | References `.cursor/docs/technical/PROPERTY_DETAILS_FORM_SPEC.md`, sub-issue table |
+| EVE-16 | Epic 2.3: Condition Assessment (Step 2) | Room list, component checklist, photo upload, visual mockup |
+| EVE-17 | Epic 2.4: Strategy & Goals (Step 3) | Investment strategies, buyer personas, 70% rule calculator |
+| EVE-18 | Epic 2.5: Scope Building (Step 4) | Cost calculation engine, AI recommendations, quality tiers |
+| EVE-19 | Epic 2.6: Priority Matrix (Step 5) | 6-dimensional scoring algorithm, MoSCoW columns, optimizer |
+| EVE-20 | Epic 2.7: Timeline (Step 6) | React Flow Gantt, auto-scheduling, critical path algorithm |
+| EVE-21 | Epic 2.8: Final Review (Step 7) | ROI projection, pre-flight checklist, activation logic |
+
+### Spec Contents (Each Issue)
+Each issue now includes:
+- **Overview**: Clear explanation of what the step accomplishes
+- **Acceptance Criteria**: Categorized as Must/Should/Could
+- **Database Schema**: Relevant tables and TypeScript interfaces
+- **File Structure**: Complete component and hook organization
+- **Visual Layout**: ASCII diagrams showing UI structure
+- **Implementation Steps**: Phased approach with time estimates
+- **Code Examples**: Key algorithms and logic snippets
+- **Testing Checklist**: Verification points for QA
+
+### Key Highlights
+
+**Scope Building (EVE-18)**
+- Detailed cost calculation engine: base × qty × quality_mult × regional_mult
+- Quality tier multipliers: Budget (0.7x), Standard (1.0x), Premium (1.5x), Luxury (2.5x)
+- AI recommendation engine with rule-based logic (MVP) or OpenAI (future)
+
+**Priority Matrix (EVE-19)**
+- 6-dimensional scoring: Urgency (25%), ROI Impact (30%), Market Timing (15%), Dependency (10%), Complexity (10%), Risk (10%)
+- Knapsack-style budget optimizer algorithm
+- MoSCoW categorization thresholds
+
+**Timeline (EVE-20)**
+- React Flow reuse from Moodboard builder
+- Auto-scheduling with topological sort
+- Business day calculator (exclude weekends)
+- Critical path algorithm (longest dependency chain)
+
+### Epic 3 Status
+Epic 3 (EVE-22, EVE-23, EVE-24) was already marked as "Done" in Linear - no updates needed.
+
+---
