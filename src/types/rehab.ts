@@ -30,6 +30,11 @@ export interface RehabProject {
   purchasePrice: number
   neighborhoodCompAvg: number
   
+  // Financing
+  financingDetails?: FinancingDetails
+  holdingCosts?: HoldingCosts
+  holdingCostEstimate?: HoldingCostEstimate
+  
   // Status
   status: 'draft' | 'active' | 'completed' | 'archived'
   
@@ -273,23 +278,83 @@ export interface ContractorBid {
   submittedAt: Date
 }
 
-// Form schemas for validation
+// ============================================================================
+// Financing Types
+// ============================================================================
+
+export type LoanType = 'cash' | 'conventional' | 'hard_money'
+
+export interface FinancingDetails {
+  loanType: LoanType
+  downPaymentPercent: number
+  interestRate: number
+  loanTermMonths: number
+  points: number
+  holdingPeriodMonths: number
+}
+
+export interface HoldingCosts {
+  propertyTaxesMonthly: number
+  insuranceMonthly: number
+  utilitiesMonthly: number
+  hoaMonthly: number
+  maintenanceMonthly: number
+}
+
+export interface HoldingCostEstimate {
+  loanAmount: number
+  downPayment: number
+  monthlyPayment: number
+  totalInterest: number
+  pointsCost: number
+  closingCosts: number
+  sellingCosts: number
+  totalHoldingCosts: number
+  totalMonthlyHoldingCost: number
+  cashRequired: number
+  allInCost: number
+  estimatedProfit: number
+  roi: number
+  annualizedROI: number
+  cashOnCashReturn: number
+}
+
+// ============================================================================
+// Form Schemas for Validation
+// ============================================================================
+
 export interface PropertyDetailsFormData {
+  // Project identification
   projectName: string
   projectType: 'flip' | 'rental' | 'wholesale'
+  
+  // Address
   address: {
     street: string
     city: string
     state: string
     zip: string
   }
+  
+  // Property specs
+  propertyType: 'single_family' | 'multi_family' | 'condo' | 'townhouse'
+  yearBuilt: number
   squareFeet: number
   lotSize: number
-  yearBuilt: number
-  propertyType: 'single_family' | 'multi_family' | 'condo' | 'townhouse'
   bedrooms: number
   bathrooms: number
+  garageSpaces?: number
+  stories?: number
+  
+  // Financial inputs
   purchasePrice: number
+  arv?: number
+  closingCostsPercent?: number
+  sellingCostsPercent?: number
+  
+  // Financing (optional, for calculator)
+  financing?: FinancingDetails
+  holdingCosts?: HoldingCosts
 }
 
 export interface StrategyFormData {

@@ -58,7 +58,7 @@ export {
   IconPhotoEdit,
   IconLayoutGrid,
   IconLayoutList,
-  IconMoodboard,
+  IconLayoutCollage,
   IconWand,
   IconSparkles,
   
@@ -122,6 +122,10 @@ export {
   IconLoader2,
   IconProgress,
   
+  // Measurement
+  // IconRuler already exported in Building & Construction
+  IconRuler2,
+  
   // Misc
   IconMail,
   IconPhone,
@@ -152,8 +156,10 @@ export {
   IconRotate,
   IconFlipHorizontal,
   IconFlipVertical,
-  IconStack,
+IconStack,
   IconPencil,
+  IconLayersLinked,
+  IconStack2,
   IconTemplate,
   IconApps,
   IconPackage,
