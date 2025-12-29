@@ -51,7 +51,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Auth pages - redirect to dashboard if already logged in
-  const authPaths = ['/auth', '/forgot-password', '/reset-password']
+  const authPaths = ['/auth', '/login', '/signup', '/forgot-password', '/reset-password']
   const isAuthPath = authPaths.some((path) => request.nextUrl.pathname === path)
 
   if (isAuthPath && user) {

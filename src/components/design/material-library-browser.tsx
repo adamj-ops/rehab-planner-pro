@@ -2,7 +2,13 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { Search, X, Loader2, Package, Star, Filter } from "lucide-react"
+import {
+  IconSearch,
+  IconX,
+  IconLoader2,
+  IconPackage,
+  IconStar,
+} from "@/lib/icons"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -109,22 +115,23 @@ export function MaterialLibraryBrowser({
       result = result.filter(
         (m) =>
           m.productName.toLowerCase().includes(query) ||
-          m.manufacturer?.toLowerCase().includes(query) ||
+          m.brand?.toLowerCase().includes(query) ||
           m.modelNumber?.toLowerCase().includes(query) ||
-          m.category?.toLowerCase().includes(query)
+          m.materialCategory?.toLowerCase().includes(query) ||
+          m.materialType?.toLowerCase().includes(query)
       )
     }
 
-    // Filter by category
+    // Filter by category (match against materialType)
     if (selectedCategory !== "all") {
-      result = result.filter((m) => m.category === selectedCategory)
+      result = result.filter((m) => m.materialType === selectedCategory)
     }
 
     // Filter by price range
     if (selectedPriceRange !== "all") {
       result = result.filter((m) => {
-        if (!m.pricePerUnit) return false
-        const price = m.pricePerUnit
+        if (!m.avgCostPerUnit) return false
+        const price = m.avgCostPerUnit
         switch (selectedPriceRange) {
           case "budget":
             return price < 10
@@ -140,9 +147,24 @@ export function MaterialLibraryBrowser({
       })
     }
 
-    // Filter by quality tier
+    // Filter by quality tier - based on price tiers as proxy
     if (selectedQuality !== "all") {
-      result = result.filter((m) => m.qualityTier === selectedQuality)
+      result = result.filter((m) => {
+        if (!m.avgCostPerUnit) return selectedQuality === "builder"
+        const price = m.avgCostPerUnit
+        switch (selectedQuality) {
+          case "builder":
+            return price < 5
+          case "standard":
+            return price >= 5 && price < 25
+          case "premium":
+            return price >= 25 && price < 75
+          case "luxury":
+            return price >= 75
+          default:
+            return true
+        }
+      })
     }
 
     // Sort
@@ -151,11 +173,11 @@ export function MaterialLibraryBrowser({
         case "name":
           return a.productName.localeCompare(b.productName)
         case "price-low":
-          return (a.pricePerUnit || 0) - (b.pricePerUnit || 0)
+          return (a.avgCostPerUnit || 0) - (b.avgCostPerUnit || 0)
         case "price-high":
-          return (b.pricePerUnit || 0) - (a.pricePerUnit || 0)
+          return (b.avgCostPerUnit || 0) - (a.avgCostPerUnit || 0)
         case "category":
-          return (a.category || "").localeCompare(b.category || "")
+          return (a.materialType || "").localeCompare(b.materialType || "")
         default:
           return 0
       }
@@ -189,7 +211,7 @@ export function MaterialLibraryBrowser({
       <div className="flex-shrink-0 space-y-4 pb-4 border-b">
         {/* Search bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search materials by name, manufacturer, or model..."
             value={searchQuery}
@@ -198,10 +220,11 @@ export function MaterialLibraryBrowser({
           />
           {searchQuery && (
             <button
+              type="button"
               onClick={() => setSearchQuery("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              <X className="h-4 w-4" />
+              <IconX className="h-4 w-4" />
             </button>
           )}
         </div>
@@ -210,15 +233,15 @@ export function MaterialLibraryBrowser({
         <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as typeof viewMode)}>
           <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="all" className="gap-2">
-              <Package className="h-4 w-4" />
+              <IconPackage className="h-4 w-4" />
               All
             </TabsTrigger>
             <TabsTrigger value="popular" className="gap-2">
-              <Star className="h-4 w-4" />
+              <IconStar className="h-4 w-4" />
               Popular
             </TabsTrigger>
             <TabsTrigger value="favorites" className="gap-2">
-              <Star className="h-4 w-4 fill-current" />
+              <IconStar className="h-4 w-4 fill-current" />
               Favorites
             </TabsTrigger>
           </TabsList>
@@ -279,7 +302,7 @@ export function MaterialLibraryBrowser({
 
           {hasActiveFilters && (
             <Button variant="ghost" size="sm" onClick={clearFilters}>
-              <X className="h-4 w-4 mr-1" />
+              <IconX className="h-4 w-4 mr-1" />
               Clear
             </Button>
           )}
@@ -300,11 +323,11 @@ export function MaterialLibraryBrowser({
       <ScrollArea className="flex-1 -mx-1 px-1">
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <IconLoader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : filteredMaterials.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-center">
-            <Package className="h-12 w-12 text-muted-foreground mb-4" />
+            <IconPackage className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="font-medium text-lg">No materials found</h3>
             <p className="text-muted-foreground text-sm mt-1">
               {hasActiveFilters
@@ -353,7 +376,7 @@ export function MaterialLibrarySheet({
       <SheetTrigger asChild>
         {trigger || (
           <Button variant="outline" className="gap-2">
-            <Package className="h-4 w-4" />
+            <IconPackage className="h-4 w-4" />
             Browse Materials
           </Button>
         )}

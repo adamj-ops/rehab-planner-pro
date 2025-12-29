@@ -66,6 +66,7 @@ export {
   IconHammer,
   IconTool,
   IconTools,
+  IconRuler,
   IconBuildingWarehouse,
   IconBuilding,
   IconBuildingEstate,
@@ -96,6 +97,7 @@ export {
   IconBookmark,
   IconStar,
   IconHeart,
+  IconHeartFilled,
   
   // Finance
   IconCurrencyDollar,
@@ -150,10 +152,11 @@ export {
   IconRotate,
   IconFlipHorizontal,
   IconFlipVertical,
-  IconLayers,
   IconStack,
+  IconPencil,
   IconTemplate,
   IconApps,
+  IconPackage,
 } from '@tabler/icons-react';
 
 // Re-export types for TypeScript
