@@ -10,6 +10,18 @@ import {
   IconWand,
   IconColorPicker,
   IconPhoto,
+  IconUser,
+  IconArrowLeft,
+  IconClipboardList,
+  IconTarget,
+  IconCalendar,
+  IconUsers,
+  IconFileCheck,
+  IconDownload,
+  IconEye,
+  IconChartBar,
+  IconRuler,
+  IconBrush,
   type TablerIconsProps,
 } from "@tabler/icons-react";
 import type { ForwardRefExoticComponent, RefAttributes } from "react";
@@ -23,12 +35,17 @@ export interface NavItem {
   icon: TablerIcon;
   isActive?: boolean;
   badge?: string;
+  isComplete?: boolean;
 }
 
 export interface NavGroup {
   label: string;
   items: NavItem[];
 }
+
+// ============================================================================
+// GLOBAL SIDEBAR NAVIGATION (Outside Projects)
+// ============================================================================
 
 // Main navigation items
 export const mainNavItems: NavItem[] = [
@@ -37,52 +54,137 @@ export const mainNavItems: NavItem[] = [
     href: "/dashboard",
     icon: IconLayoutDashboard,
   },
-  {
-    title: "My Projects",
-    href: "/projects",
-    icon: IconHome,
-  },
 ];
 
 // Quick actions
 export const actionNavItems: NavItem[] = [
   {
     title: "New Project",
-    href: "/wizard/step-1",
+    href: "/project/new",
     icon: IconPlus,
   },
 ];
 
-// Tools section
-export const toolNavItems: NavItem[] = [
+// Settings section (includes Libraries and Contractors)
+export const settingsNavItems: NavItem[] = [
   {
-    title: "Color Library",
-    href: "/colors",
+    title: "My Profile",
+    href: "/settings/profile",
+    icon: IconUser,
+  },
+  {
+    title: "Libraries",
+    href: "/settings/libraries",
     icon: IconPalette,
   },
   {
-    title: "Materials",
-    href: "/materials",
-    icon: IconBuildingWarehouse,
+    title: "Contractors",
+    href: "/settings/contractors",
+    icon: IconBriefcase,
   },
   {
-    title: "Vendors",
-    href: "/vendors",
-    icon: IconBriefcase,
+    title: "Preferences",
+    href: "/settings/preferences",
+    icon: IconSettings,
   },
 ];
 
-// Settings section
-export const settingsNavItems: NavItem[] = [
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: IconSettings,
-  },
+// Help section
+export const helpNavItems: NavItem[] = [
   {
     title: "Help & Docs",
     href: "/help",
     icon: IconHelp,
+  },
+];
+
+// ============================================================================
+// PROJECT SIDEBAR NAVIGATION (Inside a Project)
+// ============================================================================
+
+export interface ProjectSection {
+  label: string;
+  items: {
+    title: string;
+    path: string; // relative path like 'details', 'condition'
+    icon: TablerIcon;
+  }[];
+}
+
+// Project sections for the conveyor belt
+export const projectSections: ProjectSection[] = [
+  {
+    label: "Property",
+    items: [
+      { title: "Details", path: "details", icon: IconHome },
+      { title: "Condition", path: "condition", icon: IconEye },
+    ],
+  },
+  {
+    label: "Planning",
+    items: [
+      { title: "Strategy", path: "strategy", icon: IconTarget },
+      { title: "Scope", path: "scope", icon: IconClipboardList },
+    ],
+  },
+  {
+    label: "Design",
+    items: [
+      { title: "Style", path: "design/style", icon: IconWand },
+      { title: "Colors", path: "design/colors", icon: IconColorPicker },
+      { title: "Materials", path: "design/materials", icon: IconBuildingWarehouse },
+      { title: "Moodboard", path: "design/moodboard", icon: IconPhoto },
+    ],
+  },
+  {
+    label: "Execution",
+    items: [
+      { title: "Priority", path: "priority", icon: IconChartBar },
+      { title: "Timeline", path: "timeline", icon: IconCalendar },
+      { title: "Team", path: "team", icon: IconUsers },
+    ],
+  },
+  {
+    label: "Complete",
+    items: [
+      { title: "Review", path: "review", icon: IconFileCheck },
+      { title: "Export", path: "export", icon: IconDownload },
+    ],
+  },
+];
+
+// Generate full nav items for a specific project
+export function getProjectNavItems(projectId: string): NavGroup[] {
+  return projectSections.map((section) => ({
+    label: section.label,
+    items: section.items.map((item) => ({
+      title: item.title,
+      href: `/project/${projectId}/${item.path}`,
+      icon: item.icon,
+    })),
+  }));
+}
+
+// ============================================================================
+// LEGACY: Wizard navigation (for backwards compatibility / redirects)
+// ============================================================================
+
+// @deprecated - Use projectSections instead
+export const toolNavItems: NavItem[] = [
+  {
+    title: "Color Library",
+    href: "/settings/libraries/colors",
+    icon: IconPalette,
+  },
+  {
+    title: "Materials",
+    href: "/settings/libraries/materials",
+    icon: IconBuildingWarehouse,
+  },
+  {
+    title: "Vendors",
+    href: "/settings/contractors",
+    icon: IconBriefcase,
   },
 ];
 

@@ -1,26 +1,36 @@
 # 🎯 Rehab Planner Pro - Project Checklist
 
-## Current Status: Phase 2A Design Intelligence
+## Current Status: Phase 2A Design Intelligence + Epic 2.1 Complete
 
-**Last Updated**: December 28, 2024
-**Current Sprint**: Phase 2A Complete!
-**Overall Progress**: 100% (Phase 2A)
+**Last Updated**: December 28, 2025
+**Current Sprint**: Phase 2A Complete + Epic 2.1 Project Dashboard & Auth Complete!
+**Overall Progress**: 100% (Phase 2A) + Epic 2.1 Complete
 
 ---
 
 ## 🚀 PHASE 1: Core Infrastructure ✅ COMPLETE
 
-### 1.1 Authentication & User Management ✅
+### 1.1 Authentication & User Management ✅ ENHANCED (Dec 28, 2025)
 - [x] Supabase Auth with Next.js
 - [x] User profile management
 - [x] Role-based access control
 - [x] Project sharing and collaboration
+- [x] **NEW: Login/Signup pages with full Supabase integration**
+- [x] **NEW: Email verification enforcement**
+- [x] **NEW: Password reset confirmation page**
+- [x] **NEW: Google OAuth functional**
+- [x] **NEW: Next.js middleware for server-side auth**
+- [x] **NEW: User profiles table with RLS policies**
+- [x] **NEW: Profile service with avatar upload**
+- [x] **NEW: Settings layout with profile editing**
 
-### 1.2 Data Persistence Layer ✅
+### 1.2 Data Persistence Layer ✅ ENHANCED (Dec 28, 2025)
 - [x] Complete CRUD operations
 - [x] Real-time subscriptions
 - [x] Data validation and error handling
 - [x] Zustand store with database integration
+- [x] **NEW: rehab_projects table with soft delete support**
+- [x] **NEW: use-projects-store with Zustand state management**
 
 ### 1.3 Cost Database Engine ✅
 - [x] Comprehensive cost database
@@ -30,7 +40,38 @@
 
 ---
 
-## 🏗️ PHASE 2: Design Intelligence 🔄 IN PROGRESS
+## 🏢 EPIC 2.1: Project Dashboard & CRUD ✅ COMPLETE (Dec 28, 2025)
+
+### Project List View ✅
+- [x] Card view with project thumbnails
+- [x] Table view with sortable columns
+- [x] View toggle between card/table
+- [x] Filter bar (status, strategy, date range)
+- [x] Search input with debouncing
+- [x] Empty states for no projects and no results
+
+### Project Detail Page ✅
+- [x] Project header with actions (edit, duplicate, archive, delete)
+- [x] Tabbed interface (Overview, Scope, Design, Timeline, Budget, Documents)
+- [x] Overview tab with property info, financials, activity log
+- [x] Not-found page for invalid project IDs
+
+### CRUD Operations ✅
+- [x] Create projects (via wizard)
+- [x] Read project details
+- [x] Update project info
+- [x] Duplicate projects
+- [x] Archive projects
+- [x] Soft delete with confirmation dialog
+
+### Dashboard Updates ✅
+- [x] Real stats from database (total projects, active, in progress, completed)
+- [x] Recent projects list from database
+- [x] Quick action buttons
+
+---
+
+## 🏗️ PHASE 2: Design Intelligence ✅ COMPLETE
 
 ### 2A.1 UI Theme Implementation ✅ COMPLETE
 - [x] **Mira shadcn Theme** - Full implementation
@@ -145,6 +186,8 @@
 | Phase | Progress | Status |
 |-------|----------|--------|
 | Phase 1: Infrastructure | 100% | ✅ Complete |
+| Phase 1.1: Auth System | 100% | ✅ Enhanced (Dec 28, 2025) |
+| Epic 2.1: Project Dashboard | 100% | ✅ Complete (Dec 28, 2025) |
 | Phase 2A: UI Theme | 100% | ✅ Complete |
 | Phase 2A: Wizard Structure | 100% | ✅ Complete |
 | Phase 2A: Color Library | 100% | ✅ Complete |
@@ -154,19 +197,37 @@
 | Phase 4: Polish & Export | 0% | ⏳ Future |
 | Phase 5: Testing | 0% | ⏳ Future |
 
-**Overall**: 100% complete through Phase 2A - Ready for Phase 3!
+**Overall**: Epic 2.1 + Phase 2A complete - Ready for Phase 3!
 
 ---
 
 ## 🔄 Immediate Next Steps
 
-### Priority 1: Phase 3 - Smart Scope Generation
-1. [ ] AI service integration (OpenAI/Anthropic)
-2. [ ] Market-based suggestions
-3. [ ] ROI optimization algorithms
-4. [ ] Automated scope item recommendations
+### Priority 1: Epic 2.2 - Wizard Step 1: Property Details 🎯 NEXT UP
+**Technical Spec**: `.cursor/docs/technical/PROPERTY_DETAILS_FORM_SPEC.md`
 
-### Priority 2: Share & Export Features
+| Issue | Task | Priority |
+|-------|------|----------|
+| EVE-29 | Zod schema & validation rules | 🔴 Urgent |
+| EVE-34 | Property type visual selector | 🟡 Medium |
+| EVE-35 | Property spec inputs (sqft, beds, baths) | 🟡 Medium |
+| EVE-36 | Financial inputs (price, ARV) | 🟡 Medium |
+| EVE-38 | Financing details section | 🟡 Medium |
+| EVE-42 | Integrate into PropertyDetailsForm | 🟠 High |
+| EVE-30 | Auto-save mechanism | 🟠 High |
+| EVE-40 | Save & Continue navigation | 🟠 High |
+| EVE-41 | Load existing draft | 🟡 Medium |
+| EVE-43 | E2E testing | 🟡 Medium |
+
+### Priority 2: Remaining Wizard Steps
+1. [ ] EVE-16: Wizard Step 2 - Condition Assessment
+2. [ ] EVE-17: Wizard Step 3 - Strategy & Goals
+3. [ ] EVE-18: Wizard Step 4 - Scope Building
+4. [ ] EVE-19: Wizard Step 5 - Priority Matrix
+5. [ ] EVE-20: Wizard Step 6 - Timeline (React Flow)
+6. [ ] EVE-21: Wizard Step 7 - Final Review
+
+### Priority 3: Share & Export Features
 1. [ ] Public moodboard sharing via unique URL
 2. [ ] PDF report generation
 3. [ ] Excel export for scope items
@@ -223,12 +284,54 @@
 | 2024-12-28 | Group colors by room | Better UX for viewing selections by location |
 | 2024-12-28 | Material application types | Context-aware applications based on material type |
 | 2024-12-28 | Cost calculation in material summary | Show total cost per selection and project total |
+| 2025-12-28 | Soft delete for projects | Preserve data, allow recovery |
+| 2025-12-28 | Card/Table view toggle | User preference for project list display |
+| 2025-12-28 | Tabbed project detail page | Organize complex project info logically |
+| 2025-12-28 | Next.js middleware for auth | Server-side route protection |
+| 2025-12-28 | User profiles table | Separate from auth.users for extended profile data |
+| 2025-12-28 | Settings layout with sidebar | Consistent navigation for settings pages |
 
 ---
 
 ## 📅 Sprint History
 
-### Sprint 7 (Dec 28, 2024) - Moodboard Builder ✅ 🎉 PHASE 2A COMPLETE!
+### Sprint 9 (Dec 28, 2025) - Auth Integration & Login/Signup ✅
+- Integrated login page with useAuth hook for Supabase signIn
+- Integrated signup page with useAuth hook for Supabase signUp
+- Both pages properly redirect when user is authenticated
+- Google OAuth button now functional
+- Added email verification resend functionality
+- Updated middleware to include /login and /signup in auth paths
+- Fixed redirect loop issue after sign-in
+
+### Sprint 8 (Dec 28, 2025) - Epic 2.1 Project Dashboard & CRUD ✅
+- Added rehab_projects table migration with soft delete support
+- Fixed FK references in Phase 2A migration (projects → rehab_projects)
+- Created projects list with card/table views, filtering, and search
+- Added project detail page with tabbed interface (Overview, Scope, etc.)
+- Implemented CRUD operations: edit, duplicate, archive, soft delete
+- Added use-projects-store for state management with Zustand
+- Updated dashboard with real stats and recent projects from database
+- Created components: view-toggle, project-card, project-table, filter-bar, search-input, empty-states, project-header, project-tabs, overview-tab, delete-dialog
+
+### Sprint 7a (Dec 28, 2025) - Authentication System (EVE-5) ✅
+- Fixed OAuth implementation bug (incorrect nested options)
+- Added email verification enforcement on sign-in
+- Added resend verification email functionality
+- Created password reset confirmation page (/reset-password)
+- Updated auth callback to handle password recovery redirect
+- Created auth error page for failed callbacks
+- Pass user metadata (first/last name) on signup
+- Added user_profiles database migration with RLS policies
+- Created profile service with CRUD and avatar upload
+- Built settings layout with sidebar navigation
+- Created full profile editing page (avatar, personal info, contact, professional, location, bio)
+- Updated user dropdown with navigation to profile/settings
+- Added Next.js middleware for server-side auth
+- Implemented route protection for authenticated pages
+- Added redirectTo parameter support for post-login redirect
+
+### Sprint 7 (Dec 28, 2025) - Moodboard Builder ✅ 🎉 PHASE 2A COMPLETE!
 - Installed React Flow (@xyflow/react) for canvas functionality
 - Created custom node types: ColorSwatchNode, MaterialSampleNode, ImageNode, TextNode
 - Built MoodboardCanvas with background grid, minimap, zoom controls
@@ -239,7 +342,7 @@
 - Full Supabase integration (create/load/save moodboards and elements)
 - Step 4 Moodboard page completely rebuilt with React Flow
 
-### Sprint 6 (Dec 28, 2024) - Material Library Completion ✅
+### Sprint 6 (Dec 28, 2025) - Material Library Completion ✅
 - Created MaterialCard component matching ColorCard Mira styling
 - Built MaterialGrid with search/filter by name, brand, category, type
 - Implemented MaterialSelectionDialog with context-aware application types
@@ -248,7 +351,7 @@
 - Added comprehensive seed data (30+ materials across all categories)
 - Fixed syntax error in priority-score route
 
-### Sprint 5 (Dec 28, 2024) - Color Library Completion ✅
+### Sprint 5 (Dec 28, 2025) - Color Library Completion ✅
 - Completed ColorSelectionDialog component for room/surface/finish assignment
 - Created ColorSelectionsSummary component with grouped-by-room display
 - Integrated with Supabase project_color_selections table
@@ -279,8 +382,20 @@
 
 ---
 
-## 🎉 Recent Achievements
+## 🎉 Recent Achievements (December 28, 2025)
 
+- ✅ **EPIC 2.1 PROJECT DASHBOARD COMPLETE!** Full project management implemented
+  - Projects list with card/table views, filtering, search
+  - Project detail page with tabbed interface
+  - CRUD operations with soft delete
+  - Real dashboard stats from database
+- ✅ **AUTHENTICATION SYSTEM ENHANCED!** (EVE-5 Complete)
+  - Login/Signup pages fully integrated with Supabase
+  - Email verification & password reset flows
+  - Google OAuth functional
+  - User profile management with avatar upload
+  - Settings page with full profile editing
+  - Next.js middleware for route protection
 - ✅ **PHASE 2A COMPLETE!** All design intelligence features implemented
 - ✅ React Flow Moodboard Builder with drag-and-drop canvas
 - ✅ Custom node types (ColorSwatch, MaterialSample, Image, Text)

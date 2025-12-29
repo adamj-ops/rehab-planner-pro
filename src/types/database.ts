@@ -727,8 +727,398 @@ export interface Database {
         Insert: MoodboardShareInsert;
         Update: MoodboardShareUpdate;
       };
+      property_assessments: {
+        Row: PropertyAssessment;
+        Insert: PropertyAssessmentInsert;
+        Update: PropertyAssessmentUpdate;
+      };
+      contractors: {
+        Row: Contractor;
+        Insert: ContractorInsert;
+        Update: ContractorUpdate;
+      };
+      cost_items: {
+        Row: CostItem;
+        Insert: CostItemInsert;
+        Update: CostItemUpdate;
+      };
+      scope_items: {
+        Row: ScopeItem;
+        Insert: ScopeItemInsert;
+        Update: ScopeItemUpdate;
+      };
+      project_timeline: {
+        Row: ProjectTimeline;
+        Insert: ProjectTimelineInsert;
+        Update: ProjectTimelineUpdate;
+      };
+      regional_multipliers: {
+        Row: RegionalMultiplier;
+      };
+      project_contractors: {
+        Row: ProjectContractor;
+        Insert: ProjectContractorInsert;
+        Update: ProjectContractorUpdate;
+      };
     };
   };
+}
+
+// ============================================================================
+// PROPERTY ASSESSMENTS
+// ============================================================================
+
+/** Condition rating options */
+export type ConditionRating = 'excellent' | 'good' | 'fair' | 'poor' | 'terrible';
+
+/** Room types for assessments */
+export type RoomType =
+  | 'kitchen'
+  | 'bathroom'
+  | 'bedroom'
+  | 'living_room'
+  | 'dining_room'
+  | 'garage'
+  | 'exterior'
+  | 'basement'
+  | 'attic'
+  | 'laundry'
+  | 'office'
+  | 'hallway';
+
+/** Component conditions stored as JSONB */
+export interface ComponentConditions {
+  flooring?: ConditionRating;
+  walls?: ConditionRating;
+  ceiling?: ConditionRating;
+  electrical?: ConditionRating;
+  plumbing?: ConditionRating;
+  windows?: ConditionRating;
+  doors?: ConditionRating;
+  hvac?: ConditionRating;
+  appliances?: ConditionRating;
+  cabinets?: ConditionRating;
+  countertops?: ConditionRating;
+}
+
+/** Action needed for a component */
+export interface ActionNeeded {
+  component: string;
+  action: 'repair' | 'replace' | 'upgrade' | 'none';
+  notes?: string;
+}
+
+/**
+ * Row type for property_assessments table
+ * Room-by-room condition assessment
+ */
+export interface PropertyAssessment {
+  id: UUID;
+  project_id: UUID;
+  room_type: string;
+  room_name: string | null;
+  floor_level: string | null;
+  overall_condition: ConditionRating | null;
+  components: ComponentConditions;
+  actions_needed: ActionNeeded[];
+  length_ft: number | null;
+  width_ft: number | null;
+  sqft: number | null;
+  ceiling_height_ft: number | null;
+  notes: string | null;
+  photos: string[] | null;
+  assessed_by: string | null;
+  assessed_at: Timestamp | null;
+  created_at: Timestamp | null;
+  updated_at: Timestamp | null;
+}
+
+export type PropertyAssessmentInsert = Omit<PropertyAssessment, 'id' | 'created_at' | 'updated_at' | 'assessed_at'> & {
+  id?: UUID;
+  assessed_at?: Timestamp;
+};
+
+export type PropertyAssessmentUpdate = Partial<Omit<PropertyAssessment, 'id' | 'created_at' | 'updated_at'>>;
+
+// ============================================================================
+// CONTRACTORS
+// ============================================================================
+
+/** Contractor specialties */
+export type ContractorSpecialty =
+  | 'plumbing'
+  | 'electrical'
+  | 'hvac'
+  | 'roofing'
+  | 'flooring'
+  | 'painting'
+  | 'kitchen'
+  | 'bathroom'
+  | 'general'
+  | 'landscaping'
+  | 'concrete'
+  | 'masonry'
+  | 'windows'
+  | 'siding'
+  | 'insulation'
+  | 'demolition'
+  | 'foundation'
+  | 'carpentry'
+  | 'drywall'
+  | 'tile';
+
+/** Vendor types */
+export type VendorType = 'contractor' | 'supplier' | 'service_provider';
+
+/**
+ * Row type for contractors table
+ * User's contractor/vendor Rolodex
+ */
+export interface Contractor {
+  id: UUID;
+  user_id: UUID;
+  name: string;
+  company: string | null;
+  email: string | null;
+  phone: string | null;
+  address_street: string | null;
+  address_city: string | null;
+  address_state: string | null;
+  address_zip: string | null;
+  specialties: string[] | null;
+  vendor_type: VendorType | null;
+  license_number: string | null;
+  license_expiration: string | null;
+  insurance_coverage: string | null;
+  insurance_expiration: string | null;
+  hourly_rate: number | null;
+  markup_percent: number | null;
+  payment_terms: string | null;
+  rating: number | null;
+  completed_projects: number | null;
+  total_spent: number | null;
+  is_active: boolean | null;
+  is_preferred: boolean | null;
+  notes: string | null;
+  tags: string[] | null;
+  created_at: Timestamp | null;
+  updated_at: Timestamp | null;
+}
+
+export type ContractorInsert = Omit<Contractor, 'id' | 'created_at' | 'updated_at'> & {
+  id?: UUID;
+};
+
+export type ContractorUpdate = Partial<Omit<Contractor, 'id' | 'created_at' | 'updated_at'>>;
+
+// ============================================================================
+// COST ITEMS CATALOG
+// ============================================================================
+
+/** Cost item categories */
+export type CostCategory = 'exterior' | 'interior' | 'systems' | 'structural';
+
+/** Difficulty levels */
+export type DifficultyLevel = 'simple' | 'moderate' | 'complex';
+
+/**
+ * Row type for cost_items table
+ * Renovation cost catalog
+ */
+export interface CostItem {
+  id: UUID;
+  category: CostCategory;
+  subcategory: string;
+  name: string;
+  description: string | null;
+  unit: string;
+  base_cost: number;
+  labor_percent: number | null;
+  budget_multiplier: number | null;
+  standard_multiplier: number | null;
+  premium_multiplier: number | null;
+  luxury_multiplier: number | null;
+  difficulty: DifficultyLevel | null;
+  difficulty_multiplier: number | null;
+  estimated_hours: number | null;
+  typical_duration_days: number | null;
+  typical_roi: number | null;
+  buyer_appeal_score: number | null;
+  common_dependencies: string[] | null;
+  is_active: boolean | null;
+  notes: string | null;
+  created_at: Timestamp | null;
+  updated_at: Timestamp | null;
+}
+
+export type CostItemInsert = Omit<CostItem, 'id' | 'created_at' | 'updated_at'> & {
+  id?: UUID;
+};
+
+export type CostItemUpdate = Partial<Omit<CostItem, 'id' | 'created_at' | 'updated_at'>>;
+
+// ============================================================================
+// SCOPE ITEMS
+// ============================================================================
+
+/** Quality tiers for scope items */
+export type QualityTier = 'budget' | 'standard' | 'premium' | 'luxury';
+
+/** Priority levels (MoSCoW method) */
+export type PriorityLevel = 'must' | 'should' | 'could' | 'nice';
+
+/** Scope item status */
+export type ScopeItemStatus = 'planned' | 'scheduled' | 'in_progress' | 'completed' | 'cancelled' | 'on_hold';
+
+/**
+ * Row type for scope_items table
+ * Individual renovation tasks for a project
+ */
+export interface ScopeItem {
+  id: UUID;
+  project_id: UUID;
+  name: string;
+  description: string | null;
+  category: CostCategory;
+  subcategory: string | null;
+  room_id: UUID | null;
+  room_type: string | null;
+  room_name: string | null;
+  cost_item_id: UUID | null;
+  quantity: number | null;
+  unit: string | null;
+  quality_tier: QualityTier | null;
+  labor_cost: number | null;
+  material_cost: number | null;
+  total_cost: number | null;
+  priority: PriorityLevel | null;
+  urgency_score: number | null;
+  roi_score: number | null;
+  risk_score: number | null;
+  overall_score: number | null;
+  phase: number | null;
+  estimated_days: number | null;
+  start_date: string | null;
+  end_date: string | null;
+  dependencies: UUID[] | null;
+  contractor_id: UUID | null;
+  assigned_at: Timestamp | null;
+  status: ScopeItemStatus | null;
+  completed_at: Timestamp | null;
+  actual_cost: number | null;
+  notes: string | null;
+  created_at: Timestamp | null;
+  updated_at: Timestamp | null;
+}
+
+export type ScopeItemInsert = Omit<ScopeItem, 'id' | 'created_at' | 'updated_at'> & {
+  id?: UUID;
+};
+
+export type ScopeItemUpdate = Partial<Omit<ScopeItem, 'id' | 'created_at' | 'updated_at'>>;
+
+/** Scope item with joined data */
+export interface ScopeItemWithDetails extends ScopeItem {
+  room?: PropertyAssessment | null;
+  cost_item?: CostItem | null;
+  contractor?: Contractor | null;
+}
+
+// ============================================================================
+// PROJECT TIMELINE
+// ============================================================================
+
+/** Timeline phase structure */
+export interface TimelinePhase {
+  name: string;
+  phase_number: number;
+  start: string;
+  end: string;
+  scope_item_ids: UUID[];
+  status: 'pending' | 'in_progress' | 'completed';
+}
+
+/**
+ * Row type for project_timeline table
+ * Project schedule data
+ */
+export interface ProjectTimeline {
+  id: UUID;
+  project_id: UUID;
+  start_date: string | null;
+  target_end_date: string | null;
+  actual_end_date: string | null;
+  phases: TimelinePhase[];
+  critical_path: UUID[] | null;
+  total_estimated_days: number | null;
+  total_actual_days: number | null;
+  is_locked: boolean | null;
+  notes: string | null;
+  created_at: Timestamp | null;
+  updated_at: Timestamp | null;
+}
+
+export type ProjectTimelineInsert = Omit<ProjectTimeline, 'id' | 'created_at' | 'updated_at'> & {
+  id?: UUID;
+};
+
+export type ProjectTimelineUpdate = Partial<Omit<ProjectTimeline, 'id' | 'created_at' | 'updated_at'>>;
+
+// ============================================================================
+// REGIONAL MULTIPLIERS
+// ============================================================================
+
+/**
+ * Row type for regional_multipliers table
+ * Location-based pricing adjustments
+ */
+export interface RegionalMultiplier {
+  id: UUID;
+  zip_code: string;
+  city: string | null;
+  state: string;
+  metro_area: string | null;
+  labor_multiplier: number | null;
+  material_multiplier: number | null;
+  overall_multiplier: number | null;
+  market_temperature: 'hot' | 'warm' | 'neutral' | 'cool' | 'cold' | null;
+  avg_days_on_market: number | null;
+  data_source: string | null;
+  last_updated: Timestamp | null;
+}
+
+// ============================================================================
+// PROJECT CONTRACTORS (Junction table)
+// ============================================================================
+
+/**
+ * Row type for project_contractors table
+ * Links contractors to specific projects
+ */
+export interface ProjectContractor {
+  id: UUID;
+  project_id: UUID;
+  contractor_id: UUID;
+  role: string | null;
+  agreed_rate: number | null;
+  contract_amount: number | null;
+  payment_status: 'pending' | 'partial' | 'paid' | null;
+  amount_paid: number | null;
+  notes: string | null;
+  is_active: boolean | null;
+  created_at: Timestamp | null;
+  updated_at: Timestamp | null;
+}
+
+export type ProjectContractorInsert = Omit<ProjectContractor, 'id' | 'created_at' | 'updated_at'> & {
+  id?: UUID;
+};
+
+export type ProjectContractorUpdate = Partial<Omit<ProjectContractor, 'id' | 'created_at' | 'updated_at'>>;
+
+/** Project contractor with joined contractor data */
+export interface ProjectContractorWithDetails extends ProjectContractor {
+  contractor?: Contractor | null;
 }
 
 // ============================================================================

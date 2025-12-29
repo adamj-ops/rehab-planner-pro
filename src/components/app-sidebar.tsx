@@ -16,8 +16,8 @@ import {
 import {
   mainNavItems,
   actionNavItems,
-  toolNavItems,
   settingsNavItems,
+  helpNavItems,
 } from "@/lib/navigation";
 
 // Placeholder user data - will be replaced with auth context
@@ -27,35 +27,39 @@ const userData = {
   avatar: "",
 };
 
+/**
+ * Global Sidebar - Used outside of project context
+ * Shows: Dashboard, New Project, Settings (with Libraries & Contractors), Help
+ */
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <AppLogo />
       </SidebarHeader>
-      
+
       <SidebarContent>
-        {/* Main Navigation */}
+        {/* Main Navigation - Dashboard */}
         <NavSimple items={mainNavItems} label="Navigation" />
-        
+
         {/* New Project CTA */}
         <NavAction items={actionNavItems} />
-        
+
         <SidebarSeparator />
-        
-        {/* Tools */}
-        <NavSimple items={toolNavItems} label="Tools" />
-        
-        <SidebarSeparator />
-        
-        {/* Settings */}
+
+        {/* Settings - includes Libraries & Contractors */}
         <NavSimple items={settingsNavItems} label="Settings" />
+
+        <SidebarSeparator />
+
+        {/* Help */}
+        <NavSimple items={helpNavItems} />
       </SidebarContent>
-      
+
       <SidebarFooter>
         <NavUser user={userData} />
       </SidebarFooter>
-      
+
       <SidebarRail />
     </Sidebar>
   );

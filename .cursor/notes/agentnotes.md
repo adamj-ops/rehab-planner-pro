@@ -5,11 +5,11 @@
 **Type**: Fix & Flip Real Estate Investment Analysis Tool  
 **Tech Stack**: Next.js 15, TypeScript, Tailwind CSS v4, shadcn/ui (Mira theme), Supabase, Zustand  
 **Repository**: https://github.com/adamj-ops/rehab-planner-pro  
-**Status**: Phase 2A Design Intelligence - UI Complete
+**Status**: Phase 2A Complete + Epic 2.1 Project Dashboard Complete + Auth Enhanced
 
 ---
 
-## Current Project State (Updated Dec 23, 2024)
+## Current Project State (Updated Dec 28, 2025)
 
 ### ✅ Recently Completed: Mira Theme Implementation
 
@@ -46,8 +46,11 @@ Layer 3 (Top):    Text = Zinc-50 (bright)
 ```
 /app
   /(app)               # Main application with sidebar
-    /dashboard         # Dashboard overview
-    /projects          # Project listing
+    /dashboard         # Dashboard overview with real stats
+    /projects          # Project listing (card/table views)
+    /projects/[id]     # Project detail page with tabs
+    /settings          # Settings layout
+    /settings/profile  # User profile editing
     /wizard            # 7-step project creation wizard
       /step-1          # Property Details
       /step-2          # Condition Assessment
@@ -55,7 +58,7 @@ Layer 3 (Top):    Text = Zinc-50 (bright)
       /step-4          # Design Intelligence (tabbed)
         /color         # Color selection
         /materials     # Material selection
-        /moodboard     # Moodboard builder
+        /moodboard     # Moodboard builder (React Flow)
       /step-5          # Priority Matrix
       /step-6          # Action Plan
       /step-7          # Final Review
@@ -63,6 +66,9 @@ Layer 3 (Top):    Text = Zinc-50 (bright)
   /(dashboard)         # Legacy dashboard layout
   /api                 # API routes
   /auth                # Authentication pages
+  /login               # Login page (Supabase integrated)
+  /signup              # Signup page (Supabase integrated)
+  /reset-password      # Password reset confirmation
 ```
 
 ### Key Components
@@ -70,20 +76,25 @@ Layer 3 (Top):    Text = Zinc-50 (bright)
 - `src/components/wizard/step-navigation.tsx` - Wizard step indicators
 - `src/components/wizard/wizard-footer.tsx` - Navigation buttons
 - `src/components/design/ColorLibrary/` - Color selection components
+- `src/components/design/MaterialLibrary/` - Material selection components
+- `src/components/design/Moodboard/` - React Flow moodboard builder
+- `src/components/projects/` - Project dashboard components (card, table, filter, etc.)
 - `src/components/ui/` - shadcn/ui components (themed)
 
 ---
 
-## Phase 2A: Design Intelligence
+## Phase 2A: Design Intelligence ✅ COMPLETE
 
 ### Features Implemented
-1. **Color Library Browser** - Sherwin Williams colors with search/filter
-2. **Material Library Browser** - Flooring, countertops, fixtures
-3. **Moodboard Builder** - Drag-and-drop design board with sharing
+1. **Color Library Browser** - Sherwin Williams colors with search/filter, room/surface assignment
+2. **Material Library Browser** - Flooring, countertops, fixtures with room/application selection
+3. **Moodboard Builder** - React Flow canvas with drag-and-drop, custom nodes (ColorSwatch, MaterialSample, Image, Text)
 
 ### Database Schema (Supabase)
-Tables created via migration `20250101000000_phase_2a_initial.sql`:
-- `color_library` - Sherwin Williams color data
+Tables created via migrations:
+- `rehab_projects` - Main projects table with soft delete (20241231000000)
+- `user_profiles` - Extended user profile data (20250128000000)
+- `color_library` - Sherwin Williams color data (20250101000000)
 - `project_color_selections` - Project-specific colors
 - `material_library` - Materials with categories
 - `project_material_selections` - Project materials
@@ -97,6 +108,52 @@ Location: `src/types/database.ts`
 - All Phase 2A table interfaces
 - Enums for element_type, surface_type, status
 - Utility types for common patterns
+
+---
+
+## Epic 2.1: Project Dashboard ✅ COMPLETE (Dec 28, 2025)
+
+### Features Implemented
+1. **Projects List** - Card/table views with toggle, filtering, search
+2. **Project Detail** - Tabbed interface (Overview, Scope, Design, Timeline, Budget, Documents)
+3. **CRUD Operations** - Create, read, update, duplicate, archive, soft delete
+4. **Dashboard Stats** - Real data from database (totals, active, in progress, completed)
+
+### New Components Created
+- `src/components/projects/view-toggle.tsx` - Card/table view toggle
+- `src/components/projects/project-card.tsx` - Project card display
+- `src/components/projects/project-table.tsx` - Project table display
+- `src/components/projects/filter-bar.tsx` - Status/strategy/date filters
+- `src/components/projects/search-input.tsx` - Debounced search
+- `src/components/projects/empty-states.tsx` - No projects/no results states
+- `src/components/projects/project-header.tsx` - Project detail header with actions
+- `src/components/projects/project-tabs.tsx` - Tabbed navigation
+- `src/components/projects/tabs/overview-tab.tsx` - Overview content
+- `src/components/projects/delete-dialog.tsx` - Delete confirmation
+
+### State Management
+- `src/hooks/use-projects-store.ts` - Zustand store for projects with CRUD operations
+
+---
+
+## Authentication System ✅ ENHANCED (Dec 28, 2025)
+
+### Features Implemented
+1. **Login/Signup Pages** - Fully integrated with Supabase Auth
+2. **Email Verification** - Enforcement on sign-in, resend functionality
+3. **Password Reset** - Full flow with confirmation page
+4. **Google OAuth** - Functional OAuth button
+5. **User Profiles** - Extended profile data with avatar upload
+6. **Settings Page** - Full profile editing (personal, contact, professional, location, bio)
+7. **Route Protection** - Next.js middleware for server-side auth
+
+### New Components/Services
+- `src/app/(app)/settings/layout.tsx` - Settings sidebar layout
+- `src/app/(app)/settings/profile/page.tsx` - Profile editing page
+- `src/app/reset-password/page.tsx` - Password reset confirmation
+- `src/app/auth/auth-code-error/page.tsx` - Auth error handling
+- `src/lib/services/profile-service.ts` - Profile CRUD with avatar upload
+- `src/middleware.ts` - Route protection middleware
 
 ---
 
@@ -198,6 +255,14 @@ Tables use Row Level Security. Ensure:
 3. [ ] Verify dev server runs: `npm run dev`
 4. [ ] Check `/test-theme` page for theme verification
 5. [ ] Review recent git commits for context
+6. [ ] Check `/dashboard` for project stats and recent projects
+7. [ ] Test auth flows if working on auth-related features
+
+## Next Priorities
+
+1. **Phase 3: Smart Scope Generation** - AI service integration
+2. **Share & Export Features** - PDF reports, Excel export, vendor packets
+3. **Testing Framework** - Unit tests, integration tests, E2E tests
 
 ---
 
@@ -220,11 +285,30 @@ Commit types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 
 ---
 
-## Recent Commits
+## Recent Commits (Dec 28, 2025)
 
-- `ec2d56e` - feat(theme): implement Mira shadcn theme with Tabler icons and Roboto font
-  - 315 files changed
-  - Full theme implementation
-  - Sidebar-07 app shell
-  - 7-step wizard structure
-  - Phase 2A database schema
+- `415a50b` - fix(auth): integrate login/signup pages with Supabase authentication
+  - Login/signup fully functional with Supabase
+  - Google OAuth working
+  - Fixed redirect loop issues
+
+- `995afe9` - feat(projects): implement Epic 2.1 - Project Dashboard & CRUD
+  - Projects list with card/table views
+  - Project detail page with tabs
+  - Full CRUD operations
+  - Dashboard with real stats
+
+- `9d27c5e` - feat(auth): implement complete authentication system (EVE-5)
+  - Email verification enforcement
+  - Password reset flow
+  - User profile management
+  - Next.js middleware for auth
+
+- `d4d5fda` - feat(moodboard): complete React Flow moodboard builder - Phase 2A complete!
+  - React Flow canvas with drag-and-drop
+  - Custom node types
+  - Full database integration
+
+- `6221d88` - feat(material-library): complete material library with room/application assignment
+  - MaterialCard, MaterialGrid, MaterialSelectionDialog
+  - Full database integration

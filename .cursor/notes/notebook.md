@@ -297,7 +297,70 @@ feat(theme): implement Mira shadcn theme with Tabler icons and Roboto font
 
 ## Next Session Priorities
 
-1. **Complete Color Library** - Add search, filter, surface type selection
-2. **Material Library** - Build MaterialCard/Grid components
-3. **Moodboard Builder** - Implement drag-and-drop canvas
+1. **Phase 3: Smart Scope Generation** - AI service integration
+2. **Share & Export Features** - PDF reports, Excel export
+3. **Testing Framework** - Unit tests, integration tests
 4. **Test on mobile** - Verify responsive behavior
+
+---
+
+## 2025-12-28 — Major Feature Session: Auth + Projects + Design Tools
+
+### Summary
+This was a massive productivity session completing multiple epics:
+
+### Epic 2.1: Project Dashboard & CRUD ✅ COMPLETE
+Implemented a full project management system:
+- **Projects List Page**: Card and table views with toggle, filtering (status, strategy, date), and search with debouncing
+- **Project Detail Page**: Tabbed interface with Overview, Scope, Design, Timeline, Budget, Documents tabs
+- **CRUD Operations**: Create (via wizard), read, update, duplicate, archive, soft delete
+- **Dashboard Updates**: Real stats from database, recent projects list
+- **Components Created**: view-toggle, project-card, project-table, filter-bar, search-input, empty-states, project-header, project-tabs, overview-tab, delete-dialog
+- **Database**: Added rehab_projects table migration with soft delete support
+
+### Authentication System (EVE-5) ✅ ENHANCED
+Completed full authentication system overhaul:
+- **Login/Signup Pages**: Fully integrated with Supabase Auth, not just UI mockups
+- **Email Verification**: Enforcement on sign-in, resend functionality
+- **Password Reset**: Complete flow with /reset-password confirmation page
+- **Google OAuth**: Functional OAuth button
+- **User Profiles**: user_profiles table with RLS, profile service with avatar upload
+- **Settings Page**: Full profile editing (avatar, personal info, contact, professional, location, bio)
+- **Route Protection**: Next.js middleware for server-side auth
+- **Auth Error Handling**: Error page for failed callbacks
+
+### Phase 2A: Design Intelligence ✅ COMPLETE
+Finished all design tools:
+- **Moodboard Builder**: React Flow canvas with drag-and-drop, custom node types (ColorSwatch, MaterialSample, Image, Text), background grid, minimap, zoom controls, resizable nodes, editable text
+- **Material Library**: MaterialCard, MaterialGrid, MaterialSelectionDialog, MaterialSelectionsSummary with room/application assignment and cost tracking
+- **Color Library**: ColorSelectionDialog with room/surface/finish assignment, ColorSelectionsSummary grouped by room
+
+### Key Technical Decisions
+1. **Soft delete for projects** - Preserves data, allows recovery
+2. **Card/Table view toggle** - User preference for project list display
+3. **Tabbed project detail** - Organizes complex project info logically
+4. **Next.js middleware for auth** - Server-side route protection
+5. **Separate user_profiles table** - Extended profile data separate from auth.users
+6. **React Flow for moodboard** - More flexible than custom canvas implementation
+
+### Files Changed (Summary)
+- 50+ new/modified files
+- New database migrations: rehab_projects, user_profiles, material seed data
+- New component directories: projects/, Moodboard/
+- Enhanced: login, signup, dashboard, settings pages
+
+### Git Commits Today
+```
+415a50b fix(auth): integrate login/signup pages with Supabase authentication
+995afe9 feat(projects): implement Epic 2.1 - Project Dashboard & CRUD
+9d27c5e feat(auth): implement complete authentication system (EVE-5)
+d4d5fda feat(moodboard): complete React Flow moodboard builder - Phase 2A complete!
+6221d88 feat(material-library): complete material library with room/application assignment
+```
+
+### What's Next
+1. Phase 3: Smart Scope Generation (AI integration)
+2. Share & Export Features (PDF reports, Excel export)
+3. Testing Framework (unit, integration, E2E tests)
+
+---
