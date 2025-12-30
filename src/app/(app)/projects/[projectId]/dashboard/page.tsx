@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useProject } from '../layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -7,8 +9,6 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   IconCamera,
-  IconClipboardList,
-  IconPlus,
   IconReceipt,
   IconAlertCircle,
   IconCheck,
@@ -21,18 +21,39 @@ import {
   getDaysSinceStart,
 } from '@/stores/workspace-store'
 import { cn } from '@/lib/utils'
+import { QuickActionsCard, TodaysTasksCard } from '@/components/dashboard'
+import { TaskDetailSheet } from '@/components/tasks'
+import { PhotoUploadDialog } from '@/components/photos'
+import { useTaskStats } from '@/hooks/use-project-tasks'
+import type { ProjectTask } from '@/types/task'
 
 export default function ProjectDashboardPage() {
   const { project, isLoading } = useProject()
+  const router = useRouter()
+  
+  const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false)
+  const [isTaskSheetOpen, setIsTaskSheetOpen] = useState(false)
+  const [selectedTask, setSelectedTask] = useState<ProjectTask | null>(null)
+
+  const { data: taskStats } = useTaskStats(project?.id || '')
 
   if (isLoading || !project) {
     return <DashboardSkeleton />
   }
 
   const displayName = getProjectDisplayName(project)
-  const taskProgress = getTaskProgressPercent(project)
   const budgetUsage = getBudgetUsagePercent(project)
   const daysSinceStart = getDaysSinceStart(project)
+
+  // Use real task stats if available, fall back to project cache
+  const tasksTotal = taskStats?.total ?? project.tasks_total ?? 0
+  const tasksCompleted = taskStats?.done ?? project.tasks_completed ?? 0
+  const taskProgress = taskStats?.completionRate ?? getTaskProgressPercent(project)
+
+  const handleTaskClick = (task: ProjectTask) => {
+    setSelectedTask(task)
+    setIsTaskSheetOpen(true)
+  }
 
   return (
     <div className="space-y-6">
@@ -147,7 +168,7 @@ export default function ProjectDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {project.tasks_completed}/{project.tasks_total}
+              {tasksCompleted}/{tasksTotal}
             </div>
             <p className="text-xs text-muted-foreground">
               {taskProgress}% complete
@@ -173,84 +194,60 @@ export default function ProjectDashboardPage() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks for your daily workflow</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <Button variant="outline" className="gap-2">
-              <IconCamera className="h-4 w-4" />
-              Upload Photos
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <IconClipboardList className="h-4 w-4" />
-              Daily Report
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <IconPlus className="h-4 w-4" />
-              Add Task
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <IconReceipt className="h-4 w-4" />
-              Log Expense
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Today's Tasks */}
+      {/* Quick Actions + Today's Tasks */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Today's Tasks</CardTitle>
-            <CardDescription>Tasks scheduled for today</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <IconClipboardList className="h-10 w-10 text-muted-foreground mb-3" />
-              <p className="text-sm text-muted-foreground">No tasks for today</p>
-              <Button variant="link" size="sm" className="mt-2">
-                View all tasks →
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <QuickActionsCard
+          onUploadPhotos={() => setIsPhotoDialogOpen(true)}
+          onDailyReport={() => router.push(`/projects/${project.id}/reports`)}
+          onAddTask={() => {
+            setSelectedTask(null)
+            setIsTaskSheetOpen(true)
+          }}
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Photos</CardTitle>
-            <CardDescription>Latest project photos</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <IconCamera className="h-10 w-10 text-muted-foreground mb-3" />
-              <p className="text-sm text-muted-foreground">No photos uploaded yet</p>
-              <Button variant="link" size="sm" className="mt-2">
-                Upload photos →
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <TodaysTasksCard
+          projectId={project.id}
+          onTaskClick={handleTaskClick}
+        />
       </div>
 
-      {/* Activity Feed */}
+      {/* Recent Photos */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>Latest updates on this project</CardDescription>
+          <CardTitle>Recent Photos</CardTitle>
+          <CardDescription>Latest project photos</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <p className="text-sm text-muted-foreground">No activity yet</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Activity will appear here as you work on the project
-            </p>
+            <IconCamera className="h-10 w-10 text-muted-foreground mb-3" />
+            <p className="text-sm text-muted-foreground">No photos uploaded yet</p>
+            <Button
+              variant="link"
+              size="sm"
+              className="mt-2"
+              onClick={() => setIsPhotoDialogOpen(true)}
+            >
+              Upload photos →
+            </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialogs */}
+      <PhotoUploadDialog
+        isOpen={isPhotoDialogOpen}
+        onOpenChange={setIsPhotoDialogOpen}
+      />
+
+      <TaskDetailSheet
+        isOpen={isTaskSheetOpen}
+        onClose={() => {
+          setIsTaskSheetOpen(false)
+          setSelectedTask(null)
+        }}
+        projectId={project.id}
+        task={selectedTask}
+      />
     </div>
   )
 }
@@ -270,7 +267,6 @@ function DashboardSkeleton() {
           <Skeleton key={i} className="h-32" />
         ))}
       </div>
-      <Skeleton className="h-24" />
       <div className="grid gap-4 md:grid-cols-2">
         <Skeleton className="h-48" />
         <Skeleton className="h-48" />

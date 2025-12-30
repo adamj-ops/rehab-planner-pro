@@ -1,21 +1,36 @@
 'use client'
 
+import { useState } from 'react'
 import { useProject } from '../layout'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { IconUpload, IconPhoto, IconGrid3x3 } from '@tabler/icons-react'
+import { IconUpload } from '@tabler/icons-react'
 import { getProjectDisplayName } from '@/stores/workspace-store'
+import { PhotoGallery } from '@/components/photos/photo-gallery'
+import { PhotoUploadDialog } from '@/components/photos/photo-upload-dialog'
+import { useProjectPhotos, type PhotoFilters } from '@/hooks/use-project-photos'
 
 export default function ProjectPhotosPage() {
-  const { project, isLoading } = useProject()
+  const { project, isLoading: projectLoading } = useProject()
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('all')
+  
+  // Determine filter based on active tab
+  const filters: PhotoFilters | undefined = 
+    activeTab === 'all' ? undefined : { category: activeTab as PhotoFilters['category'] }
+  
+  const { data: photos, isLoading: photosLoading } = useProjectPhotos(
+    project?.id || '',
+    filters
+  )
 
-  if (isLoading || !project) {
+  if (projectLoading || !project) {
     return <PhotosSkeleton />
   }
 
   const displayName = getProjectDisplayName(project)
+  const isLoading = photosLoading
 
   return (
     <div className="space-y-6">
@@ -25,66 +40,47 @@ export default function ProjectPhotosPage() {
           <h1 className="text-2xl font-bold">Photos</h1>
           <p className="text-muted-foreground">{displayName}</p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setUploadOpen(true)}>
           <IconUpload className="h-4 w-4" />
           Upload Photos
         </Button>
       </div>
 
       {/* Category Tabs */}
-      <Tabs defaultValue="all" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="before">Before</TabsTrigger>
           <TabsTrigger value="during">During</TabsTrigger>
           <TabsTrigger value="after">After</TabsTrigger>
-          <TabsTrigger value="issues">Issues</TabsTrigger>
+          <TabsTrigger value="issue">Issues</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="mt-4">
-          <PhotoGrid />
-        </TabsContent>
-        <TabsContent value="before" className="mt-4">
-          <PhotoGrid category="before" />
-        </TabsContent>
-        <TabsContent value="during" className="mt-4">
-          <PhotoGrid category="during" />
-        </TabsContent>
-        <TabsContent value="after" className="mt-4">
-          <PhotoGrid category="after" />
-        </TabsContent>
-        <TabsContent value="issues" className="mt-4">
-          <PhotoGrid category="issues" />
+        <TabsContent value={activeTab} className="mt-4">
+          <PhotoGallery
+            photos={photos || []}
+            isLoading={isLoading}
+            emptyMessage={
+              activeTab === 'all'
+                ? 'No photos yet'
+                : `No ${activeTab} photos yet`
+            }
+            onUploadClick={() => setUploadOpen(true)}
+          />
         </TabsContent>
       </Tabs>
 
-      {/* Coming Soon Notice */}
-      <Card className="border-dashed">
-        <CardContent className="py-8 text-center">
-          <h3 className="font-semibold mb-2">Photo Documentation Coming Soon</h3>
-          <p className="text-sm text-muted-foreground">
-            Upload, tag, and organize project photos with room assignments and timeline view.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
-
-function PhotoGrid({ category }: { category?: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed rounded-lg">
-      <IconPhoto className="h-12 w-12 text-muted-foreground mb-4" />
-      <h3 className="font-semibold mb-2">No photos yet</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        {category
-          ? `Upload ${category} photos to document the project`
-          : 'Upload photos to start documenting your project'}
-      </p>
-      <Button variant="outline" className="gap-2">
-        <IconUpload className="h-4 w-4" />
-        Upload Photos
-      </Button>
+      {/* Upload Dialog */}
+      <PhotoUploadDialog
+        projectId={project.id}
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+        defaultCategory={
+          activeTab === 'all' || activeTab === 'issue' 
+            ? 'during' 
+            : (activeTab as 'before' | 'during' | 'after' | 'planning')
+        }
+      />
     </div>
   )
 }
@@ -100,7 +96,11 @@ function PhotosSkeleton() {
         <Skeleton className="h-10 w-36" />
       </div>
       <Skeleton className="h-10 w-96" />
-      <Skeleton className="h-64 w-full" />
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {[...Array(8)].map((_, i) => (
+          <Skeleton key={i} className="aspect-square rounded-lg" />
+        ))}
+      </div>
     </div>
   )
 }
