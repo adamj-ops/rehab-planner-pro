@@ -1,8 +1,24 @@
 /**
  * Cache Revalidation API
- * 
+ *
  * Allows manual cache invalidation for specific tags.
  * Useful for admin operations or webhooks from Supabase.
+ *
+ * Supabase Webhook Setup:
+ * 1. Go to Database → Webhooks in Supabase dashboard
+ * 2. Create a new webhook for each table you want to track
+ * 3. Configure:
+ *    - URL: https://your-domain.com/api/revalidate
+ *    - Method: POST
+ *    - Headers: { "Content-Type": "application/json" }
+ *    - Body: See examples below
+ *
+ * Example webhook payloads:
+ * - Vendors table: { "secret": "YOUR_SECRET", "tag": "vendors" }
+ * - Materials table: { "secret": "YOUR_SECRET", "tag": "materials" }
+ * - Scope catalog: { "secret": "YOUR_SECRET", "tag": "scope-catalog" }
+ * - User-specific vendors: { "secret": "YOUR_SECRET", "userId": "user-uuid" }
+ * - Project-specific: { "secret": "YOUR_SECRET", "projectId": "project-uuid" }
  */
 
 import type { NextRequest } from 'next/server'
@@ -15,7 +31,7 @@ const REVALIDATION_SECRET = process.env.REVALIDATION_SECRET
 /** Valid cache tags that can be revalidated */
 const VALID_TAGS = [
   'materials',
-  'colors', 
+  'colors',
   'vendors',
   'scope-catalog',
   'labor-rates',
@@ -24,7 +40,7 @@ const VALID_TAGS = [
   'ai-responses',
 ] as const
 
-type ValidTag = typeof VALID_TAGS[number]
+type ValidTag = (typeof VALID_TAGS)[number]
 
 interface RevalidateRequest {
   /** Cache tag to invalidate */
@@ -33,6 +49,10 @@ interface RevalidateRequest {
   path?: string
   /** Project ID for project-specific cache */
   projectId?: string
+  /** User ID for user-specific cache (e.g., user-vendors) */
+  userId?: string
+  /** Table name for Supabase webhook integration */
+  table?: string
   /** Secret token for authorization */
   secret?: string
 }
@@ -69,7 +89,34 @@ export async function POST(request: NextRequest) {
       revalidateTag(`project-${body.projectId}`)
       revalidated.push(`tag:project-${body.projectId}`)
     }
-    
+
+    // Revalidate user-specific cache
+    if (body.userId) {
+      revalidateTag(`user-vendors-${body.userId}`)
+      revalidated.push(`tag:user-vendors-${body.userId}`)
+    }
+
+    // Handle Supabase webhook table-based revalidation
+    if (body.table) {
+      const tableTagMap: Record<string, ValidTag[]> = {
+        vendors: ['vendors'],
+        material_library: ['materials'],
+        color_library: ['colors'],
+        scope_catalog: ['scope-catalog'],
+        labor_rates: ['labor-rates'],
+        material_prices: ['material-prices'],
+        rehab_projects: ['project-stats'],
+      }
+
+      const tags = tableTagMap[body.table]
+      if (tags) {
+        for (const tag of tags) {
+          revalidateTag(tag)
+          revalidated.push(`tag:${tag}`)
+        }
+      }
+    }
+
     // Revalidate by path
     if (body.path) {
       revalidatePath(body.path)
@@ -102,6 +149,21 @@ export async function GET() {
   return NextResponse.json({
     status: 'ok',
     validTags: VALID_TAGS,
-    message: 'POST to this endpoint with { tag, path, or projectId } to revalidate cache',
+    supportedTables: [
+      'vendors',
+      'material_library',
+      'color_library',
+      'scope_catalog',
+      'labor_rates',
+      'material_prices',
+      'rehab_projects',
+    ],
+    message: 'POST to this endpoint with { tag, path, projectId, userId, or table } to revalidate cache',
+    examples: {
+      byTag: { secret: 'YOUR_SECRET', tag: 'vendors' },
+      byTable: { secret: 'YOUR_SECRET', table: 'vendors' },
+      byProject: { secret: 'YOUR_SECRET', projectId: 'uuid' },
+      byUser: { secret: 'YOUR_SECRET', userId: 'uuid' },
+    },
   })
 }
