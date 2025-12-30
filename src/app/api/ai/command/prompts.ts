@@ -12,6 +12,71 @@ import {
   isMultiBlocks,
 } from './utils';
 
+// Rehab/Real Estate context for AI prompts
+export const REHAB_CONTEXT = {
+  domain: 'real estate renovation and fix-and-flip investing',
+  expertise: [
+    'renovation cost estimation',
+    'ROI analysis for property improvements',
+    'contractor management',
+    'permit requirements',
+    'material selection',
+    'timeline planning',
+    'budget tracking',
+    'investment strategy (flip vs rental vs Airbnb)',
+  ],
+  terminology: {
+    ARV: 'After Repair Value - estimated market value after renovations',
+    ROI: 'Return on Investment',
+    scopeItem: 'A specific renovation task or work item',
+    punchList: 'Final walkthrough items to complete before project close',
+    changeOrder: 'A modification to the original scope of work',
+    holdingCosts: 'Monthly costs while property is being renovated',
+  },
+};
+
+/**
+ * Get rehab-specific system context to inject into prompts
+ */
+export function getRehabSystemContext(projectContext?: {
+  projectName?: string;
+  location?: string;
+  investmentStrategy?: string;
+  budget?: number;
+  currentPhase?: string;
+}): string {
+  let context = dedent`
+    You are an AI assistant specialized in ${REHAB_CONTEXT.domain}.
+    You have expertise in: ${REHAB_CONTEXT.expertise.join(', ')}.
+    
+    Key terminology you should understand:
+    ${Object.entries(REHAB_CONTEXT.terminology)
+      .map(([term, def]) => `- ${term}: ${def}`)
+      .join('\n')}
+  `;
+
+  if (projectContext) {
+    context += '\n\nCurrent project context:';
+    if (projectContext.projectName) {
+      context += `\n- Project: ${projectContext.projectName}`;
+    }
+    if (projectContext.location) {
+      context += `\n- Location: ${projectContext.location}`;
+    }
+    if (projectContext.investmentStrategy) {
+      context += `\n- Investment strategy: ${projectContext.investmentStrategy}`;
+    }
+    if (projectContext.budget) {
+      context += `\n- Budget: $${projectContext.budget.toLocaleString()}`;
+    }
+    if (projectContext.currentPhase) {
+      context += `\n- Current phase: ${projectContext.currentPhase}`;
+    }
+  }
+
+  return context;
+}
+
 export function getChooseToolPrompt({ messages }: { messages: ChatMessage[] }) {
   return buildStructuredPrompt({
     examples: [
@@ -313,5 +378,135 @@ export function getEditPrompt(
       Your output should be a direct replacement for the selected text, without including any tags or surrounding content.
       Ensure the replacement is grammatically correct and fits naturally when substituted back into the original text.
     `,
+  });
+}
+
+// ============================================================================
+// REHAB-SPECIFIC AI PROMPTS
+// ============================================================================
+
+/**
+ * Rehab-focused generate prompt with real estate renovation examples
+ */
+export function getRehabGeneratePrompt(
+  editor: SlateEditor,
+  {
+    messages,
+    projectContext,
+  }: {
+    messages: ChatMessage[];
+    projectContext?: {
+      projectName?: string;
+      location?: string;
+      investmentStrategy?: string;
+      budget?: number;
+      currentPhase?: string;
+    };
+  }
+) {
+  if (!isMultiBlocks(editor)) {
+    addSelection(editor);
+  }
+
+  const selectingMarkdown = getMarkdownWithSelection(editor);
+  const rehabContext = getRehabSystemContext(projectContext);
+
+  return buildStructuredPrompt({
+    backgroundData: selectingMarkdown,
+    examples: [
+      // Cost estimation
+      'User: Estimate the cost for this renovation.\nBackground data:\nReplace kitchen cabinets - standard grade, 20 linear feet\nOutput:\nEstimated cost: $4,000 - $6,000\n- Cabinets (stock): $150-$200 per linear foot = $3,000-$4,000\n- Installation labor: $50-$100 per linear foot = $1,000-$2,000\n- Note: Premium or custom cabinets would increase cost 2-3x',
+
+      // ROI analysis
+      'User: How will this improvement impact ARV?\nBackground data:\nAdding a second full bathroom to a 3bed/1bath property.\nOutput:\n## ARV Impact Analysis\n\n**Estimated ARV Increase**: $15,000 - $25,000\n\n**ROI Calculation**:\n- Typical bathroom addition cost: $10,000-$15,000\n- Expected value add: $15,000-$25,000\n- Potential ROI: 50-100%\n\n**Market Considerations**:\n- 3bed/1bath to 3bed/2bath significantly improves marketability\n- Reduces days on market\n- Attracts larger buyer pool (families)',
+
+      // Scope expansion
+      'User: What related work might this renovation require?\nBackground data:\nReplacing the HVAC system\nOutput:\n## Related Work Items for HVAC Replacement\n\n**Likely Required**:\n- Electrical upgrade if adding capacity\n- Ductwork inspection/repair\n- Thermostat replacement\n- Permit fees\n\n**Potentially Required**:\n- Attic insulation upgrade (efficiency)\n- Vent/register replacement\n- Return air modifications\n- Gas line inspection\n\n**Consider Adding**:\n- Smart thermostat ($150-300)\n- Duct sealing for efficiency\n- Preventive maintenance plan',
+
+      // Timeline suggestions
+      'User: What is a realistic timeline for this work?\nBackground data:\nFull kitchen remodel including cabinets, countertops, flooring, and appliances\nOutput:\n## Realistic Timeline: Full Kitchen Remodel\n\n**Total Duration**: 4-6 weeks\n\n| Phase | Duration | Tasks |\n|-------|----------|-------|\n| Demo | 2-3 days | Remove cabinets, flooring, appliances |\n| Rough-in | 3-5 days | Electrical, plumbing updates |\n| Drywall | 2-3 days | Patch, texture, prime |\n| Cabinets | 2-3 days | Installation, leveling |\n| Countertops | 1-2 days | Template + install (may need 1 week lead time) |\n| Flooring | 2-3 days | Install LVP/tile |\n| Finish | 3-5 days | Backsplash, paint, fixtures |\n| Appliances | 1 day | Install and test |\n\n**Critical Path**: Countertop fabrication (7-10 day lead time after template)',
+
+      // Vendor questions
+      'User: What questions should I ask the contractor about this bid?\nBackground data:\nPlumbing bid for bathroom remodel: $3,500\nOutput:\n## Questions for Plumbing Contractor\n\n**Scope Clarification**:\n1. Does this include permit costs?\n2. Are fixture costs included or separate?\n3. Is demo and disposal included?\n\n**Quality & Warranty**:\n4. What brands/materials will you use?\n5. What warranty do you provide on labor?\n6. Are you licensed and insured? (verify)\n\n**Timeline & Logistics**:\n7. How long will the work take?\n8. Will water be shut off? For how long?\n9. Who will handle drywall patches after?\n\n**Payment Terms**:\n10. What is your payment schedule?\n11. Is there a discount for paying in full upfront?',
+
+      // Budget variance
+      'User: Analyze why we went over budget on this line item.\nBackground data:\nFlooring budget: $2,000\nActual spent: $3,200\nMaterial: LVP throughout main level\nOutput:\n## Budget Variance Analysis: Flooring\n\n**Variance**: $1,200 over (60% overage)\n\n**Likely Causes**:\n1. **Underestimated square footage** - Common in older homes with irregular layouts\n2. **Material upgrade** - May have chosen thicker/premium LVP\n3. **Subfloor issues** - Leveling or repairs not in original scope\n4. **Transition pieces** - Often underbudgeted\n5. **Waste factor** - Standard 10% may not have been included\n\n**Prevention for Next Project**:\n- Measure twice, add 15% waste factor\n- Get material costs locked before budgeting\n- Include $500 contingency for subfloor surprises\n- Price transitions and thresholds separately',
+    ],
+    history: formatTextFromMessages(messages),
+    rules: dedent`
+      ${rehabContext}
+      
+      - <Selection> is the text highlighted by the user.
+      - backgroundData represents the user's current Markdown context.
+      - Provide actionable, specific advice based on real estate renovation best practices.
+      - Include cost estimates when relevant (use ranges to account for regional variation).
+      - Consider ROI and investment strategy when making recommendations.
+      - Be practical and focused on execution, not just theory.
+      - CRITICAL: when writing Markdown or MDX, do NOT wrap output in code fences.
+    `,
+    task: dedent`
+      You are an expert real estate renovation advisor helping an investor with their rehab project.
+      Generate content based on the user's instructions, using the background data as context.
+      Provide specific, actionable advice that considers cost, timeline, and ROI.
+      Use your expertise in renovation cost estimation, contractor management, and investment strategy.
+    `,
+  });
+}
+
+/**
+ * Prompt for estimating renovation costs
+ */
+export function getCostEstimatePrompt(
+  { messages, scopeItem, location }: {
+    messages: ChatMessage[];
+    scopeItem: string;
+    location?: string;
+  }
+) {
+  return buildStructuredPrompt({
+    backgroundData: scopeItem,
+    examples: [
+      'User: Estimate cost for replacing a roof.\nBackground data: 2,000 sq ft single-story home, asphalt shingles\nOutput:\n## Roof Replacement Estimate\n\n**Material + Labor Range**: $8,000 - $15,000\n\n| Component | Low | Mid | High |\n|-----------|-----|-----|------|\n| Shingles (architectural) | $3,000 | $4,500 | $6,000 |\n| Underlayment | $500 | $800 | $1,200 |\n| Labor | $3,500 | $5,000 | $6,500 |\n| Permits | $200 | $400 | $600 |\n| Dump fees | $300 | $500 | $700 |\n\n**Factors Affecting Cost**:\n- Roof complexity (valleys, dormers add 20-40%)\n- Deck condition (may need repairs)\n- Multiple layers to remove\n- Regional labor rates',
+    ],
+    history: formatTextFromMessages(messages),
+    rules: dedent`
+      You are a renovation cost estimation expert.
+      ${location ? `Location context: ${location} (adjust estimates for this market)` : ''}
+      
+      - Provide realistic cost ranges (low/mid/high)
+      - Break down costs by component
+      - List factors that could affect the estimate
+      - Include labor, materials, permits, and disposal
+      - Use 2024 pricing as a baseline
+    `,
+    task: 'Provide a detailed cost estimate for the renovation scope item described.',
+  });
+}
+
+/**
+ * Prompt for analyzing contractor bids
+ */
+export function getBidAnalysisPrompt(
+  { messages, bids }: {
+    messages: ChatMessage[];
+    bids: string;
+  }
+) {
+  return buildStructuredPrompt({
+    backgroundData: bids,
+    examples: [
+      'User: Analyze these bids and recommend the best option.\nBackground data:\nContractor A: $5,000, 2 weeks\nContractor B: $4,200, 3 weeks  \nContractor C: $6,500, 10 days\nOutput:\n## Bid Analysis\n\n| Contractor | Price | Timeline | Value Score |\n|------------|-------|----------|-------------|\n| A | $5,000 | 2 weeks | ⭐⭐⭐⭐ |\n| B | $4,200 | 3 weeks | ⭐⭐⭐ |\n| C | $6,500 | 10 days | ⭐⭐ |\n\n**Recommendation**: Contractor A offers the best value\n- 16% more than lowest bid but 1 week faster\n- Middle ground on price and timeline\n- If holding costs are $200/day, the week saved = $1,400 value\n\n**Questions to Ask Before Deciding**:\n- Why is B significantly cheaper? (red flag?)\n- Can A match B\'s price?\n- What\'s C\'s reputation? Premium may be worth it.',
+    ],
+    history: formatTextFromMessages(messages),
+    rules: dedent`
+      You are a contractor bid analysis expert.
+      
+      - Compare bids on price, timeline, and implied quality
+      - Consider holding costs when evaluating timelines
+      - Flag potential red flags (too cheap, too long)
+      - Provide a clear recommendation with reasoning
+      - Suggest negotiation strategies
+    `,
+    task: 'Analyze the contractor bids provided and recommend the best option with reasoning.',
   });
 }

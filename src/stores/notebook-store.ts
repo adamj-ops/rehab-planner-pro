@@ -1,3 +1,12 @@
+/**
+ * Notebook Store
+ * 
+ * Zustand store managing all notebook-related data and operations.
+ * Provides CRUD operations for pages, links, tags, and attachments.
+ * 
+ * @module stores/notebook-store
+ */
+
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import { createClient } from '@supabase/supabase-js'
@@ -6,15 +15,11 @@ import type {
   ProjectNotebook,
   NotebookPage,
   NotebookLink,
-  NotebookTag,
   NotebookAttachment,
   CreatePageData,
   UpdatePageData,
   NotebookTemplate,
   LinkType,
-  NotebookUIState,
-  DEFAULT_PAGE_CONTENT,
-  getTemplateDefaultContent,
 } from '@/types/notebook'
 import type { Database } from '@/types/supabase'
 
@@ -301,8 +306,8 @@ export const useNotebookStore = create<NotebookStore>()(
                 : p
             ),
             currentPage:
-              get().currentPage?.id === pageId
-                ? { ...get().currentPage!, ...data, updated_at: updated.updated_at }
+              get().currentPage?.id === pageId && get().currentPage
+                ? { ...get().currentPage, ...data, updated_at: updated.updated_at }
                 : get().currentPage,
           })
         },
@@ -324,10 +329,20 @@ export const useNotebookStore = create<NotebookStore>()(
           }
 
           const idsToRemove = removePageAndChildren(pageId)
+          const remainingPages = pages.filter((p) => !idsToRemove.includes(p.id))
+
+          // If we deleted the current page, select another page
+          let newCurrentPage = currentPage
+          if (currentPage?.id === pageId || idsToRemove.includes(currentPage?.id || '')) {
+            // Try to select the first remaining page, or null if none left
+            newCurrentPage = remainingPages.length > 0 
+              ? remainingPages.sort((a, b) => a.sort_order - b.sort_order)[0]
+              : null
+          }
 
           set({
-            pages: pages.filter((p) => !idsToRemove.includes(p.id)),
-            currentPage: currentPage?.id === pageId ? null : currentPage,
+            pages: remainingPages,
+            currentPage: newCurrentPage,
           })
         },
 
@@ -476,7 +491,13 @@ export const useNotebookStore = create<NotebookStore>()(
         loadAllTags: () => {
           const { pages } = get()
           const tags = new Set<string>()
-          pages.forEach((p) => p.tags?.forEach((t) => tags.add(t)))
+          for (const p of pages) {
+            if (p.tags) {
+              for (const t of p.tags) {
+                tags.add(t)
+              }
+            }
+          }
           set({ allTags: Array.from(tags).sort() })
         },
 

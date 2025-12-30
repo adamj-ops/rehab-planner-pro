@@ -1,25 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
+import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import type { ColorSearchFilters } from '@/types/design'
 
-// GET /api/colors - List colors with optional filters
-export async function GET(request: NextRequest) {
-  try {
+/** Cache duration for colors list (30 minutes) */
+const COLORS_CACHE_TTL = 1800
+
+/**
+ * Cached colors query function
+ * Key includes all filter params for granular caching
+ */
+const getCachedColors = unstable_cache(
+  async (params: {
+    page: number
+    limit: number
+    brand?: string
+    colorFamily?: string
+    lrvMin?: number
+    lrvMax?: number
+    undertone?: string
+    designStyle?: string
+    roomType?: string
+    popular?: boolean
+    searchTerm?: string
+  }) => {
     const supabase = await createClient()
-    const { searchParams } = new URL(request.url)
-    
-    // Parse query params
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '50')
-    const brand = searchParams.get('brand')
-    const colorFamily = searchParams.get('colorFamily')
-    const lrvMin = searchParams.get('lrvMin')
-    const lrvMax = searchParams.get('lrvMax')
-    const undertone = searchParams.get('undertone')
-    const designStyle = searchParams.get('designStyle')
-    const roomType = searchParams.get('roomType')
-    const popular = searchParams.get('popular')
-    const searchTerm = searchParams.get('search')
     
     // Build query
     let query = supabase
@@ -30,61 +35,94 @@ export async function GET(request: NextRequest) {
       .order('color_name', { ascending: true })
     
     // Apply filters
-    if (brand) {
-      query = query.eq('brand', brand)
+    if (params.brand) {
+      query = query.eq('brand', params.brand)
     }
-    if (colorFamily) {
-      query = query.eq('color_family', colorFamily)
+    if (params.colorFamily) {
+      query = query.eq('color_family', params.colorFamily)
     }
-    if (lrvMin) {
-      query = query.gte('lrv', parseInt(lrvMin))
+    if (params.lrvMin !== undefined) {
+      query = query.gte('lrv', params.lrvMin)
     }
-    if (lrvMax) {
-      query = query.lte('lrv', parseInt(lrvMax))
+    if (params.lrvMax !== undefined) {
+      query = query.lte('lrv', params.lrvMax)
     }
-    if (undertone) {
-      query = query.contains('undertones', [undertone])
+    if (params.undertone) {
+      query = query.contains('undertones', [params.undertone])
     }
-    if (designStyle) {
-      query = query.contains('design_styles', [designStyle])
+    if (params.designStyle) {
+      query = query.contains('design_styles', [params.designStyle])
     }
-    if (roomType) {
-      query = query.contains('recommended_rooms', [roomType])
+    if (params.roomType) {
+      query = query.contains('recommended_rooms', [params.roomType])
     }
-    if (popular === 'true') {
+    if (params.popular) {
       query = query.eq('popular', true)
     }
-    if (searchTerm) {
+    if (params.searchTerm) {
       query = query.or(
-        `color_name.ilike.%${searchTerm}%,color_code.ilike.%${searchTerm}%`
+        `color_name.ilike.%${params.searchTerm}%,color_code.ilike.%${params.searchTerm}%`
       )
     }
     
     // Pagination
-    const from = (page - 1) * limit
-    const to = from + limit - 1
+    const from = (params.page - 1) * params.limit
+    const to = from + params.limit - 1
     query = query.range(from, to)
     
     const { data, error, count } = await query
     
     if (error) {
-      return NextResponse.json(
-        { error: 'Failed to fetch colors', details: error.message },
-        { status: 500 }
-      )
+      throw new Error(error.message)
     }
     
-    return NextResponse.json({
+    return {
       data: data || [],
       total: count || 0,
-      page,
-      limit,
-      hasMore: (count || 0) > page * limit,
+      page: params.page,
+      limit: params.limit,
+      hasMore: (count || 0) > params.page * params.limit,
+    }
+  },
+  ['colors-list'],
+  { 
+    revalidate: COLORS_CACHE_TTL,
+    tags: ['colors'],
+  }
+)
+
+// GET /api/colors - List colors with optional filters
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    
+    // Parse query params
+    const params = {
+      page: parseInt(searchParams.get('page') || '1'),
+      limit: parseInt(searchParams.get('limit') || '50'),
+      brand: searchParams.get('brand') || undefined,
+      colorFamily: searchParams.get('colorFamily') || undefined,
+      lrvMin: searchParams.get('lrvMin') ? parseInt(searchParams.get('lrvMin') ?? '0') : undefined,
+      lrvMax: searchParams.get('lrvMax') ? parseInt(searchParams.get('lrvMax') ?? '0') : undefined,
+      undertone: searchParams.get('undertone') || undefined,
+      designStyle: searchParams.get('designStyle') || undefined,
+      roomType: searchParams.get('roomType') || undefined,
+      popular: searchParams.get('popular') === 'true' || undefined,
+      searchTerm: searchParams.get('search') || undefined,
+    }
+    
+    const result = await getCachedColors(params)
+    
+    // Add cache headers for CDN/browser caching
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600',
+      },
     })
   } catch (error) {
     console.error('Error fetching colors:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to fetch colors', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

@@ -203,6 +203,9 @@ export default function ProjectDashboardPage() {
             setSelectedTask(null)
             setIsTaskSheetOpen(true)
           }}
+          onLogSiteVisit={() => router.push(`/projects/${project.id}/notebook?template=daily-log`)}
+          onRecordVendorMeeting={() => router.push(`/projects/${project.id}/notebook?template=vendor-meeting`)}
+          onDocumentDecision={() => router.push(`/projects/${project.id}/notebook?template=design-decision`)}
         />
 
         <TodaysTasksCard

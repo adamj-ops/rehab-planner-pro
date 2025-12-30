@@ -5,6 +5,7 @@ import { ChevronRight, ChevronDown, FileText, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useNotebookStore } from '@/stores/notebook-store'
+import { toast } from 'sonner'
 import type { NotebookPage } from '@/types/notebook'
 
 interface PageTreeProps {
@@ -45,8 +46,12 @@ function PageTreeItem({ page, level }: PageTreeItemProps) {
       })
       setCurrentPage(newPage)
       setIsExpanded(true)
+      toast.success('Subpage created', {
+        description: `Added under "${page.title}"`,
+      })
     } catch (error) {
       console.error('Failed to create subpage:', error)
+      toast.error('Failed to create subpage')
     }
   }
 

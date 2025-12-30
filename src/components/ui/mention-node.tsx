@@ -16,15 +16,33 @@ import {
 
 import { cn } from '@/lib/utils';
 import { useMounted } from '@/hooks/use-mounted';
+import { useEditorContext } from '@/components/editor/editor-context';
+import {
+  useProjectEntities,
+  filterEntities,
+  groupEntitiesByType,
+  getEntityTypeLabel,
+  type MentionableEntity,
+} from '@/hooks/use-project-entities';
 
 import {
   InlineCombobox,
   InlineComboboxContent,
   InlineComboboxEmpty,
   InlineComboboxGroup,
+  InlineComboboxGroupLabel,
   InlineComboboxInput,
   InlineComboboxItem,
 } from './inline-combobox';
+
+// Get icon for entity type based on the key prefix
+function getEntityIcon(key: string): string {
+  if (key.startsWith('room-')) return '🏠';
+  if (key.startsWith('vendor-')) return '👷';
+  if (key.startsWith('scope-')) return '🔧';
+  if (key.startsWith('material-')) return '🪵';
+  return '@';
+}
 
 export function MentionElement(
   props: PlateElementProps<TMentionElement> & {
@@ -37,6 +55,10 @@ export function MentionElement(
   const focused = useFocused();
   const mounted = useMounted();
   const readOnly = useReadOnly();
+
+  // Get icon based on the mention key (stored in element data)
+  const mentionKey = (element as unknown as { key?: string }).key || '';
+  const icon = getEntityIcon(mentionKey);
 
   return (
     <PlateElement
@@ -53,6 +75,7 @@ export function MentionElement(
         ...props.attributes,
         contentEditable: false,
         'data-slate-value': element.value,
+        'data-mention-type': mentionKey.split('-')[0],
         draggable: true,
       }}
     >
@@ -60,12 +83,14 @@ export function MentionElement(
         // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490
         <>
           {props.children}
+          {icon !== '@' && <span className="mr-0.5">{icon}</span>}
           {props.prefix}
           {element.value}
         </>
       ) : (
         // Others like Android https://github.com/ianstormtaylor/slate/pull/5360
         <>
+          {icon !== '@' && <span className="mr-0.5">{icon}</span>}
           {props.prefix}
           {element.value}
           {props.children}
@@ -82,6 +107,35 @@ export function MentionInputElement(
 ) {
   const { editor, element } = props;
   const [search, setSearch] = React.useState('');
+  
+  // Get project context for fetching entities
+  const { projectId } = useEditorContext();
+  const { data: entities = [], isLoading } = useProjectEntities(projectId);
+  
+  // Filter and group entities
+  const filteredEntities = React.useMemo(
+    () => filterEntities(entities, search),
+    [entities, search]
+  );
+  
+  const groupedEntities = React.useMemo(
+    () => groupEntitiesByType(filteredEntities),
+    [filteredEntities]
+  );
+  
+  // Fallback mentionables when no project context
+  const fallbackItems: MentionableEntity[] = React.useMemo(() => {
+    if (projectId) return [];
+    return [
+      { key: 'example-room', text: 'Kitchen', type: 'room', icon: '🏠' },
+      { key: 'example-room-2', text: 'Master Bath', type: 'room', icon: '🏠' },
+      { key: 'example-vendor', text: 'ABC Plumbing', type: 'vendor', icon: '👷' },
+      { key: 'example-scope', text: 'Replace HVAC', type: 'scope_item', icon: '🔧' },
+    ];
+  }, [projectId]);
+  
+  const displayEntities = projectId ? filteredEntities : fallbackItems;
+  const displayGroups = projectId ? groupedEntities : groupEntitiesByType(fallbackItems);
 
   return (
     <PlateElement {...props} as="span">
@@ -97,19 +151,33 @@ export function MentionInputElement(
         </span>
 
         <InlineComboboxContent className="my-1.5">
-          <InlineComboboxEmpty>No results</InlineComboboxEmpty>
-
-          <InlineComboboxGroup>
-            {MENTIONABLES.map((item) => (
-              <InlineComboboxItem
-                key={item.key}
-                value={item.text}
-                onClick={() => onSelectItem(editor, item, search)}
-              >
-                {item.text}
-              </InlineComboboxItem>
-            ))}
-          </InlineComboboxGroup>
+          {isLoading ? (
+            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+              Loading...
+            </div>
+          ) : displayEntities.length === 0 ? (
+            <InlineComboboxEmpty>
+              {search ? 'No matching items' : 'No items available'}
+            </InlineComboboxEmpty>
+          ) : (
+            Object.entries(displayGroups).map(([type, items]) => (
+              <InlineComboboxGroup key={type}>
+                <InlineComboboxGroupLabel>
+                  {getEntityTypeLabel(type)}
+                </InlineComboboxGroupLabel>
+                {items.map((item) => (
+                  <InlineComboboxItem
+                    key={item.key}
+                    value={item.text}
+                    onClick={() => onSelectItem(editor, { key: item.key, text: item.text }, search)}
+                  >
+                    <span className="mr-1.5">{item.icon}</span>
+                    {item.text}
+                  </InlineComboboxItem>
+                ))}
+              </InlineComboboxGroup>
+            ))
+          )}
         </InlineComboboxContent>
       </InlineCombobox>
 
@@ -117,80 +185,3 @@ export function MentionInputElement(
     </PlateElement>
   );
 }
-
-const MENTIONABLES = [
-  { key: '0', text: 'Aayla Secura' },
-  { key: '1', text: 'Adi Gallia' },
-  {
-    key: '2',
-    text: 'Admiral Dodd Rancit',
-  },
-  {
-    key: '3',
-    text: 'Admiral Firmus Piett',
-  },
-  {
-    key: '4',
-    text: 'Admiral Gial Ackbar',
-  },
-  { key: '5', text: 'Admiral Ozzel' },
-  { key: '6', text: 'Admiral Raddus' },
-  {
-    key: '7',
-    text: 'Admiral Terrinald Screed',
-  },
-  { key: '8', text: 'Admiral Trench' },
-  {
-    key: '9',
-    text: 'Admiral U.O. Statura',
-  },
-  { key: '10', text: 'Agen Kolar' },
-  { key: '11', text: 'Agent Kallus' },
-  {
-    key: '12',
-    text: 'Aiolin and Morit Astarte',
-  },
-  { key: '13', text: 'Aks Moe' },
-  { key: '14', text: 'Almec' },
-  { key: '15', text: 'Alton Kastle' },
-  { key: '16', text: 'Amee' },
-  { key: '17', text: 'AP-5' },
-  { key: '18', text: 'Armitage Hux' },
-  { key: '19', text: 'Artoo' },
-  { key: '20', text: 'Arvel Crynyd' },
-  { key: '21', text: 'Asajj Ventress' },
-  { key: '22', text: 'Aurra Sing' },
-  { key: '23', text: 'AZI-3' },
-  { key: '24', text: 'Bala-Tik' },
-  { key: '25', text: 'Barada' },
-  { key: '26', text: 'Bargwill Tomder' },
-  { key: '27', text: 'Baron Papanoida' },
-  { key: '28', text: 'Barriss Offee' },
-  { key: '29', text: 'Baze Malbus' },
-  { key: '30', text: 'Bazine Netal' },
-  { key: '31', text: 'BB-8' },
-  { key: '32', text: 'BB-9E' },
-  { key: '33', text: 'Ben Quadinaros' },
-  { key: '34', text: 'Berch Teller' },
-  { key: '35', text: 'Beru Lars' },
-  { key: '36', text: 'Bib Fortuna' },
-  {
-    key: '37',
-    text: 'Biggs Darklighter',
-  },
-  { key: '38', text: 'Black Krrsantan' },
-  { key: '39', text: 'Bo-Katan Kryze' },
-  { key: '40', text: 'Boba Fett' },
-  { key: '41', text: 'Bobbajo' },
-  { key: '42', text: 'Bodhi Rook' },
-  { key: '43', text: 'Borvo the Hutt' },
-  { key: '44', text: 'Boss Nass' },
-  { key: '45', text: 'Bossk' },
-  {
-    key: '46',
-    text: 'Breha Antilles-Organa',
-  },
-  { key: '47', text: 'Bren Derlin' },
-  { key: '48', text: 'Brendol Hux' },
-  { key: '49', text: 'BT-1' },
-];

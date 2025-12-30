@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useWorkspaceStore, type WorkspaceProject } from '@/stores/workspace-store'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ProjectTabs } from '@/components/project'
 
 interface ProjectLayoutProps {
   children: React.ReactNode
@@ -37,7 +38,7 @@ export default function ProjectLayout({ children }: ProjectLayoutProps) {
   
   const setActiveProject = useWorkspaceStore((state) => state.setActiveProject)
 
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     if (!projectId) return
     
     setIsLoading(true)
@@ -83,6 +84,12 @@ export default function ProjectLayout({ children }: ProjectLayoutProps) {
         return
       }
       
+      // Handle case where data is null even without an error
+      if (!data) {
+        setError('not_found')
+        return
+      }
+      
       const workspaceProject: WorkspaceProject = {
         id: data.id,
         project_name: data.project_name,
@@ -114,11 +121,11 @@ export default function ProjectLayout({ children }: ProjectLayoutProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [projectId, setActiveProject])
 
   useEffect(() => {
     fetchProject()
-  }, [projectId])
+  }, [fetchProject])
 
   if (error === 'not_found') {
     notFound()
@@ -133,6 +140,7 @@ export default function ProjectLayout({ children }: ProjectLayoutProps) {
       <div className="flex flex-col items-center justify-center min-h-[400px]">
         <p className="text-destructive mb-2">Error loading project</p>
         <button
+          type="button"
           onClick={fetchProject}
           className="text-primary hover:underline"
         >
@@ -144,7 +152,12 @@ export default function ProjectLayout({ children }: ProjectLayoutProps) {
 
   return (
     <ProjectContext.Provider value={{ project, isLoading, refetch: fetchProject }}>
-      {children}
+      <div className="flex flex-col">
+        <ProjectTabs projectId={projectId} />
+        <div className="flex-1 p-6">
+          {children}
+        </div>
+      </div>
     </ProjectContext.Provider>
   )
 }
