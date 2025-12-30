@@ -1,7 +1,7 @@
 "use client";
 
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
+import { WorkspaceSidebar } from "@/components/workspace";
 import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
@@ -12,6 +12,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Toaster } from "@/components/ui/sonner";
+import { useWorkspaceProjects } from "@/hooks/use-workspace-projects";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -19,9 +20,11 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, breadcrumbs }: AppShellProps) {
+  const { projects, isLoading } = useWorkspaceProjects();
+
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <WorkspaceSidebar projects={projects} isLoading={isLoading} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">

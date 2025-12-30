@@ -5,7 +5,7 @@ import { AppLogo } from "@/components/app-logo";
 import { NavSimple } from "@/components/nav-simple";
 import { NavAction } from "@/components/nav-action";
 import { NavUserAuth } from "@/components/nav-user-auth";
-import { ThemeSwitch } from "@/components/shadcn-studio/switch/switch-11";
+import { ThemeSwitcherToggle } from "@/components/elements/theme-switcher-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -51,7 +51,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <SidebarGroup>
           <SidebarGroupContent className="flex justify-center py-2">
-            <ThemeSwitch />
+            <ThemeSwitcherToggle />
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarSeparator />

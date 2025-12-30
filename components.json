@@ -24,6 +24,7 @@
     "@ss-blocks": "https://shadcnstudio.com/r/blocks/{name}.json",
     "@ss-themes": "https://shadcnstudio.com/r/themes/{name}.json",
     "@blocks": "https://blocks.so/r/{name}.json",
-    "@reui": "https://reui.io/r/{name}.json"
+    "@reui": "https://reui.io/r/{name}.json",
+    "@elements": "https://tryelements.dev/r/{name}.json"
   }
 }
