@@ -47,6 +47,13 @@ interface WizardContextValue {
   isFirstStep: boolean;
   isLastStep: boolean;
   
+  // Modal state
+  isModalOpen: boolean;
+  openModal: () => void;
+  closeModal: () => void;
+  isDirty: boolean;
+  setIsDirty: (dirty: boolean) => void;
+  
   // Wizard data
   wizardData: WizardData;
   
@@ -156,6 +163,19 @@ export function WizardProvider({ children }: WizardProviderProps) {
   const [isSaving, setIsSaving] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isDirty, setIsDirty] = React.useState(false);
+  
+  const openModal = useCallback(() => {
+    setIsModalOpen(true);
+  }, []);
+  
+  const closeModal = useCallback(() => {
+    setIsModalOpen(false);
+    setIsDirty(false);
+  }, []);
+  
   // Wizard data stored in component state, synced with Zustand
   const [wizardData, setWizardData] = React.useState<WizardData>(() => {
     // Initialize from store if available
@@ -167,7 +187,7 @@ export function WizardProvider({ children }: WizardProviderProps) {
       step4: storedData?.step4 || {},
       step5: storedData?.step5 || { scope_items: [] },
       step6: storedData?.step6 || { tasks: [] },
-      step7: storedData?.step7 || {},
+      step7: storedData?.step7 || { scenarios: [] },
       currentStep: storeCurrentStep || 1,
       completedSteps: steps.filter(s => s.completed).map(s => s.id) || [],
     };
@@ -360,6 +380,13 @@ export function WizardProvider({ children }: WizardProviderProps) {
     completedSteps: wizardData.completedSteps,
     isFirstStep,
     isLastStep,
+    // Modal state
+    isModalOpen,
+    openModal,
+    closeModal,
+    isDirty,
+    setIsDirty,
+    // Data
     wizardData,
     goToStep,
     goToNextStep,
@@ -381,6 +408,10 @@ export function WizardProvider({ children }: WizardProviderProps) {
     wizardData,
     isFirstStep,
     isLastStep,
+    isModalOpen,
+    openModal,
+    closeModal,
+    isDirty,
     goToStep,
     goToNextStep,
     goToPreviousStep,

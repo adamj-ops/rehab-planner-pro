@@ -7,6 +7,7 @@ import {
   IconPalette,
   IconBuildingWarehouse,
   IconBriefcase,
+  IconLayoutKanban,
   IconWand,
   IconColorPicker,
   IconPhoto,
@@ -41,6 +42,11 @@ export const mainNavItems: NavItem[] = [
     title: "My Projects",
     href: "/projects",
     icon: IconHome,
+  },
+  {
+    title: "Deals",
+    href: "/deals",
+    icon: IconLayoutKanban,
   },
 ];
 

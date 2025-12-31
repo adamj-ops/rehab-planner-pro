@@ -46,6 +46,22 @@ export async function GET(request: Request) {
       if (type === 'recovery') {
         return NextResponse.redirect(`${origin}/reset-password`)
       }
+
+      // Check if user has completed onboarding
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('onboarding_completed')
+          .eq('auth_id', user.id)
+          .single()
+
+        // If onboarding not completed, redirect to onboarding
+        if (!userData?.onboarding_completed) {
+          return NextResponse.redirect(`${origin}/onboarding/step-1`)
+        }
+      }
+
       return NextResponse.redirect(`${origin}${next}`)
     }
   }

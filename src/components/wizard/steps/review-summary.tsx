@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { 
   IconFileText, 
@@ -12,19 +11,17 @@ import {
   IconHome,
   IconClipboardCheck,
   IconTarget,
-  IconPalette,
   IconListNumbers,
-  IconCalendarEvent,
-  IconCheck,
   IconEdit,
   IconCurrencyDollar,
   IconClock,
   IconAlertCircle,
+  IconSparkles,
+  IconTrendingUp,
 } from "@tabler/icons-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,23 +43,25 @@ import { WizardFooter } from "@/components/wizard/wizard-footer";
 import { useWizard } from "@/components/wizard/wizard-context";
 import {
   finalReviewSchema,
-  FinalReviewFormData,
-  PropertyDetailsFormData,
-  ConditionAssessmentFormData,
-  StrategyFormData,
-  PriorityMatrixFormData,
-  ActionPlanFormData,
+  type FinalReviewFormData,
+  type PropertyDetailsFormData,
+  type ConditionAssessmentFormData,
+  type StrategyFormData,
+  type PriorityMatrixFormData,
+  type ActionPlanFormData,
 } from "@/lib/validations/project-wizard";
 import { cn } from "@/lib/utils";
-
-const STEP_ICONS = {
-  1: IconHome,
-  2: IconClipboardCheck,
-  3: IconTarget,
-  4: IconPalette,
-  5: IconListNumbers,
-  6: IconCalendarEvent,
-};
+import { BudgetOptimizer, type OptimizableItem } from "@/lib/priority-engine";
+import { BudgetOptimizationDialog } from "./budget-optimization-dialog";
+import { exportProjectAsPDF } from "@/lib/utils/pdf-export";
+import ScenarioManager from "./scenario-manager";
+import ScenarioDialog from "./scenario-dialog";
+import ScenarioComparisonDialog from "./scenario-comparison-dialog";
+import { useScenarios } from "@/hooks/use-scenarios";
+import type { 
+  BudgetScenario, 
+  CreateScenarioParams,
+} from "@/types/scenario";
 
 const STEP_TITLES = {
   1: "Property Details",
@@ -74,7 +73,6 @@ const STEP_TITLES = {
 };
 
 export function ReviewSummary() {
-  const router = useRouter();
   const { 
     getStepData, 
     setStepData, 
@@ -85,6 +83,15 @@ export function ReviewSummary() {
     isSubmitting,
     goToStep,
   } = useWizard();
+
+  const [showOptimizationDialog, setShowOptimizationDialog] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  
+  // Scenario management state
+  const [showScenarioDialog, setShowScenarioDialog] = useState(false);
+  const [showComparisonDialog, setShowComparisonDialog] = useState(false);
+  const [selectedScenarioIds, setSelectedScenarioIds] = useState<string[]>([]);
+  const [editingScenario, setEditingScenario] = useState<BudgetScenario | undefined>();
 
   // Get all step data
   const step1Data = getStepData<PropertyDetailsFormData>(1);
@@ -105,6 +112,63 @@ export function ReviewSummary() {
   // Check which steps are incomplete
   const incompleteSteps = [1, 2, 3].filter((step) => !completedSteps.includes(step));
   const hasRequiredSteps = incompleteSteps.length === 0;
+
+  // Convert items for budget optimizer
+  const optimizableItems = useMemo<OptimizableItem[]>(() => {
+    const allItems = step5Data?.scope_items || [];
+    return allItems.map((item, index) => ({
+      id: item.id || `item-${index}`,
+      name: item.item_name || `Item ${index + 1}`,
+      cost: item.total_cost || 0,
+      value: item.roi_impact_score || 50,
+      priority: item.priority === "nice_to_have" ? "nice" : item.priority,
+      category: item.category || "other",
+    }));
+  }, [step5Data]);
+
+  // Get currently selected (included) items
+  const currentSelection = useMemo(() => {
+    const allItems = step5Data?.scope_items || [];
+    return optimizableItems.filter((_, index) => allItems[index]?.is_included);
+  }, [step5Data, optimizableItems]);
+
+  // Scenario management
+  const {
+    scenarios,
+    createScenario,
+    updateScenario,
+    deleteScenario,
+    applyScenario,
+    compareScenarios,
+    getDetailedComparison,
+  } = useScenarios();
+
+  // Get budget suggestions
+  const budgetSuggestions = useMemo(() => {
+    if (optimizableItems.length === 0) return null;
+    return BudgetOptimizer.suggestBudgetAdjustments(
+      optimizableItems,
+      step3Data?.max_budget || 100000
+    );
+  }, [optimizableItems, step3Data?.max_budget]);
+
+  // Handle optimization apply - update Step 5 data
+  const handleApplyOptimization = (selectedIds: string[]) => {
+    const selectedSet = new Set(selectedIds);
+    const allItems = step5Data?.scope_items || [];
+    
+    const updatedItems = allItems.map((item, index) => {
+      const itemId = item.id || `item-${index}`;
+      return {
+        ...item,
+        is_included: selectedSet.has(itemId),
+      };
+    });
+
+    // Update Step 5 data
+    setStepData(5, { scope_items: updatedItems });
+    toast.success("Budget optimization applied!");
+  };
 
   const form = useForm<FinalReviewFormData>({
     resolver: zodResolver(finalReviewSchema),
@@ -137,8 +201,28 @@ export function ReviewSummary() {
     await saveDraft();
   };
 
-  const handleExportPDF = () => {
-    toast.info("PDF export coming soon!");
+  const handleExportPDF = async () => {
+    if (isExportingPDF) return;
+    
+    setIsExportingPDF(true);
+    try {
+      await exportProjectAsPDF(
+        {
+          step1: step1Data,
+          step2: step2Data,
+          step3: step3Data,
+          step5: step5Data,
+          step6: step6Data,
+        },
+        step1Data?.project_name
+      );
+      toast.success("PDF exported successfully!");
+    } catch (error) {
+      console.error("PDF export error:", error);
+      toast.error("Failed to export PDF. Please try again.");
+    } finally {
+      setIsExportingPDF(false);
+    }
   };
 
   const handleExportExcel = () => {
@@ -148,6 +232,58 @@ export function ReviewSummary() {
   const handleShare = () => {
     toast.info("Sharing coming soon!");
   };
+
+  // =============================================================================
+  // SCENARIO MANAGEMENT HANDLERS
+  // =============================================================================
+
+  const handleCreateScenario = () => {
+    setEditingScenario(undefined);
+    setShowScenarioDialog(true);
+  };
+
+  const handleEditScenario = (scenario: BudgetScenario) => {
+    setEditingScenario(scenario);
+    setShowScenarioDialog(true);
+  };
+
+  const handleSaveScenario = async (params: CreateScenarioParams) => {
+    if (editingScenario) {
+      await updateScenario(editingScenario.id, {
+        name: params.name,
+        description: params.description,
+      });
+    } else {
+      await createScenario(params);
+    }
+  };
+
+  const handleDeleteScenario = async (scenarioId: string) => {
+    await deleteScenario(scenarioId);
+  };
+
+  const handleApplyScenario = async (scenarioId: string) => {
+    await applyScenario(scenarioId);
+  };
+
+  const handleCompareScenarios = (scenarioIds: string[]) => {
+    setSelectedScenarioIds(scenarioIds);
+    setShowComparisonDialog(true);
+  };
+
+  // Get comparison data when dialog opens
+  const comparisonData = useMemo(() => {
+    if (selectedScenarioIds.length < 2 || !showComparisonDialog) return null;
+    
+    try {
+      const comparison = compareScenarios(selectedScenarioIds, optimizableItems);
+      const itemDetails = getDetailedComparison(selectedScenarioIds, optimizableItems);
+      return { comparison, itemDetails };
+    } catch (error) {
+      console.error('Failed to generate comparison:', error);
+      return null;
+    }
+  }, [selectedScenarioIds, showComparisonDialog, compareScenarios, getDetailedComparison, optimizableItems]);
 
   const confirmations = form.watch(["confirm_details_accurate", "confirm_budget_approved"]);
   const canSubmit = hasRequiredSteps && confirmations.every(Boolean);
@@ -399,6 +535,72 @@ export function ReviewSummary() {
 
           {/* Export & Confirmation */}
           <div className="space-y-6">
+            {/* Budget Optimization */}
+            <Card className="border-primary/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <IconSparkles className="h-5 w-5 text-primary" />
+                  Budget Optimization
+                </CardTitle>
+                <CardDescription>
+                  AI-powered analysis to maximize ROI
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button 
+                  type="button"
+                  className="w-full" 
+                  onClick={() => setShowOptimizationDialog(true)}
+                  disabled={!scopeItems.length}
+                >
+                  <IconSparkles className="mr-2 h-4 w-4" />
+                  Optimize Budget
+                </Button>
+
+                {/* Budget Suggestions */}
+                {budgetSuggestions && (
+                  <div className="space-y-2 pt-2 border-t">
+                    <p className="text-xs text-muted-foreground font-medium">
+                      Budget Suggestions
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-2 rounded bg-muted/50">
+                        <span className="text-xs">Minimal</span>
+                        <span className="text-xs font-mono font-medium">
+                          ${budgetSuggestions.minimal.budget.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded bg-primary/10 border border-primary/20">
+                        <span className="text-xs flex items-center gap-1">
+                          <IconTrendingUp className="h-3 w-3 text-primary" />
+                          Optimal
+                        </span>
+                        <span className="text-xs font-mono font-medium text-primary">
+                          ${budgetSuggestions.optimal.budget.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded bg-muted/50">
+                        <span className="text-xs">Max Value</span>
+                        <span className="text-xs font-mono font-medium">
+                          ${budgetSuggestions.maxValue.budget.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Scenario Management */}
+            <ScenarioManager
+              scenarios={scenarios}
+              onCreateScenario={handleCreateScenario}
+              onEditScenario={handleEditScenario}
+              onDeleteScenario={handleDeleteScenario}
+              onApplyScenario={handleApplyScenario}
+              onCompareScenarios={handleCompareScenarios}
+            />
+
             {/* Export Options */}
             <Card>
               <CardHeader>
@@ -413,9 +615,19 @@ export function ReviewSummary() {
                   className="w-full justify-start rounded-none" 
                   variant="outline"
                   onClick={handleExportPDF}
+                  disabled={isExportingPDF}
                 >
-                  <IconDownload className="mr-2 h-4 w-4" />
-                  Export as PDF
+                  {isExportingPDF ? (
+                    <>
+                      <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    <>
+                      <IconDownload className="mr-2 h-4 w-4" />
+                      Export as PDF
+                    </>
+                  )}
                 </Button>
                 <Button 
                   type="button"
@@ -524,6 +736,38 @@ export function ReviewSummary() {
           form={form}
           isSubmitting={isSubmitting}
         />
+
+        {/* Budget Optimization Dialog */}
+        <BudgetOptimizationDialog
+          open={showOptimizationDialog}
+          onOpenChange={setShowOptimizationDialog}
+          items={optimizableItems}
+          budget={step3Data?.max_budget || 100000}
+          currentSelection={currentSelection}
+          onApplyOptimization={handleApplyOptimization}
+        />
+
+        {/* Scenario Creation/Edit Dialog */}
+        <ScenarioDialog
+          open={showScenarioDialog}
+          onOpenChange={setShowScenarioDialog}
+          onSave={handleSaveScenario}
+          items={optimizableItems}
+          currentBudget={step3Data?.max_budget || 100000}
+          existingScenario={editingScenario}
+          investmentStrategy={step3Data?.investment_strategy}
+        />
+
+        {/* Scenario Comparison Dialog */}
+        {comparisonData && (
+          <ScenarioComparisonDialog
+            open={showComparisonDialog}
+            onOpenChange={setShowComparisonDialog}
+            comparison={comparisonData.comparison}
+            itemDetails={comparisonData.itemDetails}
+            onApplyScenario={handleApplyScenario}
+          />
+        )}
       </form>
     </Form>
   );

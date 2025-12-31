@@ -2,7 +2,7 @@
 
 ## Current Status: Phase 3 Workspaces + Execution
 
-**Last Updated**: December 29, 2024  
+**Last Updated**: December 30, 2024  
 **Current Sprint**: Multi-Project Workspaces (Week 1)  
 **Overall Progress**: Phase 2A Complete, Phase 3 Starting
 
@@ -158,13 +158,54 @@
   - [x] Recent photos placeholder
   - [x] Dashboard header with project stats
 
-### 3.3 Planning Dashboard (Week 3) ⏳
+### 3.3 Planning Dashboard & Wizard Integration (Week 3) 🔄 IN PROGRESS
 - [ ] `/projects/[projectId]/planning` overview
 - [ ] Wizard progress widget
 - [ ] "Resume Wizard" CTA
 - [ ] Planning photos (category=planning)
 - [ ] Planning notes CRUD
 - [ ] Budget estimates view
+
+### 3.3.1 Wizard Engine Integration ✅ COMPLETE (Option A)
+- [x] **Step 5: Priority Scoring Integration**
+  - [x] Create PriorityScoreCard component (visual score display)
+  - [x] Integrate PriorityScoringEngine for automatic scoring
+  - [x] Score breakdown by 6 dimensions (urgency, ROI, risk, dependencies, timing, complexity)
+  - [x] Score reasoning display (hover for details)
+  - [x] Budget Optimizer dialog with comparison view
+  
+- [x] **Step 6: Gantt Chart Integration**
+  - [x] Integrate GanttChart component with React Flow
+  - [x] Auto-scheduling via SchedulingEngine
+  - [x] Critical path highlighting
+  - [x] Schedule conflict detection and alerts
+  - [x] Simple/Gantt view toggle
+  
+- [x] **Step 7: Budget Optimizer Integration**
+  - [x] "Optimize Budget" button with AI analysis
+  - [x] Before/after comparison dialog
+  - [x] Budget suggestions (minimal/optimal/max value)
+  - [x] Apply optimization to update Step 5 scope items
+
+### 3.3.2 Wizard UX Enhancements 🔄 IN PROGRESS
+> **Linear Issues Created**: EVE-61 through EVE-71
+
+**High Priority:**
+- [x] EVE-61: Add Dependency Mapping UI to Scope Items (Step 5) ✅
+- [ ] EVE-62: Implement Drag-and-Drop Task Editing in Gantt Chart (Step 6)
+- [x] EVE-63: Implement PDF Export for Project Plan (Step 7) ✅
+
+**Medium Priority:**
+- [ ] EVE-64: Add What-If Scenario Comparison for Budget Optimization
+- [ ] EVE-65: Enhance Priority Score Card with Smart Explanations
+- [ ] EVE-66: Add Filter/Sort Controls for Scope Items Table (Step 5)
+- [ ] EVE-67: Add Real-Time Schedule Impact Preview When Toggling Items
+- [ ] EVE-68: Add Vendor Assignment to Gantt Chart Tasks (Step 6)
+
+**Low Priority:**
+- [ ] EVE-69: Implement Inline Editing in Scope Items Table (Step 5)
+- [ ] EVE-70: Add Visual Budget Gauge Component
+- [ ] EVE-71: Add Undo/Redo for Budget Optimizations
 
 ### 3.4 Transitions + Portfolio (Week 4) ⏳
 - [ ] **Phase Transitions**
@@ -231,6 +272,8 @@
 | Phase 3.1: Workspace Foundation | 100% | ✅ Complete |
 | Phase 3.2: Construction MVP | 35% | 🔄 In Progress (Photos ✅) |
 | Phase 3.3: Planning Dashboard | 50% | ✅ Basic UI Complete |
+| Phase 3.3.1: Wizard Engine Integration | 100% | ✅ Complete (Option A) |
+| Phase 3.3.2: Wizard UX Enhancements | 18% | 🔄 In Progress (2/11 complete) |
 | Phase 3.4: Transitions + Portfolio | 0% | ⏳ Week 4 |
 | Phase 4: Expansion | 0% | ⏳ Future |
 | Phase 5: Close & Learn | 0% | ⏳ Future |

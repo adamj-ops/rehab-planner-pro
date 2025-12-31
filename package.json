@@ -86,6 +86,7 @@
     "@tanstack/react-query-devtools": "^5.91.2",
     "@tanstack/react-table": "^8.21.3",
     "@types/dagre": "^0.7.53",
+    "@types/uuid": "^10.0.0",
     "@udecode/cn": "^52.0.11",
     "@uploadthing/react": "^7.3.3",
     "@use-gesture/react": "^10.3.1",
@@ -133,6 +134,7 @@
     "tunnel-rat": "^0.1.2",
     "uploadthing": "^7.7.4",
     "use-file-picker": "^2.1.2",
+    "uuid": "^13.0.0",
     "vaul": "^1.1.2",
     "zod": "^4.2.1",
     "zustand": "^5.0.8"

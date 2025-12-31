@@ -1,26 +1,31 @@
 "use client";
 
-import { StepNavigation } from "@/components/wizard/step-navigation";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { WizardProvider, useWizard } from "@/components/wizard/wizard-context";
-import { Card, CardContent } from "@/components/ui/card";
+import { WizardModal } from "@/components/wizard/wizard-modal";
 
 function WizardLayoutContent({ children }: { children: React.ReactNode }) {
-  const { completedSteps } = useWizard();
+  const pathname = usePathname();
+  const { isModalOpen, openModal, closeModal } = useWizard();
+  
+  // Auto-open modal when navigating to wizard routes
+  useEffect(() => {
+    if (pathname.startsWith('/wizard') && !isModalOpen) {
+      openModal();
+    }
+  }, [pathname, isModalOpen, openModal]);
   
   return (
-    <div className="space-y-6">
-      {/* Step Navigation Header */}
-      <Card>
-        <CardContent className="pt-6">
-          <StepNavigation completedSteps={completedSteps} />
-        </CardContent>
-      </Card>
-
-      {/* Step Content */}
-      <div className="min-h-[calc(100vh-300px)]">
-        {children}
-      </div>
-    </div>
+    <WizardModal open={isModalOpen} onOpenChange={(open) => {
+      if (!open) {
+        closeModal();
+        // Navigate back to projects or dashboard when modal closes
+        window.history.back();
+      }
+    }}>
+      {children}
+    </WizardModal>
   );
 }
 
@@ -35,4 +40,3 @@ export default function WizardLayout({
     </WizardProvider>
   );
 }
-

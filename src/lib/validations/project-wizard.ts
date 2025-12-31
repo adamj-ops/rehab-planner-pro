@@ -302,6 +302,9 @@ export const scopeItemSchema = z.object({
   // Status
   is_approved: z.boolean().default(false),
   is_included: z.boolean().default(true),
+  
+  // Dependencies
+  depends_on: z.array(z.string()).optional().default([]),
 });
 
 export const priorityMatrixSchema = z.object({
@@ -324,6 +327,10 @@ export const actionPlanTaskSchema = z.object({
   start_day: z.coerce.number().min(0).optional(),
   duration_days: z.coerce.number().min(1).default(1),
   depends_on: z.array(z.string()).optional(),
+  // Manual scheduling overrides (for drag-and-drop editing)
+  manual_start_date: z.string().optional(), // ISO date string
+  manual_end_date: z.string().optional(), // ISO date string
+  is_manually_scheduled: z.boolean().optional().default(false),
 });
 
 export const actionPlanSchema = z.object({
@@ -331,6 +338,17 @@ export const actionPlanSchema = z.object({
   total_duration_days: z.coerce.number().min(0).optional(),
   start_date: z.string().optional(),
   target_completion_date: z.string().optional(),
+  // Track manual overrides separately for persistence
+  manual_overrides: z
+    .record(
+      z.string(), // task ID
+      z.object({
+        start_date: z.string(),
+        end_date: z.string(),
+        modified_at: z.string().optional(),
+      })
+    )
+    .optional(),
 });
 
 export type ActionPlanTaskFormData = z.infer<typeof actionPlanTaskSchema>;
@@ -354,6 +372,10 @@ export const finalReviewSchema = z.object({
   
   // Project status on save
   status: z.enum(["draft", "planning", "active"]).default("planning"),
+
+  // Scenario management (optional)
+  scenarios: z.array(z.any()).optional(), // BudgetScenario[] - using any to avoid circular imports
+  activeScenarioId: z.string().optional(),
 });
 
 export type FinalReviewFormData = z.infer<typeof finalReviewSchema>;

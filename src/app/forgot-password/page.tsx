@@ -1,31 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Mail } from "lucide-react";
+import { IconLoader2, IconAlertCircle, IconCheck } from "@tabler/icons-react";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Mail, CheckCircle2, AlertCircle } from "lucide-react";
-import { Icons } from "@/components/ui/icons";
+import { SplitAuthLayout } from "@/components/auth/split-auth-layout";
+import { AuthMarketingPanel } from "@/components/auth/auth-marketing-panel";
+import {
+  AuthFormPanel,
+  AuthFormHeader,
+  AuthFormFooter,
+} from "@/components/auth/auth-form-panel";
 import { useAuth } from "@/lib/auth/auth-context";
-import { AuthLayout } from "@/components/auth/auth-layout";
 
 export default function ForgotPasswordPage() {
+  const { resetPassword } = useAuth();
+
+  // Generate unique ID for email input
+  const emailId = useId();
+
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const { resetPassword } = useAuth();
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,116 +49,124 @@ export default function ForgotPasswordPage() {
     }
   };
 
+  // Success State
   if (isSubmitted) {
     return (
-      <AuthLayout>
-        <Card className="w-full max-w-md border bg-card shadow-lg">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-              <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+      <SplitAuthLayout
+        variant="reset"
+        marketingContent={<AuthMarketingPanel variant="reset" />}
+      >
+        <AuthFormPanel>
+          <div className="text-center space-y-4">
+            <div className="mx-auto w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+              <IconCheck className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <CardTitle className="text-2xl font-bold tracking-tight">
-              Check your email
-            </CardTitle>
-            <CardDescription className="mt-2">
-              We sent a password reset link to {email}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold tracking-tight">
+                Check your email
+              </h2>
+              <p className="text-muted-foreground">
+                We sent a password reset link to{" "}
+                <span className="font-medium text-foreground">{email}</span>
+              </p>
+            </div>
             <p className="text-sm text-muted-foreground">
               Click the link in your email to reset your password. If you
               don&apos;t see it, check your spam folder.
             </p>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-3">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                setIsSubmitted(false);
-                setEmail("");
-              }}
-            >
-              Send another link
-            </Button>
-            <Button variant="ghost" className="w-full" asChild>
-              <Link href="/login">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to sign in
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </AuthLayout>
+            <div className="pt-4 space-y-3">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setIsSubmitted(false);
+                  setEmail("");
+                }}
+              >
+                Send another link
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full text-foreground/70 hover:text-foreground"
+                asChild
+              >
+                <Link href="/login">← Back to sign in</Link>
+              </Button>
+            </div>
+          </div>
+        </AuthFormPanel>
+      </SplitAuthLayout>
     );
   }
 
   return (
-    <AuthLayout>
-      <Card className="w-full max-w-md border bg-card shadow-lg">
-        <CardHeader className="space-y-1 pb-6">
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Forgot password?
-          </CardTitle>
-          <CardDescription>
-            Enter your email and we&apos;ll send you a reset link
-          </CardDescription>
-        </CardHeader>
+    <SplitAuthLayout
+      variant="reset"
+      marketingContent={<AuthMarketingPanel variant="reset" />}
+    >
+      <AuthFormPanel>
+        <AuthFormHeader
+          title="Forgot password?"
+          description="Enter your email and we'll send you a reset link"
+        />
 
-        <CardContent>
-          <form onSubmit={handleResetPassword} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-9"
-                  required
-                  disabled={isLoading}
-                  autoFocus
-                />
-              </div>
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <IconAlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Reset Password Form */}
+        <form onSubmit={handleResetPassword} className="space-y-4">
+          {/* Email Field */}
+          <div className="space-y-2">
+            <Label htmlFor={emailId}>Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                id={emailId}
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10"
+                required
+                disabled={isLoading}
+                autoFocus
+                autoComplete="email"
+              />
             </div>
+          </div>
 
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+          {/* Submit Button - High Contrast */}
+          <Button
+            type="submit"
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 font-medium"
+            disabled={isLoading || !email}
+          >
+            {isLoading ? (
+              <>
+                <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                Sending link...
+              </>
+            ) : (
+              "Send reset link"
             )}
+          </Button>
+        </form>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading || !email}
-            >
-              {isLoading ? (
-                <>
-                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                  Sending link...
-                </>
-              ) : (
-                "Send reset link"
-              )}
-            </Button>
-          </form>
-        </CardContent>
-
-        <CardFooter>
+        {/* Back to Sign In Link */}
+        <AuthFormFooter>
           <Link
             href="/login"
-            className="flex items-center text-sm text-muted-foreground hover:text-primary w-full justify-center transition-colors"
+            className="text-foreground/70 hover:text-foreground hover:underline transition-colors"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to sign in
+            ← Back to sign in
           </Link>
-        </CardFooter>
-      </Card>
-    </AuthLayout>
+        </AuthFormFooter>
+      </AuthFormPanel>
+    </SplitAuthLayout>
   );
 }
