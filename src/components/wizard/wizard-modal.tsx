@@ -254,10 +254,8 @@ export function WizardModal({ open, onOpenChange, children }: WizardModalProps) 
     saveDraft,
     isSaving,
     isSubmitting,
+    isDirty,
   } = useWizard();
-
-  // Track if there are unsaved changes (simplified - could be enhanced)
-  const [isDirty, setIsDirty] = React.useState(false);
 
   // Handle close request
   const handleCloseRequest = React.useCallback(() => {
