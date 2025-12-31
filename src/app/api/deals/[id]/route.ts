@@ -18,6 +18,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     .from('property_leads')
     .select('*')
     .eq('id', id)
+    .eq('user_id', user.id)
     .single()
 
   if (error) {
@@ -51,6 +52,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     .from('property_leads')
     .update(body)
     .eq('id', id)
+    .eq('user_id', user.id)
     .select()
     .single()
 
@@ -74,7 +76,11 @@ export async function DELETE(_request: Request, context: { params: Promise<{ id:
 
   const { id } = await context.params
 
-  const { error } = await supabase.from('property_leads').delete().eq('id', id)
+  const { error } = await supabase
+    .from('property_leads')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id)
   if (error) {
     return NextResponse.json({ error: error.message ?? 'Failed to delete lead' }, { status: 500 })
   }
