@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo, useState, useRef } from 'react';
+import React, { useCallback, useMemo, useState, useRef, useId } from 'react';
 import {
   ReactFlow,
   Background,
@@ -9,18 +9,18 @@ import {
   useNodesState,
   useEdgesState,
   Panel,
-  Node,
-  Edge,
-  NodeTypes,
   Position,
   Handle,
   MarkerType,
-  NodeDragHandler,
-  OnNodeDrag,
+  type Node,
+  type Edge,
+  type NodeTypes,
+  type NodeDragHandler,
+  type OnNodeDrag,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { TimelineTask, TimelinePhase, TimelineMilestone, GanttViewOptions } from '@/lib/timeline/types';
+import type { TimelineTask, TimelinePhase, TimelineMilestone, GanttViewOptions } from '@/lib/timeline/types';
 import {
   validateTaskMove,
   detectScheduleConflicts,
@@ -526,6 +526,11 @@ export function GanttChart({
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
+  // Generate unique IDs for form elements
+  const depsId = useId();
+  const progressId = useId();
+  const criticalPathId = useId();
+
   // Sync nodes when data changes
   React.useEffect(() => {
     setNodes(initialNodes);
@@ -726,37 +731,37 @@ export function GanttChart({
             {/* Show Dependencies */}
             <div className="flex items-center gap-2">
               <Switch
-                id="show-deps"
+                id={depsId}
                 checked={viewOptions.showDependencies}
                 onCheckedChange={checked =>
                   setViewOptions(prev => ({ ...prev, showDependencies: checked }))
                 }
               />
-              <Label htmlFor="show-deps" className="text-xs">Dependencies</Label>
+              <Label htmlFor={depsId} className="text-xs">Dependencies</Label>
             </div>
             
             {/* Show Progress */}
             <div className="flex items-center gap-2">
               <Switch
-                id="show-progress"
+                id={progressId}
                 checked={viewOptions.showProgress}
                 onCheckedChange={checked =>
                   setViewOptions(prev => ({ ...prev, showProgress: checked }))
                 }
               />
-              <Label htmlFor="show-progress" className="text-xs">Progress</Label>
+              <Label htmlFor={progressId} className="text-xs">Progress</Label>
             </div>
             
             {/* Critical Path */}
             <div className="flex items-center gap-2">
               <Switch
-                id="critical-path"
+                id={criticalPathId}
                 checked={viewOptions.highlightCriticalPath}
                 onCheckedChange={checked =>
                   setViewOptions(prev => ({ ...prev, highlightCriticalPath: checked }))
                 }
               />
-              <Label htmlFor="critical-path" className="text-xs text-red-500">Critical Path</Label>
+              <Label htmlFor={criticalPathId} className="text-xs text-red-500">Critical Path</Label>
             </div>
           </div>
         </Panel>
@@ -837,7 +842,7 @@ export function SimpleGantt({
             date.setDate(date.getDate() + i);
             return (
               <div
-                key={i}
+                key={`day-${date.getTime()}`}
                 className="text-center text-[10px] text-muted-foreground border-l"
                 style={{ width: `${PIXELS_PER_DAY}px` }}
               >

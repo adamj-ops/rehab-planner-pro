@@ -17,6 +17,7 @@ import {
   IconRefresh,
   IconHandMove,
   IconArrowBackUp,
+  IconArrowForwardUp,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 
@@ -144,6 +145,7 @@ export function ActionPlanForm() {
   
   // Undo/redo state for drag operations
   const [undoStack, setUndoStack] = useState<ManualOverride[]>([]);
+  const [redoStack, setRedoStack] = useState<ManualOverride[]>([]);
 
   // Get data from previous steps
   const step3Data = getStepData<StrategyFormData>(3);
@@ -397,6 +399,9 @@ export function ActionPlanForm() {
     if (previousOverride) {
       setUndoStack(prev => [...prev.slice(-9), previousOverride]); // Keep only last 10
     }
+
+    // Clear redo stack on new action
+    setRedoStack([]);
     
     // Store manual override with enhanced data
     const override: ManualOverride = {
@@ -483,18 +488,58 @@ export function ActionPlanForm() {
       manual_overrides: newOverrides 
     });
     
+    // Add the undone action to redo stack
+    setRedoStack(prev => [...prev, manualOverrides[taskId]].filter(Boolean));
+
     const task = scheduleResult?.tasks.find(t => t.id === taskId);
     toast.success('Drag operation undone', {
       description: task ? `"${task.name}" restored` : undefined,
     });
   }, [undoStack, manualOverrides, setStepData, form, scheduleResult]);
+
+  // Handle redo operation
+  const handleRedo = useCallback(() => {
+    const lastRedo = redoStack[redoStack.length - 1];
+    if (!lastRedo) return;
+
+    const taskId = lastRedo.taskId;
+    if (!taskId) return;
+
+    // Apply the redo action
+    setManualOverrides(prev => ({
+      ...prev,
+      [taskId]: lastRedo,
+    }));
+
+    // Remove from redo stack and add to undo stack
+    setRedoStack(prev => prev.slice(0, -1));
+    setUndoStack(prev => [...prev, manualOverrides[taskId]].filter(Boolean));
+
+    const currentData = form.getValues();
+    setStepData(6, {
+      ...currentData,
+      manual_overrides: {
+        ...manualOverrides,
+        [taskId]: lastRedo,
+      }
+    });
+
+    const task = scheduleResult?.tasks.find(t => t.id === taskId);
+    toast.success('Drag operation redone', {
+      description: task ? `"${task.name}" rescheduled` : undefined,
+    });
+  }, [redoStack, manualOverrides, setStepData, form, scheduleResult]);
   
   // Clear all manual overrides and revert to auto-scheduled
   const handleClearOverrides = useCallback(() => {
     setManualOverrides({});
+    setUndoStack([]);
+    setRedoStack([]);
     const currentData = form.getValues();
     setStepData(6, { ...currentData, manual_overrides: {} });
-    toast.info("Schedule reset to auto-calculated dates");
+    toast.info("Schedule reset to auto-calculated dates", {
+      description: "All manual changes cleared"
+    });
   }, [form, setStepData]);
 
   // Get schedule conflicts
@@ -657,9 +702,23 @@ export function ActionPlanForm() {
                             size="sm"
                             onClick={handleUndoLastDrag}
                             className="h-7 text-xs flex items-center gap-1"
+                            title="Undo last drag operation (Ctrl+Z)"
                           >
                             <IconArrowBackUp className="h-3 w-3" />
                             Undo ({undoStack.length})
+                          </Button>
+                        )}
+                        {redoStack.length > 0 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleRedo}
+                            className="h-7 text-xs flex items-center gap-1"
+                            title="Redo last undone operation (Ctrl+Shift+Z)"
+                          >
+                            <IconArrowForwardUp className="h-3 w-3" />
+                            Redo ({redoStack.length})
                           </Button>
                         )}
                         <Button
