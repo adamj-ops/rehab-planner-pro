@@ -1,43 +1,68 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { unstable_cache, revalidateTag } from 'next/cache'
+
+/** Cache duration for vendors list (10 minutes) */
+const VENDORS_CACHE_TTL = 600
+
+/**
+ * Cached vendors query function
+ * Uses user ID as part of cache key for per-user caching
+ */
+const getCachedUserVendors = (userId: string) =>
+  unstable_cache(
+    async () => {
+      const supabase = await createClient()
+
+      const { data, error } = await supabase
+        .from('vendors')
+        .select('*')
+        .eq('user_id', userId)
+        .order('preferred', { ascending: false })
+        .order('company_name')
+
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      return data || []
+    },
+    [`vendors-${userId}`],
+    {
+      revalidate: VENDORS_CACHE_TTL,
+      tags: ['vendors', `user-vendors-${userId}`],
+    }
+  )()
 
 // GET all vendors for the authenticated user
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const supabase = await createClient()
-    
+
     // Get the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized', success: false },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 })
     }
 
-    const { data, error } = await supabase
-      .from('vendors')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('preferred', { ascending: false })
-      .order('company_name')
+    const data = await getCachedUserVendors(user.id)
 
-    if (error) {
-      console.error('Error fetching vendors:', error)
-      return NextResponse.json(
-        { error: error.message, success: false },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json({ data, success: true })
+    // Add cache headers for CDN/browser caching
+    return NextResponse.json(
+      { data, success: true },
+      {
+        headers: {
+          'Cache-Control': 'private, s-maxage=600, stale-while-revalidate=1200',
+        },
+      }
+    )
   } catch (error) {
     console.error('Unexpected error in GET /api/vendors:', error)
-    return NextResponse.json(
-      { error: 'Internal server error', success: false },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error', success: false }, { status: 500 })
   }
 }
 
@@ -80,11 +105,11 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('Error creating vendor:', error)
-      return NextResponse.json(
-        { error: error.message, success: false },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: error.message, success: false }, { status: 500 })
     }
+
+    // Invalidate user's vendor cache
+    revalidateTag(`user-vendors-${user.id}`)
 
     return NextResponse.json({ data, success: true }, { status: 201 })
   } catch (error) {

@@ -1,4 +1,6 @@
 @import "tailwindcss";
+
+@plugin "tailwind-scrollbar-hide";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -7,47 +9,47 @@
   /* Light mode - Warm gray palette (inverted from dark) */
   --background: oklch(0.97 0.003 85);            /* Warm off-white #f5f5f4 */
   --foreground: oklch(0.21 0.005 85);            /* Warm charcoal #262624 */
-  
+
   /* Card & Popover */
   --card: oklch(1.0000 0 0);                     /* Pure White */
   --card-foreground: oklch(0.21 0.005 85);       /* Warm charcoal */
   --popover: oklch(1.0000 0 0);                  /* Pure White */
   --popover-foreground: oklch(0.21 0.005 85);    /* Warm charcoal */
-  
+
   /* Neutral Primary (warm gray accent) */
   --primary: oklch(0.35 0.005 85);               /* Dark warm gray */
   --primary-foreground: oklch(0.95 0.002 85);    /* #f0f0f0 off-white */
-  
+
   /* Secondary/muted */
   --secondary: oklch(0.93 0.003 85);             /* Light warm gray */
   --secondary-foreground: oklch(0.21 0.005 85);  /* Warm charcoal */
   --muted: oklch(0.93 0.003 85);                 /* Light warm gray */
   --muted-foreground: oklch(0.55 0.005 85);      /* Medium gray */
-  
+
   /* Accent - Soft green */
   --accent: oklch(0.75 0.10 145);                /* #90c695 soft green */
   --accent-foreground: oklch(0.21 0.005 85);     /* Warm charcoal */
-  
+
   /* Destructive - Soft coral */
   --destructive: oklch(0.70 0.18 25);            /* #ff6b6b soft coral */
   --destructive-foreground: oklch(0.95 0.002 85); /* Off-white */
-  
+
   /* Success - Soft green */
   --success: oklch(0.75 0.10 145);               /* #90c695 soft green */
   --success-foreground: oklch(0.21 0.005 85);    /* Warm charcoal */
-  
+
   /* Border/Input */
   --border: oklch(0.85 0.005 85);                /* Light warm gray border */
   --input: oklch(0.85 0.005 85);                 /* Match border */
   --ring: oklch(0.75 0.10 145);                  /* Soft green ring */
-  
+
   /* Chart colors (warm neutral palette with green/coral accents) */
   --chart-1: oklch(0.75 0.10 145);               /* Soft green */
   --chart-2: oklch(0.70 0.18 25);                /* Soft coral */
   --chart-3: oklch(0.55 0.005 85);               /* Medium gray */
   --chart-4: oklch(0.65 0.08 160);               /* Teal-ish */
   --chart-5: oklch(0.35 0.005 85);               /* Dark warm gray */
-  
+
   /* Sidebar */
   --sidebar: oklch(0.97 0.003 85);               /* Warm off-white */
   --sidebar-foreground: oklch(0.21 0.005 85);    /* Warm charcoal */
@@ -57,15 +59,15 @@
   --sidebar-accent-foreground: oklch(0.21 0.005 85); /* Warm charcoal */
   --sidebar-border: oklch(0.85 0.005 85);        /* Light border */
   --sidebar-ring: oklch(0.75 0.10 145);          /* Soft green */
-  
+
   /* Fonts - Roboto (applied via next/font) */
   --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-roboto), ui-serif, Georgia, serif;
   --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
-  
+
   /* Border Radius - SUBTLE (Mira polish) */
   --radius: 0.375rem;
-  
+
   /* Shadows - Refined for depth */
   --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.03);
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -77,53 +79,55 @@
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
+  --highlight: oklch(0.852 0.199 91.936);
+  --brand: oklch(0.623 0.214 259.815);
 }
 
 .dark {
   /* Page background - Warm charcoal #262624 */
   --background: oklch(0.21 0.005 85);            /* #262624 warm charcoal */
   --foreground: oklch(0.95 0.002 85);            /* #f0f0f0 off-white */
-  
+
   /* Card & Popover - Elevated surface #333333 */
   --card: oklch(0.27 0.003 85);                  /* #333333 elevated */
   --card-foreground: oklch(0.95 0.002 85);       /* #f0f0f0 off-white */
   --popover: oklch(0.27 0.003 85);               /* Match card */
   --popover-foreground: oklch(0.95 0.002 85);    /* Off-white */
-  
+
   /* Primary - Off-white text on dark, or accent for buttons */
   --primary: oklch(0.95 0.002 85);               /* #f0f0f0 off-white */
   --primary-foreground: oklch(0.21 0.005 85);    /* #262624 charcoal */
-  
+
   /* Secondary/muted - Sidebar color #30302e */
   --secondary: oklch(0.25 0.004 85);             /* #30302e sidebar tone */
   --secondary-foreground: oklch(0.95 0.002 85);  /* Off-white */
   --muted: oklch(0.25 0.004 85);                 /* #30302e */
   --muted-foreground: oklch(0.65 0.003 85);      /* #999999 muted text */
-  
+
   /* Accent - Soft green */
   --accent: oklch(0.75 0.10 145);                /* #90c695 soft green */
   --accent-foreground: oklch(0.21 0.005 85);     /* Charcoal */
-  
+
   /* Destructive - Soft coral #ff6b6b */
   --destructive: oklch(0.70 0.18 25);            /* #ff6b6b soft coral */
   --destructive-foreground: oklch(0.95 0.002 85); /* Off-white */
-  
+
   /* Success - Soft green #90c695 */
   --success: oklch(0.75 0.10 145);               /* #90c695 soft green */
   --success-foreground: oklch(0.21 0.005 85);    /* Charcoal */
-  
+
   /* Border/Input - #3d3d3d */
   --border: oklch(0.30 0.003 85);                /* #3d3d3d border */
   --input: oklch(0.30 0.003 85);                 /* Match border */
   --ring: oklch(0.75 0.10 145);                  /* Soft green ring */
-  
+
   /* Chart colors (warm palette with green/coral accents) */
   --chart-1: oklch(0.75 0.10 145);               /* Soft green */
   --chart-2: oklch(0.70 0.18 25);                /* Soft coral */
   --chart-3: oklch(0.65 0.003 85);               /* Medium gray */
   --chart-4: oklch(0.60 0.08 160);               /* Teal accent */
   --chart-5: oklch(0.50 0.003 85);               /* Darker gray */
-  
+
   /* Sidebar - #30302e */
   --sidebar: oklch(0.25 0.004 85);               /* #30302e sidebar */
   --sidebar-foreground: oklch(0.95 0.002 85);    /* Off-white */
@@ -133,15 +137,15 @@
   --sidebar-accent-foreground: oklch(0.95 0.002 85); /* Off-white */
   --sidebar-border: oklch(0.30 0.003 85);        /* #3d3d3d */
   --sidebar-ring: oklch(0.75 0.10 145);          /* Soft green */
-  
+
   /* Fonts (same as light) */
   --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-roboto), ui-serif, Georgia, serif;
   --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
-  
+
   /* Border Radius - SUBTLE (same as light) */
   --radius: 0.375rem;
-  
+
   /* Shadows - Stronger for dark mode depth */
   --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.2);
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.25);
@@ -151,6 +155,8 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+  --highlight: oklch(0.852 0.199 91.936);
+  --brand: oklch(0.707 0.165 254.624);
 }
 
 @theme inline {
@@ -206,6 +212,8 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+  --color-brand: var(--brand);
+  --color-highlight: var(--highlight);
 }
 
 @layer base {
@@ -224,12 +232,12 @@
     letter-spacing: var(--tracking-normal);
     line-height: 1.6; /* Optimal readability for smaller base font */
   }
-  
+
   /* Code elements use mono font */
   code, pre, kbd, samp {
     font-family: var(--font-mono);
   }
-  
+
   /* Better input borders and backgrounds */
   input[type="text"],
   input[type="email"],
@@ -242,7 +250,7 @@
   select {
     @apply border-input bg-background;
   }
-  
+
   /* Better placeholder contrast */
   ::placeholder {
     @apply text-muted-foreground opacity-60;
@@ -319,12 +327,12 @@
   .dashboard-card * {
     @apply leading-snug;
   }
-  
+
   /* Card hover effect for interactive cards */
   .card-hover {
     @apply transition-shadow duration-200 hover:shadow-md;
   }
-  
+
   /* Mira-style polished cards */
   .mira-card {
     @apply bg-card border border-border shadow-sm;

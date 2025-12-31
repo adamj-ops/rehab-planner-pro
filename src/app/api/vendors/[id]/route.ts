@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 
 // GET a single vendor by ID
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -73,7 +74,7 @@ export async function PUT(
     const body = await request.json()
 
     // Remove fields that shouldn't be updated
-    const { id: _id, user_id, created_at, updated_at, ...updateData } = body
+    const { id: _id, user_id: _user_id, created_at: _created_at, updated_at: _updated_at, ...updateData } = body
 
     const { data, error } = await supabase
       .from('vendors')
@@ -85,17 +86,14 @@ export async function PUT(
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Vendor not found', success: false },
-          { status: 404 }
-        )
+        return NextResponse.json({ error: 'Vendor not found', success: false }, { status: 404 })
       }
       console.error('Error updating vendor:', error)
-      return NextResponse.json(
-        { error: error.message, success: false },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: error.message, success: false }, { status: 500 })
     }
+
+    // Invalidate user's vendor cache
+    revalidateTag(`user-vendors-${user.id}`)
 
     return NextResponse.json({ data, success: true })
   } catch (error) {
@@ -109,7 +107,7 @@ export async function PUT(
 
 // DELETE a vendor
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -134,11 +132,11 @@ export async function DELETE(
 
     if (error) {
       console.error('Error deleting vendor:', error)
-      return NextResponse.json(
-        { error: error.message, success: false },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: error.message, success: false }, { status: 500 })
     }
+
+    // Invalidate user's vendor cache
+    revalidateTag(`user-vendors-${user.id}`)
 
     return NextResponse.json({ success: true })
   } catch (error) {
