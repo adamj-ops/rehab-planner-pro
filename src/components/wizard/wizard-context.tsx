@@ -412,6 +412,7 @@ export function WizardProvider({ children }: WizardProviderProps) {
     openModal,
     closeModal,
     isDirty,
+    setIsDirty,
     goToStep,
     goToNextStep,
     goToPreviousStep,

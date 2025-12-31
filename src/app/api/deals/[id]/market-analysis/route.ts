@@ -200,6 +200,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     .from('property_leads')
     .select('id')
     .eq('id', leadId)
+    .eq('user_id', user.id)
     .single()
 
   if (leadError || !lead) {
