@@ -497,36 +497,11 @@ export function ArvCalculator({
               <ValidationAlert validation={confidenceValidation} />
             </div>
 
-            {/* Confidence Gauge */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Confidence:</span>
-                <span className="text-sm font-semibold">
-                  {confidenceDescriptor} ({confidenceScore}%)
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={cn(
-                      "h-full transition-all duration-300 rounded-full",
-                      confidenceScore <= 40 && "bg-red-500",
-                      confidenceScore > 40 && confidenceScore <= 70 && "bg-yellow-500",
-                      confidenceScore > 70 && "bg-emerald-500"
-                    )}
-                    style={{ width: `${confidenceScore}%` }}
-                  />
-                </div>
-                <span className="text-xs text-muted-foreground w-8 text-right">
-                  {confidenceScore}%
-                </span>
-              </div>
-              
-              <div className="text-xs text-muted-foreground">
-                {confidenceDetails}
-              </div>
-            </div>
+            {/* Enhanced Confidence Analysis */}
+            <ConfidenceBreakdown 
+              comps={comps}
+              totalScore={confidenceScore}
+            />
 
             {/* Notes */}
             <div className="space-y-2">
