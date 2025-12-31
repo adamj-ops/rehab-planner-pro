@@ -367,6 +367,7 @@ export function GanttChart({
   criticalPath = [],
   onTaskClick,
   onTaskUpdate,
+  onTaskDragStart,
   onDragStart,
   onDragEnd,
   className,
@@ -560,9 +561,10 @@ export function GanttChart({
         conflicts: null,
       });
       
+      onTaskDragStart?.(taskData.task);
       onDragStart?.(taskData.task.id);
     },
-    [onDragStart]
+    [onTaskDragStart, onDragStart]
   );
 
   // Handle drag (real-time validation)
@@ -619,13 +621,11 @@ export function GanttChart({
       const isCancelled = deltaDays === 0 || (dragState.validation && !dragState.validation.isValid);
       
       if (!isCancelled && dragState.newStartDate && dragState.newEndDate && onTaskUpdate) {
-        // Apply the update
-        const updatedTask: TimelineTask = {
-          ...task,
+        // Apply the update with both task and updates parameters
+        onTaskUpdate(task, {
           startDate: dragState.newStartDate,
           endDate: dragState.newEndDate,
-        };
-        onTaskUpdate(updatedTask);
+        });
       }
       
       // Reset drag state
