@@ -1,48 +1,69 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react'
+import Link from "next/link";
+import { IconAlertCircle, IconRefresh } from "@tabler/icons-react";
+
+import { Button } from "@/components/ui/button";
+import { SplitAuthLayout } from "@/components/auth/split-auth-layout";
+import { AuthMarketingPanel } from "@/components/auth/auth-marketing-panel";
+import { AuthFormPanel } from "@/components/auth/auth-form-panel";
 
 export default function AuthCodeErrorPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <Card className="border-0 shadow-xl w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-            <AlertCircle className="h-6 w-6 text-red-600" />
+    <SplitAuthLayout
+      variant="reset"
+      marketingContent={<AuthMarketingPanel variant="reset" />}
+    >
+      <AuthFormPanel>
+        <div className="text-center space-y-4">
+          {/* Error Icon */}
+          <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+            <IconAlertCircle className="h-8 w-8 text-destructive" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">Authentication Error</CardTitle>
-          <CardDescription className="mt-2">
-            We couldn't complete the authentication process
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <p className="text-sm text-muted-foreground">
-            This could happen if:
-          </p>
-          <ul className="text-sm text-muted-foreground text-left list-disc list-inside space-y-1">
-            <li>The link has expired</li>
-            <li>The link has already been used</li>
-            <li>There was a network issue</li>
-          </ul>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-3">
-          <Link href="/auth" className="w-full">
-            <Button className="w-full">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Try again
+
+          {/* Title and Description */}
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold tracking-tight">
+              Authentication Error
+            </h2>
+            <p className="text-muted-foreground">
+              We couldn&apos;t complete the authentication process
+            </p>
+          </div>
+
+          {/* Explanation */}
+          <div className="text-left space-y-2 py-2">
+            <p className="text-sm text-muted-foreground">
+              This could happen if:
+            </p>
+            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+              <li>The link has expired</li>
+              <li>The link has already been used</li>
+              <li>There was a network issue</li>
+            </ul>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="pt-4 space-y-3">
+            <Button
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 font-medium"
+              asChild
+            >
+              <Link href="/login">
+                <IconRefresh className="mr-2 h-4 w-4" />
+                Try again
+              </Link>
             </Button>
-          </Link>
-          <Link href="/" className="w-full">
-            <Button variant="outline" className="w-full">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Go to home
+            <Button
+              variant="outline"
+              className="w-full"
+              asChild
+            >
+              <Link href="/">← Go to home</Link>
             </Button>
-          </Link>
-        </CardFooter>
-      </Card>
-    </div>
-  )
+          </div>
+        </div>
+      </AuthFormPanel>
+    </SplitAuthLayout>
+  );
 }

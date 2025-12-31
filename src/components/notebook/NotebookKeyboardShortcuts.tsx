@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
-import { useNotebookStore } from '@/stores/notebook-store'
+import { useNotebookStore } from '@/hooks/use-notebook-store'
 
 interface KeyboardShortcutsProps {
   onNewPage: () => void

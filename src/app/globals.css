@@ -304,6 +304,60 @@
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   }
 
+  /* Auth form animations */
+  @keyframes auth-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .auth-form-animate {
+    animation: auth-fade-in 0.4s ease-out;
+  }
+
+  /* Auth marketing panel gradient animation */
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .auth-gradient-bg {
+    background-size: 200% 200%;
+    animation: gradient-shift 15s ease infinite;
+  }
+
+  /* Auth input focus animations */
+  .auth-input-focus {
+    @apply transition-all duration-200;
+  }
+
+  .auth-input-focus:focus-within {
+    @apply ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Auth button hover effects */
+  .auth-btn-primary {
+    @apply transition-all duration-200;
+  }
+
+  .auth-btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .auth-btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
   /* Compact mode for data-dense dashboard sections */
   .compact {
     font-size: 0.9em;

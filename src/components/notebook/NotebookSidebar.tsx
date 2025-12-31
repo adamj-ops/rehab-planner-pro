@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 // cn is available for future styling if needed
-import { useNotebookStore, usePageTree } from '@/stores/notebook-store'
+import { useNotebookStore, usePageTree } from '@/hooks/use-notebook-store'
 import { PageTree } from './PageTree'
 import { TemplateSelector } from './TemplateSelector'
 import { NOTEBOOK_TEMPLATES, type NotebookTemplate } from '@/types/notebook'

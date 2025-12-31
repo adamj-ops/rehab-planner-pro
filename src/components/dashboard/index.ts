@@ -1,3 +1,3 @@
-export * from './dashboard-header'
-export * from './quick-actions-card'
-export * from './todays-tasks-card'
+export { DashboardHeader } from './dashboard-header'
+export { QuickActionsCard } from './quick-actions-card'
+export { TodaysTasksCard } from './todays-tasks-card'

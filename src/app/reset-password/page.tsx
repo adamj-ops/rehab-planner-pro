@@ -1,235 +1,205 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ArrowLeft, Lock, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react'
-import { Icons } from '@/components/ui/icons'
-import { useAuth } from '@/lib/auth/auth-context'
-import { cn } from '@/lib/utils'
+import { useState, useId } from "react";
+import Link from "next/link";
+import { IconLoader2, IconAlertCircle, IconCheck } from "@tabler/icons-react";
+
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PasswordInput } from "@/components/ui/password-input";
+import { SplitAuthLayout } from "@/components/auth/split-auth-layout";
+import { AuthMarketingPanel } from "@/components/auth/auth-marketing-panel";
+import {
+  AuthFormPanel,
+  AuthFormHeader,
+  AuthFormFooter,
+} from "@/components/auth/auth-form-panel";
+import {
+  PasswordStrengthIndicator,
+  usePasswordStrength,
+} from "@/components/auth/password-strength-indicator";
+import { useAuth } from "@/lib/auth/auth-context";
 
 export default function ResetPasswordPage() {
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
+  const { updatePassword } = useAuth();
 
-  const { updatePassword } = useAuth()
+  // Generate unique IDs for form inputs
+  const passwordId = useId();
+  const confirmPasswordId = useId();
 
-  // Password strength calculator
-  const getPasswordStrength = (password: string) => {
-    let strength = 0
-    if (password.length >= 8) strength++
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++
-    if (/\d/.test(password)) strength++
-    if (/[!@#$%^&*]/.test(password)) strength++
-    return strength
-  }
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const passwordStrength = getPasswordStrength(password)
+  const passwordStrength = usePasswordStrength(password);
 
   const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
 
     // Validation
     if (password.length < 8) {
-      setError('Password must be at least 8 characters')
-      return
+      setError("Password must be at least 8 characters");
+      return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
+      setError("Passwords do not match");
+      return;
     }
 
-    setIsLoading(true)
+    // Check password strength
+    if (passwordStrength < 2) {
+      setError("Please choose a stronger password");
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
-      const { error } = await updatePassword(password)
+      const { error } = await updatePassword(password);
 
       if (error) {
-        setError(error.message)
+        setError(error.message);
       } else {
-        setIsSubmitted(true)
+        setIsSubmitted(true);
       }
-    } catch (error: any) {
-      setError('An unexpected error occurred. Please try again.')
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
+  // Success State
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <Card className="border-0 shadow-xl w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle2 className="h-6 w-6 text-green-600" />
+      <SplitAuthLayout
+        variant="reset"
+        marketingContent={<AuthMarketingPanel variant="reset" />}
+      >
+        <AuthFormPanel>
+          <div className="text-center space-y-4">
+            <div className="mx-auto w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+              <IconCheck className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <CardTitle className="text-2xl font-bold tracking-tight">Password updated</CardTitle>
-            <CardDescription className="mt-2">
-              Your password has been successfully reset
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold tracking-tight">
+                Password updated
+              </h2>
+              <p className="text-muted-foreground">
+                Your password has been successfully reset.
+              </p>
+            </div>
             <p className="text-sm text-muted-foreground">
               You can now sign in with your new password.
             </p>
-          </CardContent>
-          <CardFooter>
-            <Link href="/auth" className="w-full">
-              <Button className="w-full">
-                Sign in
+            <div className="pt-4">
+              <Button
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 font-medium"
+                asChild
+              >
+                <Link href="/login">Sign in</Link>
               </Button>
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-    )
+            </div>
+          </div>
+        </AuthFormPanel>
+      </SplitAuthLayout>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <Card className="border-0 shadow-xl w-full max-w-md">
-        <CardHeader className="space-y-1 pb-6">
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Set new password
-          </CardTitle>
-          <CardDescription className="text-sm text-muted-foreground">
-            Enter your new password below
-          </CardDescription>
-        </CardHeader>
+    <SplitAuthLayout
+      variant="reset"
+      marketingContent={<AuthMarketingPanel variant="reset" />}
+    >
+      <AuthFormPanel>
+        <AuthFormHeader
+          title="Set new password"
+          description="Enter your new password below"
+        />
 
-        <CardContent>
-          <form onSubmit={handleResetPassword} className="space-y-4">
-            {/* Password Field */}
-            <div className="space-y-2">
-              <Label htmlFor="password">New password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your new password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-9 pr-9"
-                  required
-                  disabled={isLoading}
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <IconAlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-              {/* Password Strength Indicator */}
-              {password && (
-                <div className="space-y-2">
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4].map((level) => (
-                      <div
-                        key={level}
-                        className={cn(
-                          "h-1 flex-1 rounded-full transition-colors",
-                          level <= passwordStrength
-                            ? passwordStrength <= 2
-                              ? "bg-yellow-500"
-                              : "bg-green-500"
-                            : "bg-gray-200"
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {passwordStrength <= 1 && "Weak password"}
-                    {passwordStrength === 2 && "Fair password"}
-                    {passwordStrength === 3 && "Good password"}
-                    {passwordStrength === 4 && "Strong password"}
-                  </p>
-                </div>
-              )}
-            </div>
+        {/* Reset Password Form */}
+        <form onSubmit={handleResetPassword} className="space-y-4">
+          {/* New Password Field */}
+          <div className="space-y-2">
+            <Label htmlFor={passwordId}>New password</Label>
+            <PasswordInput
+              id={passwordId}
+              placeholder="Enter your new password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={isLoading}
+              autoFocus
+              autoComplete="new-password"
+            />
+            <PasswordStrengthIndicator password={password} />
+          </div>
 
-            {/* Confirm Password Field */}
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm new password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Confirm your new password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-9 pr-9"
-                  required
-                  disabled={isLoading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
-                >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {confirmPassword && password !== confirmPassword && (
-                <p className="text-sm text-destructive">
-                  Passwords do not match
+          {/* Confirm Password Field */}
+          <div className="space-y-2">
+            <Label htmlFor={confirmPasswordId}>Confirm new password</Label>
+            <PasswordInput
+              id={confirmPasswordId}
+              placeholder="Confirm your new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              disabled={isLoading}
+              autoComplete="new-password"
+            />
+            {confirmPassword && password !== confirmPassword && (
+              <p className="text-xs text-destructive">Passwords do not match</p>
+            )}
+            {confirmPassword &&
+              password === confirmPassword &&
+              password.length > 0 && (
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <IconCheck className="h-3 w-3" />
+                  Passwords match
                 </p>
               )}
-            </div>
+          </div>
 
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading || !password || !confirmPassword}
-            >
-              {isLoading ? (
-                <>
-                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                  Updating password...
-                </>
-              ) : (
-                'Update password'
-              )}
-            </Button>
-          </form>
-        </CardContent>
-
-        <CardFooter>
-          <Link
-            href="/auth"
-            className="flex items-center text-sm text-muted-foreground hover:text-primary w-full justify-center"
+          {/* Submit Button - High Contrast */}
+          <Button
+            type="submit"
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 font-medium"
+            disabled={isLoading || !password || !confirmPassword}
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to sign in
+            {isLoading ? (
+              <>
+                <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                Updating password...
+              </>
+            ) : (
+              "Update password"
+            )}
+          </Button>
+        </form>
+
+        {/* Back to Sign In Link */}
+        <AuthFormFooter>
+          <Link
+            href="/login"
+            className="text-foreground/70 hover:text-foreground hover:underline transition-colors"
+          >
+            ← Back to sign in
           </Link>
-        </CardFooter>
-      </Card>
-    </div>
-  )
+        </AuthFormFooter>
+      </AuthFormPanel>
+    </SplitAuthLayout>
+  );
 }

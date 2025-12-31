@@ -6,7 +6,7 @@ import { useProject } from '../../layout'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IconArrowLeft } from '@tabler/icons-react'
-import { getProjectDisplayName } from '@/stores/workspace-store'
+import { getProjectDisplayName } from '@/hooks/use-workspace-store'
 import { DailyReportForm } from '@/components/reports'
 
 export default function NewReportPage() {

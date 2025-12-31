@@ -1,10 +1,10 @@
 # Rehab Planner Pro - Project Checklist
 
-## Current Status: Phase 3 Workspaces + Execution
+## Current Status: Phase 3 Workspaces Final Integration
 
-**Last Updated**: December 29, 2024  
-**Current Sprint**: Multi-Project Workspaces (Week 1)  
-**Overall Progress**: Phase 2A Complete, Phase 3 Starting
+**Last Updated**: December 30, 2024  
+**Current Sprint**: Final Integration & Polish  
+**Overall Progress**: Phase 3 ~85% Complete
 
 ---
 
@@ -45,180 +45,102 @@
 - [x] Step 4 tabbed layout (Color/Materials/Moodboard)
 
 ### 2A.3 Color Library ✅
-- [x] ColorWall, ColorWallView, ColorGridView
-- [x] ColorCard, ColorSwatch, ColorFamilyPills
-- [x] ColorDetailSheet, FilterSheet
-- [x] AddToProjectDialog, EditSelectionDialog, ProjectPaletteBar
+- [x] All color components implemented
 - [x] Search, filters, favorites, selections
 
 ### 2A.4 Material Library ✅
-- [x] MaterialCard, MaterialGrid, MaterialLibraryBrowser
-- [x] MaterialDetailDialog, API routes
+- [x] All material components implemented
 - [x] Search, filters, favorites, selections
 
 ### 2A.5 Moodboard Builder ⏸️ PAUSED
-- [ ] Set up @dnd-kit for drag-and-drop
-- [ ] Create MoodboardCanvas component
-- [ ] Element types (color swatch, material, image, text)
 - *Deprioritized in favor of Phase 3 execution features*
 
 ### 2A.6 Database Schema ✅
-- [x] Migration file created
-- [x] Tables deployed to Supabase
-- [x] Seed data for colors (Sherwin Williams)
-- [x] Seed data for materials
+- [x] All Phase 2A tables deployed
+- [x] Seed data loaded
 - [x] RLS policies configured
 
-### 2A.7 Design Store ✅
-- [x] Color selection state and actions
-- [x] Material selection state and actions
-- [x] Moodboard state (ready for implementation)
+---
+
+## PHASE 3: Multi-Project Workspaces 🔄 85% COMPLETE
+
+### 3.1 Workspace Foundation ✅ COMPLETE
+- [x] Database migrations (rehab_projects enhancements)
+- [x] user_preferences, project_members, project_activity tables
+- [x] Zustand workspace-store.ts
+- [x] WorkspaceSidebar with Notion-style grouping
+- [x] Project routes /projects/[projectId]/*
+
+### 3.2 Construction MVP ✅ COMPLETE
+- [x] **Photo System**: Upload, gallery, lightbox, tagging
+- [x] **Task Kanban**: @kibo-ui/kanban, CRUD, views
+- [x] **Daily Reports**: Form, PDF export, list/detail
+- [x] **Execution Dashboard**: Stats, quick actions, today's tasks
+
+### 3.3 Wizard Enhancements ✅ COMPLETE
+- [x] EVE-15: Step 1 Property Details - Google Places, accordion
+- [x] EVE-16: Step 2 Condition - Room photos, component ratings
+- [x] EVE-18: Step 4 Scope Building - Cost catalog, AI recommendations
+- [x] EVE-19: Step 5 Priority Matrix - 6D scoring, budget optimizer
+- [x] EVE-20: Step 6 Timeline - Gantt chart, drag-drop, undo/redo
+- [x] EVE-58: Wizard modal infrastructure
+
+### 3.4 Final Integration 🔄 IN PROGRESS
+- [ ] **EVE-56**: Planning Dashboard enhancements
+  - [ ] Wizard progress widget connected to Supabase
+  - [ ] Pre-demo photo grid
+  - [ ] Planning notes section
+- [ ] **EVE-57**: Project phase transitions
+  - [ ] Start Construction transition
+  - [ ] Complete Project transition
+- [ ] **EVE-21**: Step 7 Final Review (not started)
+
+### 3.5 Notebook & AI Editor ✅ COMPLETE
+- [x] EVE-59: Plate.js integration, templates, @-mentions
+- [x] EVE-60: Code quality fixes
+
+### 3.6 Caching & Performance ✅ COMPLETE (Dec 30, 2024)
+- [x] EVE-87: Next.js unstable_cache infrastructure
+- [x] API route caching (vendors, scope-catalog, materials, colors)
+- [x] Supabase webhooks for cache invalidation
+- [x] Reference tables: scope_catalog, labor_rates, material_prices
+- [x] Documentation: docs/SUPABASE_WEBHOOKS.md
 
 ---
 
-## PHASE 3: Multi-Project Workspaces 🔄 IN PROGRESS
+## PHASE 4: Acquisition Pipeline 🔄 IN PROGRESS
 
-> **Goal**: Notion-style workspace architecture where each project is a self-contained workspace with phase-specific dashboards.
+### 4.1 Foundation ✅ COMPLETE
+- [x] EVE-72: Database tables (leads, market_analysis, comps)
+- [x] EVE-72: TypeScript types and enums
+- [x] EVE-72: RLS policies
 
-### 3.1 Workspace Foundation (Week 1) ✅ COMPLETE
-- [x] **Database Migrations**
-  - [x] Enhance `rehab_projects` with phase, emoji, color, sort_order
-  - [x] Add cached aggregates (tasks_total, tasks_completed, days_ahead_behind)
-  - [x] Create `user_preferences` table
-  - [x] Create `project_members` table (schema only)
-  - [x] Create `wizard_progress` table
-  - [x] Create `planning_notes` table
-  - [x] Create `project_photos` table
-  - [x] Create `project_tasks` table
-  - [x] Create `project_activity` table
-  - [x] Add RLS policies for all new tables
+### 4.2 Market Analysis UI 🔄 IN PROGRESS
+- [x] EVE-74: API routes for market analysis
+- [x] EVE-75: Neighborhood Health metrics grid
+- [x] EVE-76: Market Velocity Score visualization
+- [x] EVE-77: Comparable Sales table
+- [x] EVE-78: ARV Calculator card
+- [ ] EVE-79: Wire Market Analysis page (final integration)
 
-- [x] **Workspace Store**
-  - [x] Create `workspace-store.ts` with activeProjectId
-  - [x] Implement project switching logic
-  - [x] Helper functions for display name, status colors, progress
-
-- [x] **Workspace Sidebar (Notion-style)**
-  - [x] Create `workspace-sidebar.tsx`
-  - [x] Create `project-sidebar-item.tsx`
-  - [x] Group projects by phase: Active / Planning / Completed
-  - [x] At-a-glance indicators (tasks, budget %, schedule)
-  - [x] Project switching via route change
-  - [x] Collapsible sections
-  - [x] Resources links (Colors, Materials, Vendors)
-
-- [x] **Workspace Routes**
-  - [x] Add `/projects/[projectId]/` route group
-  - [x] Create project context provider (layout.tsx)
-  - [x] Add planning dashboard route (`/planning/page.tsx`)
-  - [x] Add execution dashboard route (`/dashboard/page.tsx`)
-  - [x] Add portfolio route placeholder (`/portfolio/page.tsx`)
-  - [x] Add tasks route placeholder (`/tasks/page.tsx`)
-  - [x] Add photos route placeholder (`/photos/page.tsx`)
-  - [x] Add reports route placeholder (`/reports/page.tsx`)
-  - [x] Fix route conflict ([id] vs [projectId])
-
-### 3.2 Phase 3 MVP - Construction (Week 2) ✅ COMPLETE
-- [x] **Photos System** ✅ COMPLETE
-  - [x] Create Supabase Storage bucket `project-photos`
-  - [x] Add storage policies (in migration)
-  - [x] Create `project_photos` table
-  - [x] Build photo uploader component (PhotoDropzone, PhotoUploadDialog, PhotoUploadPreview)
-  - [x] Build photo timeline/grid view (PhotoGallery, PhotoCard)
-  - [x] Implement tagging (room, category, tags)
-  - [x] Signed URLs + thumbnail transform (photo-storage.ts)
-  - [x] Photo lightbox viewer
-  - [x] React Query setup (QueryClientProvider, mutations, queries)
-
-- [x] **Tasks Kanban** ✅ COMPLETE
-  - [x] Create `project_tasks` table (in migration)
-  - [x] Task types and constants (src/types/task.ts)
-  - [x] Task hooks (use-project-tasks.ts, use-task-mutations.ts)
-  - [x] Build Kanban board component (Kibo UI kanban)
-  - [x] Implement drag/drop status changes
-  - [x] Table view with grouping
-  - [x] Quick add/edit sheet (TaskDetailSheet)
-  - [x] View toggle (Kanban/Table)
-
-- [x] **Daily Site Reports** ✅ COMPLETE
-  - [x] Create `daily_site_reports` table (migration)
-  - [x] Report types and constants (src/types/report.ts)
-  - [x] Report hooks (use-daily-reports.ts)
-  - [x] Build DailyReportForm component (weather, crew, work summary, issues)
-  - [x] Build ReportList component
-  - [x] Create ReportPDFDocument with @react-pdf/renderer
-  - [x] Reports list page with empty state
-  - [x] New report page
-  - [x] Report detail page with PDF export
-
-- [x] **Execution Dashboard** ✅ COMPLETE
-  - [x] Build `/projects/[projectId]/dashboard`
-  - [x] Quick actions widget (Upload Photos, Daily Report, Add Task, Log Expense)
-  - [x] Today's tasks widget with live data
-  - [x] Recent photos placeholder
-  - [x] Dashboard header with project stats
-
-### 3.3 Planning Dashboard (Week 3) ⏳
-- [ ] `/projects/[projectId]/planning` overview
-- [ ] Wizard progress widget
-- [ ] "Resume Wizard" CTA
-- [ ] Planning photos (category=planning)
-- [ ] Planning notes CRUD
-- [ ] Budget estimates view
-
-### 3.4 Transitions + Portfolio (Week 4) ⏳
-- [ ] **Phase Transitions**
-  - [ ] "Start Construction" action
-  - [ ] "Complete Project" action
-  - [ ] Read-only mode for completed projects
-
-- [ ] **Portfolio MVP**
-  - [ ] Before/after photo gallery
-  - [ ] Summary metrics
-  - [ ] Lessons learned doc
-
-- [ ] **Quality Gates**
-  - [ ] RLS verification tests
-  - [ ] Project switching tests
-  - [ ] Storage policy tests
+### 4.3 Onboarding ✅ COMPLETE
+- [x] EVE-80: Progress persistence with auto-save
 
 ---
 
-## PHASE 4: Phase 3 Expansion ⏳ FUTURE
+## PHASE 5: ROI & Analytics ⏳ FUTURE
 
-### 4.1 Issues & Punch List
-- [ ] `project_issues` table
-- [ ] Issues list/detail views
-- [ ] Status workflow
-- [ ] Photo/task linking
+### 5.1 ROI Benchmark Database
+- [ ] EVE-25: Import Cost vs Value data
+- [ ] Regional variance data
 
-### 4.2 Vendor Communications
-- [ ] `project_comms` table
-- [ ] Messages/decisions log
-- [ ] Attachment support
+### 5.2 Modernization Scoring
+- [ ] EVE-26: 6-category assessment
+- [ ] Gap analysis visualization
 
-### 4.3 Budget vs Actual
-- [ ] `budget_items` table
-- [ ] `expenses` / `payments` tables
-- [ ] Log expense flow
-- [ ] Dashboard rollups
-
----
-
-## PHASE 5: Close & Learn ⏳ FUTURE
-
-### 5.1 Post-Project Analysis
-- [ ] Estimate vs actual comparison
-- [ ] Timeline variance analysis
-- [ ] ROI calculation (actual)
-
-### 5.2 Vendor Performance
-- [ ] Vendor rating system
-- [ ] Performance notes
-
-### 5.3 Portfolio Export
-- [ ] PDF generation
-- [ ] Marketing assets
+### 5.3 Smart Home ROI
+- [ ] EVE-27: Product catalog with ROI data
+- [ ] Pre-built packages
 
 ---
 
@@ -228,25 +150,46 @@
 |-------|----------|--------|
 | Phase 1: Infrastructure | 100% | ✅ Complete |
 | Phase 2A: Design Intelligence | 95% | ✅ Complete (Moodboard paused) |
-| Phase 3.1: Workspace Foundation | 100% | ✅ Complete |
-| Phase 3.2: Construction MVP | 35% | 🔄 In Progress (Photos ✅) |
-| Phase 3.3: Planning Dashboard | 50% | ✅ Basic UI Complete |
-| Phase 3.4: Transitions + Portfolio | 0% | ⏳ Week 4 |
-| Phase 4: Expansion | 0% | ⏳ Future |
-| Phase 5: Close & Learn | 0% | ⏳ Future |
+| Phase 3.1-3.3: Workspaces Core | 100% | ✅ Complete |
+| Phase 3.4: Final Integration | 20% | 🔄 In Progress |
+| Phase 3.5: Notebook | 100% | ✅ Complete |
+| Phase 3.6: Caching | 100% | ✅ Complete |
+| Phase 4.1: Acquisition Foundation | 100% | ✅ Complete |
+| Phase 4.2: Market Analysis | 85% | 🔄 In Progress |
+| Phase 5: ROI & Analytics | 0% | ⏳ Future |
 
 ---
 
-## Key Architecture Decisions
+## Linear Issues Summary
 
-| Date | Decision | Rationale |
-|------|----------|-----------|
-| 2024-12-29 | Notion-style workspaces | Each project = workspace with phase-specific dashboard |
-| 2024-12-29 | Multi-project from day one | Scales naturally, professional UX |
-| 2024-12-29 | Hybrid data model | Tables for analytics, docs for narrative |
-| 2024-12-29 | Supabase Storage for photos | Simpler, integrated, cheaper |
-| 2024-12-29 | Planning Dashboard per project | Flexible planning, not wizard-only |
-| 2024-12-29 | Pause moodboard | Prioritize Phase 3 execution features |
+### Done Recently (Dec 30, 2024)
+- EVE-15, 16, 18, 19, 20 - All wizard step epics ✅
+- EVE-62 - Gantt drag-and-drop ✅
+- EVE-63 - PDF Export ✅
+- EVE-64 - What-If Scenarios ✅
+- EVE-66 - Filter/Sort Controls ✅
+- EVE-74, 75, 76, 77, 78 - Market Analysis components ✅
+- EVE-80 - Onboarding persistence ✅
+- EVE-87 - Caching & Webhooks ✅ (NEW)
+
+### In Progress
+- EVE-44 - Multi-Project Workspaces epic
+- EVE-56 - Planning Dashboard enhancements
+- EVE-73 - Market Analysis epic
+
+### Backlog (Next Priority)
+- EVE-57 - Project phase transitions
+- EVE-79 - Wire Market Analysis page
+- EVE-21 - Step 7 Final Review
+- EVE-17 - Step 3 Strategy & Goals
+
+### Future (Low Priority)
+- EVE-65 - Priority Score explanations
+- EVE-67 - Schedule impact preview
+- EVE-68 - Vendor assignment in Gantt
+- EVE-69 - Inline editing in scope table
+- EVE-70 - Visual budget gauge
+- EVE-71 - Undo/redo for budget
 
 ---
 
@@ -257,4 +200,29 @@ Before ending a session:
 - [ ] Push to remote repository
 - [ ] Update this checklist with progress
 - [ ] Update agentnotes.md if significant changes
-- [ ] Document any blockers or decisions in notebook.md
+- [ ] Update Linear issues as needed
+- [ ] Document any blockers in notebook.md
+
+---
+
+## Next Session Priorities
+
+1. **EVE-56**: Complete Planning Dashboard with wizard progress widget
+2. **EVE-57**: Implement project phase transitions
+3. **EVE-79**: Wire up Market Analysis page
+4. **EVE-21**: Start Step 7 Final Review
+
+---
+
+## Key Files Modified Recently
+
+| File | Changes |
+|------|---------|
+| `src/components/wizard/steps/action-plan-form.tsx` | Undo/redo, drag handlers |
+| `src/lib/cache.ts` | Caching infrastructure |
+| `src/app/api/vendors/route.ts` | User-specific caching |
+| `src/app/api/scope-catalog/route.ts` | New cached endpoint |
+| `src/app/api/revalidate/route.ts` | Webhook handler |
+| `docs/SUPABASE_WEBHOOKS.md` | New documentation |
+| `src/hooks/use-workspace-store.ts` | Relocated from stores |
+| `src/hooks/use-notebook-store.ts` | Relocated from stores |

@@ -3,10 +3,8 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useForm, FormProvider, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 import { 
   Select,
   SelectContent,
@@ -22,12 +20,12 @@ import {
   FormMessage,
   FormDescription
 } from '@/components/ui/form'
-import { WizardFooter } from '@/components/wizard/wizard-footer'
 import { 
   IconHome2, 
   IconMapPin, 
   IconBuilding,
-  IconClipboardList
+  IconClipboardList,
+  IconCurrencyDollar
 } from '@/lib/icons'
 import { 
   propertyDetailsSchema,
@@ -44,18 +42,27 @@ import {
   FinancingSummary,
   SaveStatusIndicator
 } from '@/components/rehab-estimator/property-details'
+import {
+  WizardStepContainer,
+  WizardStepHeader,
+  WizardStepContent,
+  WizardStepSections,
+  WizardStepSection,
+  InlineFieldGroup,
+} from '@/components/wizard/wizard-step-container'
 import type { 
   FinancingCalculation,
   FinancingInputs as FinancingInputsType
 } from '@/lib/financing'
 import { useRehabStore } from '@/hooks/use-rehab-store'
 import { useAutoSave } from '@/hooks/use-auto-save'
+import { useWizard } from '@/components/wizard/wizard-context'
 
 // ============================================================================
 // Project Type Selector
 // ============================================================================
 
-interface ProjectTypeSelectorProps {
+interface ProjectTypeSelectorLocalProps {
   value: 'flip' | 'rental' | 'wholesale'
   onChange: (type: 'flip' | 'rental' | 'wholesale') => void
 }
@@ -78,7 +85,7 @@ const projectTypes = [
   }
 ]
 
-function ProjectTypeSelector({ value, onChange }: ProjectTypeSelectorProps) {
+function ProjectTypeSelectorLocal({ value, onChange }: ProjectTypeSelectorLocalProps) {
   return (
     <div className="grid grid-cols-3 gap-2">
       {projectTypes.map((type) => (
@@ -87,7 +94,7 @@ function ProjectTypeSelector({ value, onChange }: ProjectTypeSelectorProps) {
           type="button"
           onClick={() => onChange(type.value)}
           className={`
-            flex flex-col items-center gap-1 rounded-lg border-2 p-3 transition-all
+            flex flex-col items-center gap-1 rounded-none border-2 p-3 transition-all
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
             ${value === type.value 
               ? 'border-primary bg-primary/5' 
@@ -111,8 +118,20 @@ function ProjectTypeSelector({ value, onChange }: ProjectTypeSelectorProps) {
 // ============================================================================
 
 export default function Step1PropertyDetails() {
+  // Wizard context
+  const { goToNextStep, setIsDirty } = useWizard()
+  
   // Store integration
-  const { project, updateProject, goToNextStep } = useRehabStore()
+  const { project, updateProject } = useRehabStore()
+  
+  // Track which sections are complete
+  const [sectionStatus, setSectionStatus] = useState({
+    projectSetup: false,
+    address: false,
+    propertyType: false,
+    specs: false,
+    financial: false,
+  })
   
   // Form state
   const form = useForm<PropertyDetailsFormData>({
@@ -121,7 +140,7 @@ export default function Step1PropertyDetails() {
       ...defaultPropertyDetails,
       ...(project as Partial<PropertyDetailsFormData>)
     },
-    mode: 'onChange' // Enable validation on change for auto-save
+    mode: 'onChange'
   })
   
   // Local state for financing calculation
@@ -130,9 +149,21 @@ export default function Step1PropertyDetails() {
   // Watch all form values for auto-save
   const watchedValues = useWatch({ control: form.control })
   
+  // Update section completion status based on form values
+  useEffect(() => {
+    const values = watchedValues;
+    
+    setSectionStatus({
+      projectSetup: !!(values.projectName && values.investmentStrategy),
+      address: !!(values.address?.street && values.address?.city && values.address?.state && values.address?.zip),
+      propertyType: !!(values.propertyType),
+      specs: !!(values.squareFeet && values.bedrooms && values.bathrooms && values.yearBuilt),
+      financial: !!(values.purchasePrice && values.arv),
+    });
+  }, [watchedValues]);
+  
   // Auto-save callback
   const handleAutoSave = useCallback(async (data: Partial<PropertyDetailsFormData>) => {
-    // Skip save if form has validation errors (don't trigger validation here to avoid loops)
     if (!form.formState.isValid && Object.keys(form.formState.errors).length > 0) return
     
     const formData = data as PropertyDetailsFormData
@@ -157,7 +188,9 @@ export default function Step1PropertyDetails() {
         maintenanceMonthly: formData.holdingCosts.maintenanceMonthly
       } : undefined
     })
-  }, [form, updateProject])
+    
+    setIsDirty(false)
+  }, [form, updateProject, setIsDirty])
   
   // Auto-save hook
   const { status: saveStatus, lastSaved, error: saveError, isDirty, saveNow } = useAutoSave({
@@ -166,6 +199,11 @@ export default function Step1PropertyDetails() {
     debounceMs: 2000,
     enabled: true
   })
+  
+  // Mark form as dirty when values change
+  const handleFieldChange = useCallback(() => {
+    setIsDirty(true)
+  }, [setIsDirty])
   
   // Build financing inputs from form values
   const financingInputs = useMemo((): FinancingInputsType | null => {
@@ -190,20 +228,19 @@ export default function Step1PropertyDetails() {
       loanTermMonths: financing.loanTermMonths,
       points: financing.points,
       holdingPeriodMonths: financing.holdingPeriodMonths,
-      rehabBudget: 0, // Will be calculated in later steps
+      rehabBudget: 0,
       closingCostsPercent: values.closingCostsPercent || 3,
       sellingCostsPercent: values.sellingCostsPercent || 6
     }
   }, [form])
   
-  // Handle calculation updates from FinancingCalculator
+  // Handle calculation updates
   const handleCalculationChange = useCallback((calc: FinancingCalculation) => {
     setCalculation(calc)
   }, [])
   
   // Handle form submission
-  const onSubmit = (data: PropertyDetailsFormData) => {
-    // Update store with form data
+  const onSubmit = useCallback((data: PropertyDetailsFormData) => {
     updateProject({
       projectName: data.projectName,
       address: data.address,
@@ -242,261 +279,286 @@ export default function Step1PropertyDetails() {
       } : undefined
     })
     
-    // Navigate to next step
     goToNextStep()
-  }
+  }, [calculation, updateProject, goToNextStep])
   
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Property Details</h1>
-          <p className="text-muted-foreground">
-            Enter the property information and financing details to analyze your investment.
-          </p>
-        </div>
-        
-        {/* Auto-save Status */}
-        <SaveStatusIndicator
-          status={saveStatus}
-          lastSaved={lastSaved}
-          error={saveError}
-          isDirty={isDirty}
-          onSave={saveNow}
-          size="sm"
-        />
-      </div>
-      
-      {/* Form Provider */}
+    <WizardStepContainer>
       <FormProvider {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          {/* Step Header */}
+          <WizardStepHeader
+            stepNumber={1}
+            title="Property Details"
+            description="Enter the property information and financing details to analyze your investment."
+            badge={isDirty ? 'Unsaved changes' : undefined}
+          />
           
-          {/* Project Setup Card */}
-          <Card className="border-l-4 border-l-primary">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconClipboardList className="h-5 w-5 text-primary" stroke={1.5} />
-                Project Setup
-              </CardTitle>
-              <CardDescription>
-                Name your project and select your investment strategy
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="projectName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      Project Name
-                      <Badge variant="outline" className="text-xs">Required</Badge>
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="e.g., 123 Main Street Renovation"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Choose a memorable name to identify this project
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="projectType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Investment Strategy</FormLabel>
-                    <FormControl>
-                      <ProjectTypeSelector
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
+          {/* Auto-save indicator */}
+          <div className="flex justify-end mb-4">
+            <SaveStatusIndicator
+              status={saveStatus}
+              lastSaved={lastSaved}
+              error={saveError}
+              isDirty={isDirty}
+              onSave={saveNow}
+              size="sm"
+            />
+          </div>
           
-          {/* Property Address Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconMapPin className="h-5 w-5 text-primary" stroke={1.5} />
-                Property Address
-              </CardTitle>
-              <CardDescription>
-                Enter the full property address
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="address.street"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Street Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="123 Main Street" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="address.city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Austin" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="address.state"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>State</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+          <WizardStepContent>
+            <WizardStepSections defaultValue={['projectSetup', 'address', 'financial']}>
+              {/* Project Setup Section */}
+              <WizardStepSection
+                id="projectSetup"
+                title="Project Setup"
+                description="Name your project and select strategy"
+                icon={<IconClipboardList className="h-4 w-4" />}
+                isComplete={sectionStatus.projectSetup}
+              >
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="projectName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          Project Name
+                          <Badge variant="outline" className="text-xs">Required</Badge>
+                        </FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select state" />
-                          </SelectTrigger>
+                          <Input 
+                            placeholder="e.g., 123 Main Street Renovation"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e)
+                              handleFieldChange()
+                            }}
+                          />
                         </FormControl>
-                        <SelectContent>
-                          {US_STATES.map((state) => (
-                            <SelectItem key={state} value={state}>
-                              {state}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
+                        <FormDescription>
+                          Choose a memorable name to identify this project
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="projectType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Investment Strategy</FormLabel>
+                        <FormControl>
+                          <ProjectTypeSelectorLocal
+                            value={field.value}
+                            onChange={(value) => {
+                              field.onChange(value)
+                              handleFieldChange()
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </WizardStepSection>
+              
+              {/* Property Address Section */}
+              <WizardStepSection
+                id="address"
+                title="Property Address"
+                description="Enter the full property address"
+                icon={<IconMapPin className="h-4 w-4" />}
+                isComplete={sectionStatus.address}
+              >
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="address.street"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Street Address</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="123 Main Street" 
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e)
+                              handleFieldChange()
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <InlineFieldGroup columns={3}>
+                    <FormField
+                      control={form.control}
+                      name="address.city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>City</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Austin" 
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e)
+                                handleFieldChange()
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="address.state"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>State</FormLabel>
+                          <Select 
+                            onValueChange={(value) => {
+                              field.onChange(value)
+                              handleFieldChange()
+                            }} 
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select state" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {US_STATES.map((state) => (
+                                <SelectItem key={state} value={state}>
+                                  {state}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="address.zip"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>ZIP Code</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="78701" 
+                              maxLength={10}
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e)
+                                handleFieldChange()
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </InlineFieldGroup>
+                </div>
+              </WizardStepSection>
+              
+              {/* Property Type Section */}
+              <WizardStepSection
+                id="propertyType"
+                title="Property Type"
+                description="Select the type of property"
+                icon={<IconHome2 className="h-4 w-4" />}
+                isComplete={sectionStatus.propertyType}
+                defaultOpen={false}
+              >
                 <FormField
                   control={form.control}
-                  name="address.zip"
+                  name="propertyType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>ZIP Code</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="78701" 
-                          maxLength={10}
-                          {...field} 
+                        <PropertyTypeSelector
+                          value={field.value}
+                          onChange={(value) => {
+                            field.onChange(value)
+                            handleFieldChange()
+                          }}
+                          error={form.formState.errors.propertyType?.message}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
-            </CardContent>
-          </Card>
+              </WizardStepSection>
+              
+              {/* Property Specs Section */}
+              <WizardStepSection
+                id="specs"
+                title="Property Specifications"
+                description="Physical characteristics"
+                icon={<IconBuilding className="h-4 w-4" />}
+                isComplete={sectionStatus.specs}
+                defaultOpen={false}
+              >
+                <PropertySpecsInputs />
+              </WizardStepSection>
+              
+              {/* Financial Analysis Section */}
+              <WizardStepSection
+                id="financial"
+                title="Financial Analysis"
+                description="Purchase price, financing, and ROI"
+                icon={<IconCurrencyDollar className="h-4 w-4" />}
+                isComplete={sectionStatus.financial}
+              >
+                <div className="space-y-6">
+                  <FinancialInputs />
+                  
+                  <FinancingCalculator 
+                    onCalculationChange={handleCalculationChange}
+                  />
+                  
+                  {/* Results Grid */}
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <FinancialTimeline 
+                      calculation={calculation}
+                      inputs={financingInputs}
+                    />
+                    <FinancingSummary 
+                      calculation={calculation}
+                      inputs={financingInputs}
+                    />
+                  </div>
+                </div>
+              </WizardStepSection>
+            </WizardStepSections>
+          </WizardStepContent>
           
-          {/* Property Type Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconHome2 className="h-5 w-5 text-primary" stroke={1.5} />
-                Property Type
-              </CardTitle>
-              <CardDescription>
-                Select the type of property you&apos;re analyzing
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <FormField
-                control={form.control}
-                name="propertyType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <PropertyTypeSelector
-                        value={field.value}
-                        onChange={field.onChange}
-                        error={form.formState.errors.propertyType?.message}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
-          
-          {/* Property Specs Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconBuilding className="h-5 w-5 text-primary" stroke={1.5} />
-                Property Specifications
-              </CardTitle>
-              <CardDescription>
-                Enter the property&apos;s physical characteristics
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PropertySpecsInputs />
-            </CardContent>
-          </Card>
-          
-          <Separator className="my-8" />
-          
-          {/* Financial Section */}
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold">Financial Analysis</h2>
-            <p className="text-sm text-muted-foreground">
-              Enter your purchase price and financing details to calculate ROI
-            </p>
+          {/* Form Actions */}
+          <div className="flex justify-end pt-6 mt-6 border-t">
+            <button
+              type="submit"
+              disabled={!form.formState.isValid || saveStatus === 'saving'}
+              className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 transition-colors"
+            >
+              Continue to Scope of Work
+            </button>
           </div>
-          
-          {/* Financial Inputs */}
-          <FinancialInputs />
-          
-          {/* Financing Calculator */}
-          <FinancingCalculator 
-            onCalculationChange={handleCalculationChange}
-          />
-          
-          {/* Results Grid - Timeline and Summary side by side on larger screens */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Financial Timeline */}
-            <FinancialTimeline 
-              calculation={calculation}
-              inputs={financingInputs}
-            />
-            
-            {/* Financing Summary */}
-            <FinancingSummary 
-              calculation={calculation}
-              inputs={financingInputs}
-            />
-          </div>
-          
-          {/* Wizard Footer */}
-          <WizardFooter />
         </form>
       </FormProvider>
-    </div>
+    </WizardStepContainer>
   )
 }

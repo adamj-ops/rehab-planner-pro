@@ -1,0 +1,1 @@
+export { ShadcnStudio } from './shadcn-studio'

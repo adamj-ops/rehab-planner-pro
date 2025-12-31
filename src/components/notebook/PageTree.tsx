@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ChevronRight, ChevronDown, FileText, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { useNotebookStore } from '@/stores/notebook-store'
+import { useNotebookStore } from '@/hooks/use-notebook-store'
 import { toast } from 'sonner'
 import type { NotebookPage } from '@/types/notebook'
 

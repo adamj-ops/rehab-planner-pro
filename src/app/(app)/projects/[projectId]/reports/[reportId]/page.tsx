@@ -7,7 +7,7 @@ import { useProject } from '../../layout'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IconArrowLeft, IconDownload, IconLoader2 } from '@tabler/icons-react'
-import { getProjectDisplayName } from '@/stores/workspace-store'
+import { getProjectDisplayName } from '@/hooks/use-workspace-store'
 import { DailyReportForm } from '@/components/reports'
 import { useReport } from '@/hooks/use-daily-reports'
 

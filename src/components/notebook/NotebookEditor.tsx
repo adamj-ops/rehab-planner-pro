@@ -10,7 +10,7 @@ import { Check, Loader2 } from 'lucide-react'
 import { EditorKit } from '@/components/editor/editor-kit'
 import { Editor, EditorContainer } from '@/components/ui/editor'
 import { EditorProvider } from '@/components/editor/editor-context'
-import { useNotebookStore } from '@/stores/notebook-store'
+import { useNotebookStore } from '@/hooks/use-notebook-store'
 import type { NotebookPage } from '@/types/notebook'
 
 /**

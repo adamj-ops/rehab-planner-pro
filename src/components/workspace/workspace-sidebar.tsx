@@ -43,7 +43,7 @@ import {
   useWorkspaceStore,
   groupProjectsByPhase,
   type WorkspaceProject,
-} from "@/stores/workspace-store"
+} from "@/hooks/use-workspace-store"
 
 interface WorkspaceSidebarProps extends React.ComponentProps<typeof Sidebar> {
   projects: WorkspaceProject[]

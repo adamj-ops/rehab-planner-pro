@@ -17,7 +17,7 @@ import {
   IconCircle,
   IconArrowRight,
 } from '@tabler/icons-react'
-import { getProjectDisplayName } from '@/stores/workspace-store'
+import { getProjectDisplayName } from '@/hooks/use-workspace-store'
 
 // Wizard steps for progress tracking
 const wizardSteps = [

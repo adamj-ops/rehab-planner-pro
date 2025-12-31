@@ -1,14 +1,24 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useId } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Mail } from "lucide-react";
+import { IconBrandGoogle, IconLoader2, IconAlertCircle, IconCheck } from "@tabler/icons-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import Link from "next/link";
-import { IconBrandGoogle, IconHome, IconLoader2, IconAlertCircle } from "@tabler/icons-react";
+import { PasswordInput } from "@/components/ui/password-input";
+import { SplitAuthLayout } from "@/components/auth/split-auth-layout";
+import { AuthMarketingPanel } from "@/components/auth/auth-marketing-panel";
+import { 
+  AuthFormPanel, 
+  AuthFormHeader, 
+  AuthFormFooter, 
+  AuthDivider 
+} from "@/components/auth/auth-form-panel";
 import { useAuth } from "@/lib/auth/auth-context";
 
 function LoginPageContent() {
@@ -17,6 +27,10 @@ function LoginPageContent() {
   const redirectTo = searchParams.get("redirectTo") || "/dashboard";
   
   const { user, loading: authLoading, signIn, signInWithOAuth, resendVerificationEmail } = useAuth();
+  
+  // Generate unique IDs for form inputs
+  const emailId = useId();
+  const passwordId = useId();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -96,153 +110,141 @@ function LoginPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Simple header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-xl font-semibold">
-            <IconHome className="h-6 w-6 text-primary" />
-            <span>Rehab Planner Pro</span>
-          </Link>
-        </div>
-      </header>
+    <SplitAuthLayout
+      variant="login"
+      marketingContent={<AuthMarketingPanel variant="login" />}
+    >
+      <AuthFormPanel>
+        <AuthFormHeader
+          title="Welcome back"
+          description="Sign in to your account to continue"
+        />
 
-      {/* Centered card */}
-      <main className="flex-1 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-            <CardDescription>
-              Sign in to your account to continue
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <IconAlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <IconAlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-            {resendSuccess && (
-              <Alert>
-                <AlertDescription>
-                  Verification email sent! Please check your inbox.
-                </AlertDescription>
-              </Alert>
-            )}
+        {/* Success Alert */}
+        {resendSuccess && (
+          <Alert className="mb-4 border-green-500/50 bg-green-50 dark:bg-green-950/20">
+            <IconCheck className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800 dark:text-green-200">
+              Verification email sent! Please check your inbox.
+            </AlertDescription>
+          </Alert>
+        )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Forgot?
-                  </Link>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              {showResendVerification && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleResendVerification}
-                  disabled={resendLoading}
-                >
-                  {resendLoading ? (
-                    <>
-                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    "Resend verification email"
-                  )}
-                </Button>
-              )}
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  "Sign in"
-                )}
-              </Button>
-            </form>
-
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Email Field */}
+          <div className="space-y-2">
+            <Label htmlFor={emailId}>Email</Label>
             <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                id={emailId}
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+                className="pl-10"
+                autoComplete="email"
+              />
             </div>
+          </div>
+          
+          {/* Password Field */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor={passwordId}>Password</Label>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-foreground/70 hover:text-foreground hover:underline transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <PasswordInput
+              id={passwordId}
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={isLoading}
+              autoComplete="current-password"
+            />
+          </div>
 
+          {/* Resend Verification Button */}
+          {showResendVerification && (
             <Button
               type="button"
               variant="outline"
-              className="w-full"
-              onClick={handleGoogleSignIn}
-              disabled={isLoading}
+              className="w-full border-amber-500/50 text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/20"
+              onClick={handleResendVerification}
+              disabled={resendLoading}
             >
-              <IconBrandGoogle className="mr-2 h-4 w-4" />
-              Google
+              {resendLoading ? (
+                <>
+                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Resend verification email"
+              )}
             </Button>
+          )}
 
-            <div className="text-sm text-center text-muted-foreground">
-              Don&apos;t have an account?{" "}
-              <Link href="/signup" className="text-primary hover:underline font-medium">
-                Sign up
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </main>
+          {/* Submit Button - High Contrast */}
+          <Button
+            type="submit"
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 font-medium"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              "Sign in"
+            )}
+          </Button>
+        </form>
 
-      {/* Footer */}
-      <footer className="border-t py-4">
-        <div className="container mx-auto px-4">
-          <p className="text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Rehab Planner Pro
-          </p>
-        </div>
-      </footer>
-    </div>
+        {/* Divider */}
+        <AuthDivider />
+
+        {/* Google Sign In - Clear Contrast */}
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full border-border hover:bg-muted/50 font-medium"
+          onClick={handleGoogleSignIn}
+          disabled={isLoading}
+        >
+          <IconBrandGoogle className="mr-2 h-4 w-4" />
+          Continue with Google
+        </Button>
+
+        {/* Sign Up Link */}
+        <AuthFormFooter>
+          Don&apos;t have an account?{" "}
+          <Link 
+            href="/signup" 
+            className="text-foreground font-semibold hover:underline transition-colors"
+          >
+            Sign up
+          </Link>
+        </AuthFormFooter>
+      </AuthFormPanel>
+    </SplitAuthLayout>
   );
 }
 

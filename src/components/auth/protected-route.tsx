@@ -2,25 +2,62 @@
 
 import { useAuth } from '@/lib/auth/auth-context'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
   fallback?: React.ReactNode
+  requireOnboarding?: boolean
 }
 
-export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
+export function ProtectedRoute({ 
+  children, 
+  fallback,
+  requireOnboarding = true 
+}: ProtectedRouteProps) {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const [onboardingChecked, setOnboardingChecked] = useState(false)
+  const [onboardingComplete, setOnboardingComplete] = useState(true)
 
+  // Check authentication
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/auth')
+      router.push('/login')
     }
   }, [user, loading, router])
 
-  if (loading) {
+  // Check onboarding status
+  useEffect(() => {
+    async function checkOnboarding() {
+      if (!user || !requireOnboarding) {
+        setOnboardingChecked(true)
+        return
+      }
+
+      try {
+        const response = await fetch('/api/onboarding/status')
+        if (response.ok) {
+          const data = await response.json()
+          setOnboardingComplete(data.completed)
+          if (!data.completed) {
+            router.push('/onboarding/step-1')
+          }
+        }
+      } catch (error) {
+        console.error('Error checking onboarding status:', error)
+      } finally {
+        setOnboardingChecked(true)
+      }
+    }
+
+    if (!loading && user) {
+      checkOnboarding()
+    }
+  }, [user, loading, router, requireOnboarding])
+
+  if (loading || (requireOnboarding && !onboardingChecked)) {
     return (
       fallback || (
         <div className="min-h-screen flex items-center justify-center">
@@ -35,6 +72,10 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
 
   if (!user) {
     return null // Will redirect in useEffect
+  }
+
+  if (requireOnboarding && !onboardingComplete) {
+    return null // Will redirect to onboarding
   }
 
   return <>{children}</>

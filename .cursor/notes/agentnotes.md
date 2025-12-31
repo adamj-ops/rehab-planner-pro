@@ -3,152 +3,89 @@
 ## Project Overview
 **Project Name**: Rehab Planner Pro (formerly Strategic Rehab Estimator)  
 **Type**: Fix & Flip Real Estate Investment Analysis Tool  
-**Tech Stack**: Next.js 15, TypeScript, Tailwind CSS v4, shadcn/ui (Mira theme), Supabase, Zustand  
+**Tech Stack**: Next.js 15, TypeScript, Tailwind CSS v4, shadcn/ui (Mira theme), Supabase, Zustand, React Query  
 **Repository**: https://github.com/adamj-ops/rehab-planner-pro  
-**Status**: Phase 2A Design Intelligence - 85% Complete (Moodboard remaining)
+**Status**: Phase 3 Multi-Project Workspaces - 85% Complete (Final Integration remaining)
 
 ---
 
-## Current Project State (Updated Dec 26, 2024)
+## Current Project State (Updated Dec 30, 2024)
 
-### ✅ Recently Completed: Color Library & Material Library (Dec 26, 2024)
+### ✅ Recently Completed: Caching & Database Webhooks (Dec 30, 2024)
 
-Both design libraries are now **fully complete** with comprehensive features:
+Implemented comprehensive server-side caching with automatic invalidation:
 
-#### Color Library Components (`src/components/color-library/`)
-| Component | Purpose |
-|-----------|---------|
-| `ColorWall` | Main container with search, view toggle, filters |
-| `ColorWallView` | Dense spectrum wall view |
-| `ColorGridView` | Rich card grid view |
-| `ColorCard` | Individual color cards with details |
-| `ColorSwatch` | Compact color swatches |
-| `ColorFamilyPills` | Horizontal filter pills |
-| `ColorDetailSheet` | Full color information sheet |
-| `FilterSheet` | Design styles and popular filters |
-| `AddToProjectDialog` | Configure surface/room/finish when adding |
-| `EditSelectionDialog` | Edit existing color selections |
-| `ProjectPaletteBar` | Show selected colors with edit/remove |
+#### Caching Infrastructure (`src/lib/cache.ts`)
+| Function | TTL | Tags |
+|----------|-----|------|
+| `getCachedMaterialPrices` | 10 min | materials, material-prices |
+| `getCachedLaborRates` | 30 min | labor-rates |
+| `getCachedScopeCatalog` | 30 min | scope-catalog |
+| `getCachedVendorDirectory` | 10 min | vendors |
+| `getCachedProjectStats` | 5 min | project-stats |
+| `getCachedAIResponse` | 1 hour | ai-response |
 
-**Color Library Features:**
-- ✅ Search with debouncing
-- ✅ Color family filter pills
-- ✅ Design style filters
-- ✅ Popular colors toggle
-- ✅ Favorites with localStorage persistence
-- ✅ Surface type assignment (walls, trim, accent, etc.)
-- ✅ Room type assignment
-- ✅ Paint finish selection with auto-suggest
-- ✅ Max 5 colors limit with warnings
-- ✅ Dual view modes (Wall/Grid)
+#### Supabase Database Webhooks
+- **Extension**: `pg_net` enabled for HTTP requests
+- **Trigger Function**: `supabase_functions.notify_cache_invalidation()`
+- **Revalidation Endpoint**: `/api/revalidate`
+- **Tables with Triggers**: vendors, material_library, color_library, scope_catalog, labor_rates, material_prices, rehab_projects
 
-#### Material Library Components (`src/components/design/`)
-| Component | Purpose |
-|-----------|---------|
-| `MaterialCard` | Card with image, price, dimensions, variants |
-| `MaterialGrid` | Responsive grid layout |
-| `MaterialLibraryBrowser` | Full browser with search, filters, sorting |
-| `MaterialDetailDialog` | Detailed material view |
-| `material-service.ts` | Service layer |
-| `material-adapter.ts` | Type adapter for DB → UI |
-
-**Material Library Features:**
-- ✅ Search functionality
-- ✅ Category filter (flooring, tile, countertops, etc.)
-- ✅ Price range filter (budget/mid/premium/luxury)
-- ✅ Quality tier filter
-- ✅ Sorting options (name, price, category)
-- ✅ Favorites system
-- ✅ Selection system
-- ✅ All/Popular/Favorites tabs
-- ✅ API routes at `/api/materials`
-
-#### Design Store (`src/stores/design-store.ts`)
-Full Zustand store with:
-- Color selection state and CRUD actions
-- Material selection state and CRUD actions
-- Moodboard state (ready for implementation)
-- Favorites persistence
-- Undo/redo for moodboard
-- Room design summaries
-- Completion percentage calculation
+#### New Reference Tables Created
+| Table | Rows | Purpose |
+|-------|------|---------|
+| `scope_catalog` | 24 | Renovation items with costs, durations, ROI |
+| `labor_rates` | 10 | Trade types with regional hourly rates |
+| `material_prices` | 20 | Materials with quality tier pricing |
 
 ---
 
-### ✅ Previously Completed: Theme Switcher (Dec 26, 2024)
+### ✅ Recently Completed: Gantt Chart Enhancements (Dec 30, 2024)
 
-Added a light/dark mode theme switcher to the sidebar footer:
+Enhanced the Step 6 Action Plan with interactive features:
 
-- **Component**: `src/components/shadcn-studio/switch/switch-11.tsx`
-- **Location**: Sidebar footer (above user menu)
-- **Features**: 
-  - Sun/Moon icons for visual clarity
-  - Toggle switch for quick theme change
-  - Uses `next-themes` for persistence
-  - Proper hydration handling to avoid SSR mismatches
-  - Uses Tabler icons (project standard)
+- **Drag-and-Drop**: Horizontal drag to reschedule tasks
+- **Manual Overrides**: Persist user's date changes
+- **Undo/Redo**: Cmd+Z / Cmd+Shift+Z keyboard shortcuts
+- **Reset Schedule**: Button to revert to auto-calculated dates
+- **Toast Feedback**: Notifications for drag operations
 
-**Shadcn Studio Registry**: Added to `components.json` for access to extended components:
-- `@shadcn-studio` - Free content
-- `@ss-components` - Components  
-- `@ss-blocks` - Blocks
-- `@ss-themes` - Themes
+**File**: `src/components/wizard/steps/action-plan-form.tsx`
 
 ---
 
-### ✅ Previously Completed: Database Migration (Dec 26, 2024)
+### ✅ Code Quality: Store Relocations (Dec 30, 2024)
 
-The complete database schema has been deployed to Supabase:
+Zustand stores moved from `src/stores/` to `src/hooks/` for consistency:
+- `workspace-store.ts` → `src/hooks/use-workspace-store.ts`
+- `notebook-store.ts` → `src/hooks/use-notebook-store.ts`
 
-**Phase 1 Foundation Tables:**
-| Table | Purpose | Rows |
-|-------|---------|------|
-| `users` | User profiles linked to auth.users | 0 |
-| `projects` | Full project schema with wizard tracking | 0 |
-| `scope_items` | Renovation work items | 0 |
-| `vendors` | Contractor/supplier management | 0 |
-| `project_rooms` | Room-by-room details | 0 |
-| `project_transactions` | Financial tracking | 0 |
-
-**Phase 2A Design Tables:**
-| Table | Purpose | Rows |
-|-------|---------|------|
-| `color_library` | Sherwin Williams catalog | 20 |
-| `material_library` | Flooring, countertops, etc. | 19 |
-| `moodboards` | Design boards | 0 |
-| `moodboard_elements` | Board elements | 0 |
-| `moodboard_shares` | Sharing config | 0 |
-
-**TypeScript Types:** Updated in `src/types/supabase.ts`
+All imports updated across the codebase.
 
 ---
 
-### ✅ Previously Completed: Mira Theme Implementation
+## Linear Project Status
 
-The application now uses a custom **Mira shadcn/ui theme** with the following configuration:
+### Project: Rehab Planner Pro
 
-| Setting | Value | Details |
-|---------|-------|---------|
-| **Style** | new-york (CLI) / Mira (visual) | Closest shadcn CLI option to Mira |
-| **Base Color** | zinc | Cool gray tones |
-| **Primary Color** | blue (OKLCH) | Accent/primary color |
-| **Border Radius** | 0.375rem | Subtle polish |
-| **Icon Library** | @tabler/icons-react | NOT lucide-react |
-| **Font** | Roboto + Roboto Mono | Via next/font/google |
-| **Dark Mode** | Full support | Deep contrast with card pop |
+**Epics Status:**
 
-#### Theme Files
-- `components.json` - shadcn/ui configuration
-- `src/app/globals.css` - CSS variables (OKLCH colors)
-- `src/app/layout.tsx` - Font imports and application
-- `src/lib/icons.ts` - Centralized Tabler icon exports
-
-#### Dark Mode Contrast Hierarchy
-```
-Layer 1 (Bottom): Page Background = 0.09 OKLCH (very dark)
-Layer 2 (Middle): Cards = 0.18 OKLCH (medium dark - pops!)
-Layer 3 (Top):    Text = Zinc-50 (bright)
-```
+| Epic | Status | Notes |
+|------|--------|-------|
+| EVE-5: Authentication | ✅ Done | Email + Google OAuth |
+| EVE-10: App Shell | ✅ Done | Sidebar-07 |
+| EVE-14: Project Dashboard | ✅ Done | CRUD operations |
+| EVE-15: Step 1 Property Details | ✅ Done | Google Places, accordion |
+| EVE-16: Step 2 Condition | ✅ Done | Room photos, ratings |
+| EVE-18: Step 4 Scope Building | ✅ Done | Cost catalog, AI recs |
+| EVE-19: Step 5 Priority Matrix | ✅ Done | 6D scoring, optimizer |
+| EVE-20: Step 6 Timeline | ✅ Done | Gantt, drag-drop, undo |
+| EVE-21: Step 7 Final Review | Backlog | Not started |
+| EVE-22-24: Design Intelligence | ✅ Done | Colors, materials, moodboard |
+| EVE-44: Multi-Project Workspaces | 🔄 In Progress | Phase 3.4 remaining |
+| EVE-72: Acquisition Foundation | ✅ Done | Database + types |
+| EVE-73: Market Analysis UI | 🔄 In Progress | EVE-79 remaining |
+| EVE-87: Caching & Webhooks | ✅ Done | Just created |
 
 ---
 
@@ -160,55 +97,80 @@ Layer 3 (Top):    Text = Zinc-50 (bright)
   /(app)               # Main application with sidebar
     /dashboard         # Dashboard overview
     /projects          # Project listing
+    /projects/[projectId]  # Project workspace
+      /dashboard       # Construction execution dashboard
+      /planning        # Planning phase dashboard
+      /tasks           # Task Kanban board
+      /photos          # Photo gallery
+      /reports         # Daily site reports
+      /portfolio       # Before/after showcase
     /wizard            # 7-step project creation wizard
-      /step-1          # Property Details
-      /step-2          # Condition Assessment
-      /step-3          # Strategy Selection
-      /step-4          # Design Intelligence (tabbed)
-        /color         # Color selection
-        /materials     # Material selection
-        /moodboard     # Moodboard builder
-      /step-5          # Priority Matrix
-      /step-6          # Action Plan
-      /step-7          # Final Review
-    /test-theme        # Theme verification page
-  /(dashboard)         # Legacy dashboard layout
+    /deals             # Acquisition pipeline (new)
+    /onboarding        # User onboarding flow
   /api                 # API routes
   /auth                # Authentication pages
 ```
 
-### Key Components
-- `src/components/app-sidebar.tsx` - Main navigation sidebar
-- `src/components/wizard/step-navigation.tsx` - Wizard step indicators
-- `src/components/wizard/wizard-footer.tsx` - Navigation buttons
-- `src/components/design/ColorLibrary/` - Color selection components
-- `src/components/ui/` - shadcn/ui components (themed)
+### Key Hooks
+| Hook | Purpose |
+|------|---------|
+| `use-workspace-store` | Active project state (Zustand) |
+| `use-notebook-store` | Notebook pages state (Zustand) |
+| `use-project-tasks` | Task CRUD (React Query) |
+| `use-project-photos` | Photo CRUD (React Query) |
+| `use-daily-reports` | Report CRUD (React Query) |
+| `use-task-mutations` | Task update mutations |
+| `use-photo-upload` | Photo upload with Supabase Storage |
 
 ---
 
-## Phase 2A: Design Intelligence
+## Database Tables (Supabase)
 
-### Features Implemented
-1. **Color Library Browser** - Sherwin Williams colors with search/filter
-2. **Material Library Browser** - Flooring, countertops, fixtures
-3. **Moodboard Builder** - Drag-and-drop design board with sharing
+### Phase 1: Core
+| Table | Purpose |
+|-------|---------|
+| `users` | User profiles |
+| `rehab_projects` | Projects with phase, emoji, wizard state |
+| `scope_items` | Renovation work items |
+| `vendors` | Contractor/supplier management |
+| `project_rooms` | Room-by-room details |
+| `project_transactions` | Financial tracking |
 
-### Database Schema (Supabase)
-Tables created via migration `20250101000000_phase_2a_initial.sql`:
-- `color_library` - Sherwin Williams color data
-- `project_color_selections` - Project-specific colors
-- `material_library` - Materials with categories
-- `project_material_selections` - Project materials
-- `color_palettes` - Saved color schemes
-- `moodboards` - Moodboard metadata
-- `moodboard_elements` - Individual elements
-- `moodboard_shares` - Sharing configuration
+### Phase 2A: Design
+| Table | Purpose |
+|-------|---------|
+| `color_library` | Sherwin Williams colors (20 seeded) |
+| `material_library` | Flooring, countertops (19 seeded) |
+| `moodboards` | Design boards |
+| `moodboard_elements` | Board elements |
 
-### TypeScript Types
-Location: `src/types/database.ts`
-- All Phase 2A table interfaces
-- Enums for element_type, surface_type, status
-- Utility types for common patterns
+### Phase 3: Workspaces
+| Table | Purpose |
+|-------|---------|
+| `user_preferences` | User settings, last project |
+| `project_members` | Collaboration (schema only) |
+| `project_activity` | Activity log |
+| `project_tasks` | Kanban tasks |
+| `project_photos` | Photo metadata |
+| `daily_site_reports` | Daily reports |
+| `wizard_progress` | Wizard step tracking |
+| `planning_notes` | Planning phase notes |
+| `project_notebooks` | AI notebook per project |
+| `notebook_pages` | Notebook content |
+
+### Phase 3.6: Reference Data
+| Table | Purpose |
+|-------|---------|
+| `scope_catalog` | 24 renovation items |
+| `labor_rates` | 10 trade rates |
+| `material_prices` | 20 material prices |
+
+### Phase 5: Acquisition
+| Table | Purpose |
+|-------|---------|
+| `acquisition_leads` | Deal pipeline leads |
+| `market_analysis` | Neighborhood health metrics |
+| `comparable_sales` | Comp data with adjustments |
 
 ---
 
@@ -218,7 +180,8 @@ Location: `src/types/database.ts`
 # .env.local (required)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-OPENAI_API_KEY=your_openai_key (optional)
+OPENAI_API_KEY=your_openai_key
+GOOGLE_PLACES_API_KEY=your_places_key
 ```
 
 ---
@@ -249,21 +212,30 @@ npx supabase gen types typescript --project-id <id> > src/types/supabase.ts
 import { Home, Settings } from 'lucide-react'
 
 // ✅ CORRECT
-import { IconHome, IconSettings } from '@/lib/icons'
-// or
 import { IconHome, IconSettings } from '@tabler/icons-react'
 ```
 
 ---
 
-## Key Design Decisions
+## Key Architecture Decisions
 
-1. **Tailwind v4**: Uses CSS-based config in `globals.css`, no `tailwind.config.ts`
-2. **OKLCH Colors**: All colors use OKLCH for better perceptual uniformity
-3. **Route Groups**: `(app)` for sidebar layout, `(dashboard)` for legacy
-4. **Sidebar-07**: Using shadcn's sidebar-07 template for navigation
-5. **Wizard Pattern**: 7-step horizontal navigation for project creation
-6. **Supabase MCP**: Direct database access via MCP for development
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 2024-12-29 | Notion-style workspaces | Each project = workspace |
+| 2024-12-29 | Supabase Storage for photos | Simpler, integrated |
+| 2024-12-30 | Next.js unstable_cache | Server-side caching |
+| 2024-12-30 | pg_net webhooks | Auto cache invalidation |
+| 2024-12-30 | Stores → hooks folder | Consistency with hooks pattern |
+
+---
+
+## Next Session Startup Checklist
+
+1. [ ] Read this file (`agentnotes.md`)
+2. [ ] Check `project_checklist.md` for current priorities
+3. [ ] Verify dev server runs: `npm run dev`
+4. [ ] Review Linear issues at https://linear.app/everyday-co/project/rehab-planner-pro-e7ab2aed0216
+5. [ ] Check recent git commits for context
 
 ---
 
@@ -273,43 +245,9 @@ import { IconHome, IconSettings } from '@tabler/icons-react'
 |------|----------|
 | Product Requirements | `docs/PRD.md` |
 | Database Schema | `docs/DATABASE_SCHEMA_COMPLETE.sql` |
-| Expansion Plan | `docs/REFINED_EXPANSION_PLAN.md` |
+| Supabase Webhooks | `docs/SUPABASE_WEBHOOKS.md` |
 | Component Architecture | `docs/implementation/COMPONENT_ARCHITECTURE.md` |
-| Testing Strategy | `docs/testing/TESTING_STRATEGY.md` |
 | API Endpoints | `docs/reference/API_ENDPOINTS.md` |
-
----
-
-## Common Issues & Solutions
-
-### Hydration Errors
-Browser extensions (like Cursor IDE) can cause hydration mismatches. These are harmless in development.
-
-### Font Issues
-If fonts don't apply, check:
-1. `layout.tsx` imports Roboto/Roboto_Mono from next/font/google
-2. `globals.css` has `--font-sans` and `--font-mono` variables
-3. No Geist font references remain
-
-### Dark Mode Contrast
-Cards should pop off background. If blending:
-- Background: 0.09 OKLCH (very dark)
-- Cards: 0.18 OKLCH (medium dark)
-
-### Supabase RLS
-Tables use Row Level Security. Ensure:
-- User is authenticated for write operations
-- Public read enabled for color_library, material_library
-
----
-
-## Next Session Startup Checklist
-
-1. [ ] Read this file (`agentnotes.md`)
-2. [ ] Check `project_checklist.md` for current priorities
-3. [ ] Verify dev server runs: `npm run dev`
-4. [ ] Check `/test-theme` page for theme verification
-5. [ ] Review recent git commits for context
 
 ---
 
@@ -325,18 +263,6 @@ git commit -m "type(scope): description"
 
 # Push and merge
 git push origin feature/name
-# Then create PR or merge to main
 ```
 
 Commit types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-
----
-
-## Recent Commits
-
-- `ec2d56e` - feat(theme): implement Mira shadcn theme with Tabler icons and Roboto font
-  - 315 files changed
-  - Full theme implementation
-  - Sidebar-07 app shell
-  - 7-step wizard structure
-  - Phase 2A database schema

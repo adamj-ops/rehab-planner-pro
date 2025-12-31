@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { IconLoader2, IconUpload, IconTrash, IconCheck, IconAlertCircle } from '@tabler/icons-react'
 import { useAuth } from '@/lib/auth/auth-context'
 import { getProfile, updateProfile, uploadAvatar, deleteAvatar, type UserProfile } from '@/lib/services/profile-service'
+import { InvestmentPreferencesSection } from '@/components/settings/investment-preferences-section'
 import { toast } from 'sonner'
 
 const profileSchema = z.object({
@@ -405,6 +406,19 @@ export default function ProfilePage() {
               </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Investment Preferences Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Investment Preferences</CardTitle>
+          <CardDescription>
+            Update your investment profile to personalize your experience.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <InvestmentPreferencesSection />
         </CardContent>
       </Card>
     </div>
