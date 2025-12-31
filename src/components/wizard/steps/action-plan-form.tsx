@@ -438,12 +438,52 @@ export function ActionPlanForm() {
       duration: 2000,
       action: {
         label: "Undo",
-        onClick: () => handleUndoLastDrag(),
+        onClick: () => {
+          // Inline undo to avoid circular dependency
+          const lastOverride = [...undoStack].pop();
+          if (!lastOverride) return;
+          
+          const taskId = lastOverride.taskId || Object.keys(manualOverrides).find(
+            id => manualOverrides[id] === lastOverride
+          );
+          
+          if (!taskId) {
+            toast.error('Unable to undo: task not found');
+            return;
+          }
+          
+          const newOverrides = { ...manualOverrides };
+          
+          if (undoStack.filter(o => o.taskId === taskId).length === 1) {
+            delete newOverrides[taskId];
+          } else {
+            const previousOverrides = undoStack
+              .filter(o => o.taskId === taskId)
+              .slice(0, -1);
+            const previousOverride = previousOverrides[previousOverrides.length - 1];
+            if (previousOverride) {
+              newOverrides[taskId] = previousOverride;
+            } else {
+              delete newOverrides[taskId];
+            }
+          }
+          
+          setManualOverrides(newOverrides);
+          setUndoStack(prev => prev.slice(0, -1));
+          
+          const currentData = form.getValues();
+          setStepData(6, { 
+            ...currentData, 
+            manual_overrides: newOverrides 
+          });
+          
+          toast.success('Drag operation undone');
+        },
       },
     });
     
     setIsDragging(false);
-  }, [manualOverrides, scheduleResult, setStepData, form, handleUndoLastDrag]);
+  }, [manualOverrides, scheduleResult, setStepData, form, undoStack]);
 
   // Handle undo last drag operation
   const handleUndoLastDrag = useCallback(() => {
