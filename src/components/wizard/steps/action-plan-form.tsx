@@ -546,6 +546,44 @@ export function ActionPlanForm() {
   const scheduleConflicts = scheduleResult?.conflicts || [];
   const hasErrors = scheduleConflicts.some((c) => c.severity === "error");
 
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle shortcuts when not in input elements
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // Ctrl+Z or Cmd+Z for undo
+      if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+        event.preventDefault();
+        if (undoStack.length > 0) {
+          handleUndoLastDrag();
+        }
+      }
+
+      // Ctrl+Shift+Z or Ctrl+Y for redo
+      if ((event.ctrlKey || event.metaKey) && (
+        (event.key === 'z' && event.shiftKey) ||
+        (event.key === 'y' && !event.shiftKey)
+      )) {
+        event.preventDefault();
+        if (redoStack.length > 0) {
+          handleRedo();
+        }
+      }
+
+      // Escape to cancel current drag
+      if (event.key === 'Escape' && isDragging) {
+        // This would be handled by the Gantt chart component
+        toast.info('Drag cancelled');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undoStack.length, redoStack.length, isDragging, handleUndoLastDrag, handleRedo]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
