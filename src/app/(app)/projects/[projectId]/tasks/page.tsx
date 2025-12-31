@@ -5,7 +5,7 @@ import { useProject } from '../layout'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { IconPlus } from '@tabler/icons-react'
-import { getProjectDisplayName } from '@/stores/workspace-store'
+import { getProjectDisplayName } from '@/hooks/use-workspace-store'
 import {
   TaskKanban,
   TaskTable,

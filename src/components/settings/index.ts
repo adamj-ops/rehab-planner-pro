@@ -1,0 +1,1 @@
+export { InvestmentPreferencesSection } from './investment-preferences-section'

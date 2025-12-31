@@ -5,7 +5,7 @@ import { WizardFooter } from "@/components/wizard/wizard-footer";
 import { ColorWall, ProjectPaletteBar, EditSelectionDialog } from "@/components/color-library";
 import type { AddToProjectConfig } from "@/components/color-library/AddToProjectDialog";
 import type { EditSelectionConfig } from "@/components/color-library/EditSelectionDialog";
-import { useDesignStore } from "@/stores/design-store";
+import { useDesignStore } from "@/hooks/use-design-store";
 import { toast } from "sonner";
 import type { Color } from "@/types/color";
 import type { ProjectColorSelection, RoomType, SurfaceType, PaintFinish } from "@/types/design";

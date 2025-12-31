@@ -13,7 +13,7 @@ import {
   getTaskProgressPercent,
   getBudgetUsagePercent,
   getDaysSinceStart,
-} from "@/stores/workspace-store"
+} from "@/hooks/use-workspace-store"
 
 interface ProjectSidebarItemProps {
   project: WorkspaceProject

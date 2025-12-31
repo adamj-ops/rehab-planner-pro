@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { useScenarioStore } from '@/stores/scenario-store';
+import { useScenarioStore } from '@/hooks/use-scenario-store';
 
 /**
  * Convenience hook that automatically fetches scenarios for a project

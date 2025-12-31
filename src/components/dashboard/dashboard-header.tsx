@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { IconBuildingWarehouse, IconCalendar } from '@tabler/icons-react'
 import type { RehabProject } from '@/types/database'
-import { getProjectDisplayName } from '@/stores/workspace-store'
+import { getProjectDisplayName } from '@/hooks/use-workspace-store'
 
 interface DashboardHeaderProps {
   project: RehabProject

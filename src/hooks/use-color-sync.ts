@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { useDesignStore } from '@/stores/design-store';
+import { useDesignStore } from '@/hooks/use-design-store';
 import { ColorService } from '@/lib/design';
 import type { ProjectColorSelection, RoomType, SurfaceType, PaintFinish } from '@/types/design';
 import type { ProjectColorSelectionInsert, ProjectColorSelectionUpdate } from '@/types/database';

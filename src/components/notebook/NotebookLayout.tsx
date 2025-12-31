@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { Loader2, RefreshCw, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import { useNotebookStore, useCurrentPage, useNotebookLoading } from '@/stores/notebook-store'
+import { useNotebookStore, useCurrentPage, useNotebookLoading } from '@/hooks/use-notebook-store'
 import { NotebookSidebar } from './NotebookSidebar'
 import { NotebookEditor } from './NotebookEditor'
 import { PageHeader } from './PageHeader'

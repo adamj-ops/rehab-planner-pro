@@ -19,7 +19,7 @@ import {
   getTaskProgressPercent,
   getBudgetUsagePercent,
   getDaysSinceStart,
-} from '@/stores/workspace-store'
+} from '@/hooks/use-workspace-store'
 import { cn } from '@/lib/utils'
 import { QuickActionsCard, TodaysTasksCard } from '@/components/dashboard'
 import { TaskDetailSheet } from '@/components/tasks'

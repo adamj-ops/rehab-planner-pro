@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { useWorkspaceStore, type WorkspaceProject } from '@/stores/workspace-store'
+import { useWorkspaceStore, type WorkspaceProject } from '@/hooks/use-workspace-store'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ProjectTabs } from '@/components/project'
 

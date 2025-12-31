@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { toast } from 'sonner'
-import { useNotebookStore } from '@/stores/notebook-store'
+import { useNotebookStore } from '@/hooks/use-notebook-store'
 import type { NotebookPage } from '@/types/notebook'
 
 // Common emojis for page icons

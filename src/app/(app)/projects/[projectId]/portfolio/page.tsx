@@ -13,7 +13,7 @@ import {
   IconShare,
   IconCheck,
 } from '@tabler/icons-react'
-import { getProjectDisplayName } from '@/stores/workspace-store'
+import { getProjectDisplayName } from '@/hooks/use-workspace-store'
 import { format } from 'date-fns'
 
 export default function ProjectPortfolioPage() {

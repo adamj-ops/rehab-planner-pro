@@ -6,7 +6,7 @@ import { WizardFooter } from "@/components/wizard/wizard-footer";
 import { IconPackage } from "@/lib/icons";
 import { MaterialLibraryBrowser } from "@/components/design/material-library-browser";
 import { MaterialDetailDialog } from "@/components/design/material-detail-dialog";
-import { useDesignStore } from "@/stores/design-store";
+import { useDesignStore } from "@/hooks/use-design-store";
 import { adaptMaterialsFromDB } from "@/lib/adapters/material-adapter";
 import type { Material } from "@/types/design";
 import type { MaterialLibrary } from "@/types/database";

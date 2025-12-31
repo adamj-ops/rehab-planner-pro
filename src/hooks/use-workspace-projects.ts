@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { WorkspaceProject } from '@/stores/workspace-store'
+import type { WorkspaceProject } from '@/hooks/use-workspace-store'
 
 export function useWorkspaceProjects() {
   const [projects, setProjects] = useState<WorkspaceProject[]>([])
