@@ -1,32 +1,36 @@
 'use client'
 
 import { useState, useEffect, useMemo, useId } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { MethodTabs } from './method-tabs'
-import { ConfidenceBreakdown } from './confidence-breakdown'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { IconAlertTriangle, IconAlertCircle } from '@/lib/icons'
+import { MethodTabs } from './method-tabs'
+import { ConfidenceBreakdown } from './confidence-breakdown'
+import { ProgressiveDisclosure, type DisclosureSection } from './progressive-disclosure'
+import { ExportMenu } from './export-menu'
+import { prepareARVReportData } from '@/lib/export/arv-export-service'
 import type { 
   Comp, 
   MarketAnalysis, 
   MarketAnalysisUpdate,
-  ArvMethod
+  ArvMethod,
+  PropertyLead
 } from '@/hooks/use-deals-store'
 import { cn } from '@/lib/utils'
 
 interface ArvCalculatorProps {
   leadId: string
+  propertyLead: PropertyLead | null
   subjectSqft: number | null
   comps: Comp[]
   marketAnalysis: MarketAnalysis | null
   onSave: (data: Partial<MarketAnalysisUpdate>) => Promise<void>
   className?: string
 }
-
 
 // Helper to format currency
 function formatCurrency(value: number | null): string {
@@ -112,28 +116,6 @@ function calculateConfidenceScore(comps: Comp[]): number {
   return Math.min(100, score)
 }
 
-// Get confidence descriptor
-function getConfidenceDescriptor(score: number): string {
-  if (score <= 40) return 'Low'
-  if (score <= 70) return 'Medium'
-  return 'High'
-}
-
-// Get confidence descriptor details
-function getConfidenceDetails(comps: Comp[]): string {
-  if (comps.length === 0) return 'No comps available'
-  
-  const recentCount = comps.filter((comp) => {
-    if (!comp.sale_date) return false
-    const saleDate = new Date(comp.sale_date)
-    const monthsAgo = (Date.now() - saleDate.getTime()) / (1000 * 60 * 60 * 24 * 30)
-    return monthsAgo <= 6
-  }).length
-  
-  const timeframe = recentCount === comps.length ? 'within 6 mo' : 'mixed timeframe'
-  return `${comps.length} comp${comps.length !== 1 ? 's' : ''} ${timeframe}`
-}
-
 // Validation system
 interface ValidationResult {
   isValid: boolean
@@ -210,6 +192,7 @@ function ValidationAlert({ validation }: { validation: ValidationResult }) {
 
 export function ArvCalculator({
   leadId: _leadId,
+  propertyLead,
   subjectSqft,
   comps,
   marketAnalysis,
@@ -291,8 +274,6 @@ export function ArvCalculator({
 
   // Calculate confidence score
   const confidenceScore = useMemo(() => calculateConfidenceScore(comps), [comps])
-  const confidenceDescriptor = useMemo(() => getConfidenceDescriptor(confidenceScore), [confidenceScore])
-  const confidenceDetails = useMemo(() => getConfidenceDetails(comps), [comps])
 
   // Validation state
   const featureValidation = useMemo(() => validateAdjustment(featureAdjustment, 'Feature'), [featureAdjustment])
@@ -342,194 +323,289 @@ export function ArvCalculator({
     }
   }
 
-  return (
-    <Card className={className}>
-      <CardHeader className="pb-4">
-        <CardTitle className="text-base font-medium mb-4">ARV Calculation</CardTitle>
-        <MethodTabs value={method} onChange={setMethod} />
-      </CardHeader>
-
-      <CardContent className="pt-0 space-y-6">
-        {comps.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">No comps available for ARV calculation.</p>
-            <p className="text-sm text-muted-foreground mt-1">Add comparable sales to get started.</p>
+  // Progressive disclosure sections
+  const sections: DisclosureSection[] = useMemo(() => [
+    {
+      id: 'method',
+      title: 'Calculation Method',
+      required: true,
+      completed: true, // Always has a default method
+      content: (
+        <div className="space-y-3">
+          <div className="text-sm text-muted-foreground mb-3">
+            Choose how to calculate the After Repair Value (ARV)
           </div>
-        ) : calculatedArv === null ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">
-              {method === 'sqft_based' || method === 'hybrid'
-                ? 'Subject property square footage required for $/SF calculation.'
-                : 'Unable to calculate ARV with current data.'}
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* Calculation Breakdown */}
-            <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">Method: {ARV_METHODS.find(m => m.value === method)?.label}</div>
-              
-              {/* Method-specific calculation display */}
-              {method === 'sqft_based' && subjectSqft && (
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Average Comp $/SF</span>
-                    <span>{formatCurrency(
-                      comps
-                        .map((comp) => Number(comp.price_per_sqft) || 0)
-                        .filter((price) => price > 0)
-                        .reduce((a, b) => a + b, 0) / 
-                      comps.filter(comp => Number(comp.price_per_sqft) > 0).length
-                    ).replace('$', '$')}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>× Subject SF</span>
-                    <span>{subjectSqft.toLocaleString()}</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between font-medium">
-                    <span>= Base ARV</span>
-                    <span>{formatCurrency((calculatedArv || 0) - featureAdjustment - conditionAdjustment)}</span>
-                  </div>
-                </div>
-              )}
-
-              {method === 'comp_based' && (
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Average Adjusted Comp Value</span>
-                    <span>{formatCurrency((calculatedArv || 0) - featureAdjustment - conditionAdjustment)}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Based on {comps.length} comp{comps.length !== 1 ? 's' : ''} with adjustments
-                  </div>
-                </div>
-              )}
-
-              {method === 'hybrid' && subjectSqft && (
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Weighted Average (50/50)</span>
-                    <span>{formatCurrency((calculatedArv || 0) - featureAdjustment - conditionAdjustment)}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Comp-based + $/SF-based methods
-                  </div>
-                </div>
-              )}
-
-              {/* Adjustments */}
-              <div className="space-y-3">
-                <div className="text-sm font-medium">Adjustments:</div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor={`${id}-feature`} className="text-sm text-muted-foreground block mb-1">
-                      Feature Adj.
-                    </label>
-                    <Input
-                      id={`${id}-feature`}
-                      type="number"
-                      value={featureAdjustment}
-                      onChange={(e) => setFeatureAdjustment(Number(e.target.value) || 0)}
-                      placeholder="0"
-                      className="h-8"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor={`${id}-condition`} className="text-sm text-muted-foreground block mb-1">
-                      Condition Adj.
-                    </label>
-                    <Input
-                      id={`${id}-condition`}
-                      type="number"
-                      value={conditionAdjustment}
-                      onChange={(e) => setConditionAdjustment(Number(e.target.value) || 0)}
-                      placeholder="0"
-                      className="h-8"
-                    />
-                  </div>
-                </div>
-
-                {(featureAdjustment !== 0 || conditionAdjustment !== 0) && (
-                  <div className="space-y-1 text-sm">
-                    {featureAdjustment !== 0 && (
-                      <div className="flex justify-between">
-                        <span>Feature Adj.</span>
-                        <span className={featureAdjustment > 0 ? 'text-emerald-600' : 'text-red-600'}>
-                          {featureAdjustment > 0 ? '+' : ''}{formatCurrency(featureAdjustment)}
-                        </span>
-                      </div>
-                    )}
-                    {conditionAdjustment !== 0 && (
-                      <div className="flex justify-between">
-                        <span>Condition Adj.</span>
-                        <span className={conditionAdjustment > 0 ? 'text-emerald-600' : 'text-red-600'}>
-                          {conditionAdjustment > 0 ? '+' : ''}{formatCurrency(conditionAdjustment)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
+          <MethodTabs value={method} onChange={setMethod} />
+        </div>
+      )
+    },
+    {
+      id: 'calculation',
+      title: 'Base ARV Calculation',
+      required: true,
+      completed: calculatedArv !== null && comps.length > 0,
+      hasError: comps.length === 0 || (method !== 'comp_based' && !subjectSqft),
+      content: calculatedArv === null ? (
+        <div className="text-center py-4">
+          <p className="text-muted-foreground">
+            {comps.length === 0 
+              ? 'No comps available for ARV calculation. Add comparable sales to get started.'
+              : method !== 'comp_based' && !subjectSqft
+              ? 'Subject property square footage required for $/SF calculation.'
+              : 'Unable to calculate ARV with current data.'
+            }
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="text-sm text-muted-foreground">Method: {method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+          
+          {/* Method-specific calculation display */}
+          {method === 'sqft_based' && subjectSqft && (
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Average Comp $/SF</span>
+                <span>{formatCurrency(
+                  comps
+                    .map((comp) => Number(comp.price_per_sqft) || 0)
+                    .filter((price) => price > 0)
+                    .reduce((a, b) => a + b, 0) / 
+                  comps.filter(comp => Number(comp.price_per_sqft) > 0).length
+                ).replace('$', '$')}</span>
               </div>
+              <div className="flex justify-between">
+                <span>× Subject SF</span>
+                <span>{subjectSqft.toLocaleString()}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between font-medium">
+                <span>= Base ARV</span>
+                <span>{formatCurrency((calculatedArv || 0) - featureAdjustment - conditionAdjustment)}</span>
+              </div>
+            </div>
+          )}
 
-              {/* Final ARV */}
-              <div className="pt-2 border-t-2 border-double">
-                <div className="flex justify-between text-lg font-semibold">
-                  <span>FINAL ARV</span>
-                  <span className={cn(
-                    "transition-all duration-500",
-                    isCalculating && "text-muted-foreground",
-                    arvChanged && "text-emerald-600 scale-105"
-                  )}>
-                    {isCalculating ? "Calculating..." : formatCurrency(calculatedArv)}
+          {method === 'comp_based' && (
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Average Adjusted Comp Value</span>
+                <span>{formatCurrency((calculatedArv || 0) - featureAdjustment - conditionAdjustment)}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Based on {comps.length} comp{comps.length !== 1 ? 's' : ''} with adjustments
+              </div>
+            </div>
+          )}
+
+          {method === 'hybrid' && subjectSqft && (
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Weighted Average (50/50)</span>
+                <span>{formatCurrency((calculatedArv || 0) - featureAdjustment - conditionAdjustment)}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Comp-based + $/SF-based methods
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      id: 'adjustments',
+      title: 'Property Adjustments',
+      required: false,
+      completed: featureAdjustment !== 0 || conditionAdjustment !== 0,
+      hasError: !featureValidation.isValid || !conditionValidation.isValid,
+      content: (
+        <div className="space-y-4">
+          <div className="text-sm text-muted-foreground mb-3">
+            Adjust the base ARV for property-specific features or conditions
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor={`${id}-feature`} className="text-sm text-muted-foreground block mb-1">
+                Feature Adj.
+              </label>
+              <Input
+                id={`${id}-feature`}
+                type="number"
+                value={featureAdjustment}
+                onChange={(e) => setFeatureAdjustment(Number(e.target.value) || 0)}
+                placeholder="0"
+                className="h-8"
+              />
+              <div className="text-xs text-muted-foreground mt-1">
+                Positive for upgrades (pool, garage), negative for deficiencies
+              </div>
+            </div>
+            
+            <div>
+              <label htmlFor={`${id}-condition`} className="text-sm text-muted-foreground block mb-1">
+                Condition Adj.
+              </label>
+              <Input
+                id={`${id}-condition`}
+                type="number"
+                value={conditionAdjustment}
+                onChange={(e) => setConditionAdjustment(Number(e.target.value) || 0)}
+                placeholder="0"
+                className="h-8"
+              />
+              <div className="text-xs text-muted-foreground mt-1">
+                Adjust for condition differences vs. comps
+              </div>
+            </div>
+          </div>
+
+          {(featureAdjustment !== 0 || conditionAdjustment !== 0) && (
+            <div className="space-y-1 text-sm pt-2 border-t">
+              {featureAdjustment !== 0 && (
+                <div className="flex justify-between">
+                  <span>Feature Adj.</span>
+                  <span className={featureAdjustment > 0 ? 'text-emerald-600' : 'text-red-600'}>
+                    {featureAdjustment > 0 ? '+' : ''}{formatCurrency(featureAdjustment)}
                   </span>
                 </div>
-              </div>
+              )}
+              {conditionAdjustment !== 0 && (
+                <div className="flex justify-between">
+                  <span>Condition Adj.</span>
+                  <span className={conditionAdjustment > 0 ? 'text-emerald-600' : 'text-red-600'}>
+                    {conditionAdjustment > 0 ? '+' : ''}{formatCurrency(conditionAdjustment)}
+                  </span>
+                </div>
+              )}
             </div>
+          )}
 
-            {/* Validation Warnings */}
-            <div className="space-y-2">
-              <ValidationAlert validation={featureValidation} />
-              <ValidationAlert validation={conditionValidation} />
-              <ValidationAlert validation={arvValidation} />
-              <ValidationAlert validation={confidenceValidation} />
+          {/* Validation alerts for adjustments */}
+          <div className="space-y-2">
+            <ValidationAlert validation={featureValidation} />
+            <ValidationAlert validation={conditionValidation} />
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'result',
+      title: 'Final ARV Result',
+      required: true,
+      completed: calculatedArv !== null,
+      hasError: !arvValidation.isValid,
+      content: calculatedArv !== null ? (
+        <div className="space-y-4">
+          <div className="pt-2 border-t-2 border-double">
+            <div className="flex justify-between text-lg font-semibold">
+              <span>FINAL ARV</span>
+              <span className={cn(
+                "transition-all duration-500",
+                isCalculating && "text-muted-foreground",
+                arvChanged && "text-emerald-600 scale-105"
+              )}>
+                {isCalculating ? "Calculating..." : formatCurrency(calculatedArv)}
+              </span>
             </div>
+          </div>
+          
+          {/* ARV Validation */}
+          <ValidationAlert validation={arvValidation} />
+        </div>
+      ) : null
+    },
+    {
+      id: 'confidence',
+      title: 'Confidence Analysis',
+      required: false,
+      completed: true, // Always calculated
+      hasError: !confidenceValidation.isValid,
+      content: (
+        <div className="space-y-4">
+          <ConfidenceBreakdown 
+            comps={comps}
+            totalScore={confidenceScore}
+          />
+          <ValidationAlert validation={confidenceValidation} />
+        </div>
+      )
+    },
+    {
+      id: 'notes',
+      title: 'Notes & Documentation',
+      required: false,
+      completed: notes.trim().length > 0,
+      content: (
+        <div className="space-y-2">
+          <div className="text-sm text-muted-foreground mb-2">
+            Document your methodology, assumptions, or special considerations
+          </div>
+          <Textarea
+            id={`${id}-notes`}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Add notes about adjustments, methodology, or other considerations..."
+            className="min-h-[80px] resize-none"
+          />
+        </div>
+      )
+    }
+  ], [method, calculatedArv, comps, subjectSqft, featureAdjustment, conditionAdjustment, notes, 
+      featureValidation, conditionValidation, arvValidation, confidenceValidation, 
+      confidenceScore, id, isCalculating, arvChanged])
 
-            {/* Enhanced Confidence Analysis */}
-            <ConfidenceBreakdown 
-              comps={comps}
-              totalScore={confidenceScore}
-            />
+  // Prepare export data
+  const exportData = useMemo(() => {
+    if (!propertyLead || calculatedArv === null) return null
+    
+    return prepareARVReportData(
+      propertyLead,
+      marketAnalysis,
+      comps,
+      calculatedArv,
+      method,
+      featureAdjustment,
+      conditionAdjustment,
+      confidenceScore,
+      notes
+    )
+  }, [propertyLead, marketAnalysis, comps, calculatedArv, method, featureAdjustment, conditionAdjustment, confidenceScore, notes])
 
-            {/* Notes */}
-            <div className="space-y-2">
-              <label htmlFor={`${id}-notes`} className="text-sm font-medium">
-                Notes
-              </label>
-              <Textarea
-                id={`${id}-notes`}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add notes about adjustments, methodology, or other considerations..."
-                className="min-h-[80px] resize-none"
-              />
-            </div>
-
-            {/* Save Button */}
-            <div className="pt-4">
-              <Button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="w-full"
-              >
-                {isSaving ? 'Saving ARV...' : 'Save ARV'}
-              </Button>
-            </div>
-          </>
+  return (
+    <div className={className}>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-semibold mb-1">ARV Calculation</h2>
+          <p className="text-sm text-muted-foreground">
+            Calculate the After Repair Value using comparable sales data
+          </p>
+        </div>
+        {exportData && (
+          <ExportMenu 
+            reportData={exportData}
+            disabled={isSaving}
+          />
         )}
-      </CardContent>
-    </Card>
+      </div>
+      
+      <ProgressiveDisclosure 
+        sections={sections}
+        showProgress={true}
+        autoExpand={true}
+      />
+      
+      {/* Save Button - Always Visible */}
+      {calculatedArv !== null && (
+        <div className="mt-6 pt-4 border-t">
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="w-full"
+          >
+            {isSaving ? 'Saving ARV...' : 'Save ARV'}
+          </Button>
+        </div>
+      )}
+    </div>
   )
 }

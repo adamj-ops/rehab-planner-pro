@@ -26,10 +26,26 @@ function getPhaseLabel(phaseId: string | null): string {
   return phase ? phase.label : phaseId.replace(/_/g, ' ')
 }
 
-function getPhaseColor(phaseId: string | null): string {
+// Static Tailwind class mapping for phase colors (required for build-time compilation)
+const PHASE_COLOR_CLASSES: Record<string, { bg: string; text: string; bgLight: string }> = {
+  'bg-slate-500': { bg: 'bg-slate-500', text: 'text-slate-600', bgLight: 'bg-slate-500/10' },
+  'bg-blue-500': { bg: 'bg-blue-500', text: 'text-blue-600', bgLight: 'bg-blue-500/10' },
+  'bg-amber-500': { bg: 'bg-amber-500', text: 'text-amber-600', bgLight: 'bg-amber-500/10' },
+  'bg-purple-500': { bg: 'bg-purple-500', text: 'text-purple-600', bgLight: 'bg-purple-500/10' },
+  'bg-emerald-500': { bg: 'bg-emerald-500', text: 'text-emerald-600', bgLight: 'bg-emerald-500/10' },
+  'bg-rose-500': { bg: 'bg-rose-500', text: 'text-rose-600', bgLight: 'bg-rose-500/10' },
+  'bg-gray-500': { bg: 'bg-gray-500', text: 'text-gray-600', bgLight: 'bg-gray-500/10' },
+}
+
+function getPhaseColorKey(phaseId: string | null): string {
   if (!phaseId) return 'bg-gray-500'
   const phase = ACQUISITION_PHASES.find((p) => p.id === phaseId)
   return phase ? phase.color : 'bg-gray-500'
+}
+
+function getPhaseColorClasses(phaseId: string | null): { bg: string; text: string; bgLight: string } {
+  const colorKey = getPhaseColorKey(phaseId)
+  return PHASE_COLOR_CLASSES[colorKey] || PHASE_COLOR_CLASSES['bg-gray-500']
 }
 
 export default function LeadDetailLayout({ children, params }: Props) {
@@ -97,17 +113,18 @@ export default function LeadDetailLayout({ children, params }: Props) {
 
           {!loading && lead && (
             <div className="flex items-center gap-2">
-              <span
-                className={`px-2 py-1 text-xs font-medium rounded-full ${getPhaseColor(lead.current_phase)}/10 text-${getPhaseColor(lead.current_phase).replace('bg-', '')}`}
-                style={{
-                  backgroundColor: `var(--${getPhaseColor(lead.current_phase).replace('bg-', '')}-500, hsl(var(--muted)))`,
-                  color: 'white',
-                }}
-              >
-                {getPhaseLabel(lead.current_phase)}
-              </span>
+              {(() => {
+                const colors = getPhaseColorClasses(lead.current_phase)
+                return (
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${colors.bgLight} ${colors.text}`}
+                  >
+                    {getPhaseLabel(lead.current_phase)}
+                  </span>
+                )
+              })()}
               {lead.screening_score !== null && (
-                <span className="px-2 py-1 text-xs font-medium rounded-full bg-emerald-500/10 text-emerald-500">
+                <span className="px-2 py-1 text-xs font-medium rounded-full bg-emerald-500/10 text-emerald-600">
                   Score: {lead.screening_score}
                 </span>
               )}

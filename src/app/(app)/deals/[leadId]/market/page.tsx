@@ -93,6 +93,7 @@ export default function MarketAnalysisPage({ params }: { params: Promise<{ leadI
       {/* ARV Calculator */}
       <ArvCalculator
         leadId={leadId}
+        propertyLead={propertyLead}
         subjectSqft={propertyLead?.sqft || null}
         comps={comps}
         marketAnalysis={marketAnalysis}
