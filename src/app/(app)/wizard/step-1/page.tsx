@@ -149,6 +149,19 @@ export default function Step1PropertyDetails() {
   // Watch all form values for auto-save
   const watchedValues = useWatch({ control: form.control })
   
+  // Update section completion status based on form values
+  useEffect(() => {
+    const values = watchedValues;
+    
+    setSectionStatus({
+      projectSetup: !!(values.projectName && values.investmentStrategy),
+      address: !!(values.address?.street && values.address?.city && values.address?.state && values.address?.zip),
+      propertyType: !!(values.propertyType),
+      specs: !!(values.squareFeet && values.bedrooms && values.bathrooms && values.yearBuilt),
+      financial: !!(values.purchasePrice && values.arv),
+    });
+  }, [watchedValues]);
+  
   // Auto-save callback
   const handleAutoSave = useCallback(async (data: Partial<PropertyDetailsFormData>) => {
     if (!form.formState.isValid && Object.keys(form.formState.errors).length > 0) return
