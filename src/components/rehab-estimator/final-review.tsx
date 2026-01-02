@@ -87,7 +87,7 @@ export function FinalReview({ project, onNext, onBack }: FinalReviewProps) {
     setIsSaving(true)
     try {
       // Save to database via API
-      const response = await fetch('/api/rehab/projects', {
+      const response = await fetch(project.id ? `/api/rehab/projects/${project.id}` : '/api/rehab/projects', {
         method: project.id ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -113,7 +113,7 @@ export function FinalReview({ project, onNext, onBack }: FinalReviewProps) {
     setIsSubmitting(true)
     try {
       // Save final version
-      const response = await fetch('/api/rehab/projects', {
+      const response = await fetch(project.id ? `/api/rehab/projects/${project.id}` : '/api/rehab/projects', {
         method: project.id ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

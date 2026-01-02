@@ -122,6 +122,12 @@ export const propertyDetailsSchema = z.object({
   address_zip: z
     .string()
     .regex(/^\d{5}(-\d{4})?$/, "Enter a valid ZIP code (e.g., 78701 or 78701-1234)"),
+
+  // Optional Google Places enrichment
+  address_place_id: z.string().min(1).optional(),
+  address_formatted: z.string().min(1).optional(),
+  address_lat: z.coerce.number().optional(),
+  address_lng: z.coerce.number().optional(),
   
   // Property Details
   property_type: z.enum(PROPERTY_TYPES, {

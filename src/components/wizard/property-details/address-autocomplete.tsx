@@ -18,6 +18,9 @@ interface AddressComponents {
   zip: string;
   country?: string;
   formatted?: string;
+  placeId?: string;
+  lat?: number;
+  lng?: number;
 }
 
 interface AddressSuggestion {
@@ -37,48 +40,49 @@ interface AddressAutocompleteProps {
   error?: string;
 }
 
-// =============================================================================
-// MOCK SUGGESTIONS (for MVP without Google API key)
-// In production, replace with actual Google Places API calls
-// =============================================================================
+async function fetchSuggestions(input: string): Promise<AddressSuggestion[]> {
+  const url = new URL('/api/google/places/autocomplete', window.location.origin);
+  url.searchParams.set('input', input);
+  url.searchParams.set('country', 'us');
 
-const MOCK_SUGGESTIONS: AddressSuggestion[] = [
-  {
-    placeId: 'mock_1',
-    description: '123 Main Street, Austin, TX 78701, USA',
-    mainText: '123 Main Street',
-    secondaryText: 'Austin, TX, USA',
-  },
-  {
-    placeId: 'mock_2',
-    description: '456 Oak Avenue, Minneapolis, MN 55401, USA',
-    mainText: '456 Oak Avenue',
-    secondaryText: 'Minneapolis, MN, USA',
-  },
-  {
-    placeId: 'mock_3',
-    description: '789 Pine Road, Seattle, WA 98101, USA',
-    mainText: '789 Pine Road',
-    secondaryText: 'Seattle, WA, USA',
-  },
-];
+  const res = await fetch(url.toString());
+  const json = (await res.json()) as
+    | { success: true; data: AddressSuggestion[] }
+    | { error: string };
 
-// Parse mock address to components
-function parseMockAddress(description: string): AddressComponents {
-  // Simple parser for mock data
-  const parts = description.split(', ');
-  const street = parts[0] || '';
-  const city = parts[1] || '';
-  const stateZip = parts[2] || '';
-  const [state, zip] = stateZip.split(' ');
-  
-  return {
-    street,
-    city,
-    state: state || '',
-    zip: zip || '',
-    formatted: description,
-  };
+  if (!res.ok) {
+    throw new Error('error' in json ? json.error : 'Failed to fetch address suggestions');
+  }
+  if ('success' in json && json.success) return json.data;
+  return [];
+}
+
+async function fetchDetails(placeId: string): Promise<AddressComponents> {
+  const url = new URL('/api/google/places/details', window.location.origin);
+  url.searchParams.set('placeId', placeId);
+
+  const res = await fetch(url.toString());
+  const json = (await res.json()) as
+    | { success: true; data: { street: string; city: string; state: string; zip: string; formattedAddress: string; placeId: string; lat: number; lng: number } }
+    | { error: string };
+
+  if (!res.ok) {
+    throw new Error('error' in json ? json.error : 'Failed to fetch address details');
+  }
+  if ('success' in json && json.success) {
+    return {
+      street: json.data.street,
+      city: json.data.city,
+      state: json.data.state,
+      zip: json.data.zip,
+      formatted: json.data.formattedAddress,
+      placeId: json.data.placeId,
+      lat: json.data.lat,
+      lng: json.data.lng,
+    };
+  }
+
+  throw new Error('Failed to fetch address details');
 }
 
 // =============================================================================
@@ -114,23 +118,27 @@ export function AddressAutocomplete({
     }
     
     setIsLoading(true);
-    
-    // Simulate API delay
-    const timer = setTimeout(() => {
-      // Filter mock suggestions based on input
-      const filtered = MOCK_SUGGESTIONS.filter(
-        (s) =>
-          s.description.toLowerCase().includes(debouncedInput.toLowerCase()) ||
-          s.mainText.toLowerCase().includes(debouncedInput.toLowerCase())
-      );
-      
-      // If no matches, show all as fallback for demo
-      setSuggestions(filtered.length > 0 ? filtered : MOCK_SUGGESTIONS);
-      setIsLoading(false);
-      setIsOpen(true);
-    }, 200);
-    
-    return () => clearTimeout(timer);
+
+    let cancelled = false;
+    fetchSuggestions(debouncedInput)
+      .then((data) => {
+        if (cancelled) return;
+        setSuggestions(data);
+        setIsOpen(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setSuggestions([]);
+        setIsOpen(false);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [debouncedInput]);
   
   // Handle input change
@@ -146,15 +154,18 @@ export function AddressAutocomplete({
   
   // Handle suggestion selection
   const handleSelect = useCallback(
-    (suggestion: AddressSuggestion) => {
+    async (suggestion: AddressSuggestion) => {
       setInputValue(suggestion.mainText);
       onChange?.(suggestion.mainText);
       setIsOpen(false);
       setSuggestions([]);
       
-      // Parse and emit address components
-      const components = parseMockAddress(suggestion.description);
-      onAddressSelect?.(components);
+      try {
+        const components = await fetchDetails(suggestion.placeId);
+        onAddressSelect?.(components);
+      } catch {
+        // If details fail, still keep user's selected text in the input.
+      }
     },
     [onChange, onAddressSelect]
   );

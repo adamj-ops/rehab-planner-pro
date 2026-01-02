@@ -11,6 +11,11 @@ export interface RehabProject {
     state: string
     zip: string
   }
+  /** Optional Google Places metadata (stored on rehab_projects) */
+  addressPlaceId?: string
+  addressFormatted?: string
+  addressLat?: number
+  addressLng?: number
   squareFeet: number
   lotSize: number
   yearBuilt: number

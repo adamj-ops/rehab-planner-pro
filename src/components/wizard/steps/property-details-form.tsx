@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { WizardFooter } from "@/components/wizard/wizard-footer";
 import { useWizard } from "@/components/wizard/wizard-context";
+import { AddressAutocomplete } from "@/components/wizard/property-details";
 import {
   propertyDetailsSchema,
   PropertyDetailsFormData,
@@ -59,6 +60,10 @@ export function PropertyDetailsForm() {
       address_city: "",
       address_state: undefined,
       address_zip: "",
+      address_place_id: undefined,
+      address_formatted: undefined,
+      address_lat: undefined,
+      address_lng: undefined,
       property_type: undefined,
       square_footage: undefined,
       lot_size_sqft: undefined,
@@ -155,7 +160,22 @@ export function PropertyDetailsForm() {
                   <FormItem>
                     <FormLabel>Street Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="123 Main Street" {...field} />
+                      <AddressAutocomplete
+                        value={field.value}
+                        onChange={field.onChange}
+                        error={form.formState.errors.address_street?.message as string | undefined}
+                        onAddressSelect={(addr) => {
+                          form.setValue("address_street", addr.street, { shouldValidate: true, shouldDirty: true });
+                          form.setValue("address_city", addr.city, { shouldValidate: true, shouldDirty: true });
+                          form.setValue("address_state", addr.state as any, { shouldValidate: true, shouldDirty: true });
+                          form.setValue("address_zip", addr.zip, { shouldValidate: true, shouldDirty: true });
+
+                          if (addr.placeId) form.setValue("address_place_id", addr.placeId, { shouldDirty: true });
+                          if (addr.formatted) form.setValue("address_formatted", addr.formatted, { shouldDirty: true });
+                          if (typeof addr.lat === "number") form.setValue("address_lat", addr.lat, { shouldDirty: true });
+                          if (typeof addr.lng === "number") form.setValue("address_lng", addr.lng, { shouldDirty: true });
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

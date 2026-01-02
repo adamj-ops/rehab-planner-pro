@@ -201,51 +201,23 @@ export const useRehabStore = create<RehabStore>()(
         set({ loading: true, error: null })
         
         try {
-          // Import the project service
-          const { projectService, scopeItemService, assessmentService } = await import('@/lib/supabase/database')
-          
-          let savedProject: RehabProject | null
-          
-          if (project.id) {
-            // Update existing project
-            savedProject = await projectService.update(project.id, { ...project, userId })
-          } else {
-            // Create new project
-            savedProject = await projectService.create({ ...project, userId })
+          // Use API routes so address validation/geocoding runs server-side
+          const isUpdate = Boolean(project.id)
+          const endpoint = isUpdate ? `/api/rehab/projects/${project.id}` : '/api/rehab/projects'
+
+          const res = await fetch(endpoint, {
+            method: isUpdate ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(project),
+          })
+
+          const json = (await res.json()) as { success?: boolean; data?: RehabProject; error?: string }
+          if (!res.ok || !json.data) {
+            throw new Error(json.error || 'Failed to save project')
           }
-          
-          if (savedProject) {
-            // Save scope items if they exist
-            if (project.scopeItems && project.scopeItems.length > 0) {
-              for (const item of project.scopeItems) {
-                if (item.id) {
-                  await scopeItemService.update(item.id, item)
-                } else {
-                  await scopeItemService.create(savedProject.id, item)
-                }
-              }
-            }
-            
-            // Save assessments if they exist
-            if (project.assessments && Array.isArray(project.assessments)) {
-              for (const assessment of project.assessments) {
-                if (assessment) {
-                  await assessmentService.upsert(savedProject.id, assessment)
-                }
-              }
-            }
-            
-            // Reload the project with all related data
-            const fullProject = await projectService.getById(savedProject.id)
-            if (fullProject) {
-              set({ project: fullProject })
-              return fullProject
-            }
-            
-            return savedProject
-          } else {
-            throw new Error('Failed to save project')
-          }
+
+          set({ project: json.data })
+          return json.data
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to save project'
           set({ error: errorMessage })
