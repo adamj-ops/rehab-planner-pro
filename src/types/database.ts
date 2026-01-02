@@ -85,6 +85,10 @@ export interface RehabProject {
   address_city: string;
   address_state: string;
   address_zip: string;
+  address_place_id?: string | null;
+  address_formatted?: string | null;
+  address_lat?: number | null;
+  address_lng?: number | null;
   square_feet: number | null;
   year_built: number | null;
   property_type: string | null;

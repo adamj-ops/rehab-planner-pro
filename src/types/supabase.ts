@@ -2495,6 +2495,10 @@ export type Database = {
       rehab_projects: {
         Row: {
           address_city: string
+          address_formatted: string | null
+          address_lat: number | null
+          address_lng: number | null
+          address_place_id: string | null
           address_state: string
           address_street: string
           address_zip: string
@@ -2537,6 +2541,10 @@ export type Database = {
         }
         Insert: {
           address_city?: string
+          address_formatted?: string | null
+          address_lat?: number | null
+          address_lng?: number | null
+          address_place_id?: string | null
           address_state?: string
           address_street?: string
           address_zip?: string
@@ -2579,6 +2587,10 @@ export type Database = {
         }
         Update: {
           address_city?: string
+          address_formatted?: string | null
+          address_lat?: number | null
+          address_lng?: number | null
+          address_place_id?: string | null
           address_state?: string
           address_street?: string
           address_zip?: string

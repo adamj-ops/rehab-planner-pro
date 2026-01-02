@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
+import { PlacesError, validateAndGeocodeAddress } from '@/lib/google/places'
 
 // GET /api/rehab/projects/[id] - Get project details
 export async function GET(
@@ -7,6 +8,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabase = await createClient()
     
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -67,7 +69,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -82,9 +84,50 @@ export async function PUT(
     const projectId = params.id
     const body = await request.json()
 
+    const addressStreet = body.address_street ?? body?.address?.street
+    const addressCity = body.address_city ?? body?.address?.city
+    const addressState = body.address_state ?? body?.address?.state
+    const addressZip = body.address_zip ?? body?.address?.zip
+    const addressPlaceId = body.address_place_id ?? body?.addressPlaceId
+    const addressFormatted = body.address_formatted ?? body?.addressFormatted
+
+    let geo:
+      | { placeId: string; formattedAddress: string; street: string; city: string; state: string; zip: string; lat: number; lng: number }
+      | null = null
+
+    if (addressStreet || addressFormatted || addressPlaceId) {
+      try {
+        geo = await validateAndGeocodeAddress({
+          placeId: addressPlaceId,
+          street: addressStreet,
+          city: addressCity,
+          state: addressState,
+          zip: addressZip,
+          formatted: addressFormatted,
+        })
+      } catch (e) {
+        if (e instanceof PlacesError) {
+          return NextResponse.json({ error: e.message }, { status: 422 })
+        }
+        throw e
+      }
+    }
+
     // Update project
     const updateData = {
       ...body,
+      ...(geo
+        ? {
+            address_street: geo.street,
+            address_city: geo.city,
+            address_state: geo.state,
+            address_zip: geo.zip,
+            address_place_id: geo.placeId,
+            address_formatted: geo.formattedAddress,
+            address_lat: geo.lat,
+            address_lng: geo.lng,
+          }
+        : {}),
       updated_at: new Date().toISOString(),
     }
 
@@ -134,7 +177,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
