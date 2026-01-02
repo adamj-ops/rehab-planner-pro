@@ -11,7 +11,8 @@ import {
   Target, 
   AlertTriangle,
   CheckCircle,
-  Info
+  Info,
+  Star
 } from 'lucide-react'
 import { CostUtils } from '@/lib/cost-calculator'
 import { cn } from '@/lib/utils'
