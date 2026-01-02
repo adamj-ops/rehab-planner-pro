@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { CACHE_TTL_SECONDS, cacheKeys, invalidateDealsCache, withCache } from '@/server/cache'
+
+export const runtime = 'nodejs'
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -14,18 +17,29 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
 
   const { id } = await context.params
 
-  const { data, error } = await supabase
-    .from('property_leads')
-    .select('*')
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .single()
+  try {
+    const data = await withCache({
+      key: cacheKeys.dealById(user.id, id),
+      ttlSeconds: CACHE_TTL_SECONDS.PROPERTY_LISTS,
+      loader: async () => {
+        const { data, error } = await supabase
+          .from('property_leads')
+          .select('*')
+          .eq('id', id)
+          .eq('user_id', user.id)
+          .single()
 
-  if (error) {
-    return NextResponse.json({ error: error.message ?? 'Not found' }, { status: 404 })
+        if (error) throw new Error(error.message ?? 'Not found')
+        return data
+      },
+    })
+
+    return NextResponse.json(data)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Not found'
+    // Preserve previous behavior: treat failures as not found.
+    return NextResponse.json({ error: message }, { status: 404 })
   }
-
-  return NextResponse.json(data)
 }
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -60,6 +74,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     return NextResponse.json({ error: error.message ?? 'Failed to update lead' }, { status: 500 })
   }
 
+  await invalidateDealsCache(user.id, id)
+
   return NextResponse.json(data)
 }
 
@@ -84,6 +100,8 @@ export async function DELETE(_request: Request, context: { params: Promise<{ id:
   if (error) {
     return NextResponse.json({ error: error.message ?? 'Failed to delete lead' }, { status: 500 })
   }
+
+  await invalidateDealsCache(user.id, id)
 
   return NextResponse.json({ ok: true })
 }

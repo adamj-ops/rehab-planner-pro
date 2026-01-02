@@ -1,38 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { unstable_cache, revalidateTag } from 'next/cache'
+import { CACHE_TTL_SECONDS, cacheKeys, invalidateSearchCache, withCache } from '@/server/cache'
 
-/** Cache duration for vendors list (10 minutes) */
-const VENDORS_CACHE_TTL = 600
-
-/**
- * Cached vendors query function
- * Uses user ID as part of cache key for per-user caching
- */
-const getCachedUserVendors = (userId: string) =>
-  unstable_cache(
-    async () => {
-      const supabase = await createClient()
-
-      const { data, error } = await supabase
-        .from('vendors')
-        .select('*')
-        .eq('user_id', userId)
-        .order('preferred', { ascending: false })
-        .order('company_name')
-
-      if (error) {
-        throw new Error(error.message)
-      }
-
-      return data || []
-    },
-    [`vendors-${userId}`],
-    {
-      revalidate: VENDORS_CACHE_TTL,
-      tags: ['vendors', `user-vendors-${userId}`],
-    }
-  )()
+export const runtime = 'nodejs'
 
 // GET all vendors for the authenticated user
 export async function GET() {
@@ -49,14 +19,28 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 })
     }
 
-    const data = await getCachedUserVendors(user.id)
+    const data = await withCache({
+      key: cacheKeys.searchResults({ userId: user.id, scope: 'vendors', query: {} }),
+      ttlSeconds: CACHE_TTL_SECONDS.SEARCH_RESULTS,
+      loader: async () => {
+        const { data, error } = await supabase
+          .from('vendors')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('preferred', { ascending: false })
+          .order('company_name')
+
+        if (error) throw new Error(error.message)
+        return data || []
+      },
+    })
 
     // Add cache headers for CDN/browser caching
     return NextResponse.json(
       { data, success: true },
       {
         headers: {
-          'Cache-Control': 'private, s-maxage=600, stale-while-revalidate=1200',
+          'Cache-Control': 'private, s-maxage=60, stale-while-revalidate=120',
         },
       }
     )
@@ -108,8 +92,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message, success: false }, { status: 500 })
     }
 
-    // Invalidate user's vendor cache
-    revalidateTag(`user-vendors-${user.id}`)
+    // Invalidate cached vendor search/list results for this user
+    await invalidateSearchCache(user.id, 'vendors')
 
     return NextResponse.json({ data, success: true }, { status: 201 })
   } catch (error) {

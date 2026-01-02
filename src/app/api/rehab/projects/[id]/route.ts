@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
+import { CACHE_TTL_SECONDS, cacheKeys, invalidateComputedCache, invalidateRehabProjectsCache, withCache } from '@/server/cache'
+
+export const runtime = 'nodejs'
 
 // GET /api/rehab/projects/[id] - Get project details
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    
+    const supabase = await createClient()
+
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     
     if (authError || !user) {
       return NextResponse.json(
@@ -20,39 +27,40 @@ export async function GET(
 
     const projectId = params.id
 
-    // Get project with all related data
-    const { data: project, error } = await supabase
-      .from('rehab_projects')
-      .select(`
-        *,
-        scope_items:rehab_scope_items(*),
-        assessments:property_assessments(*),
-        comparables:market_comparables(*),
-        recommendations:rehab_recommendations(*)
-      `)
-      .eq('id', projectId)
-      .eq('user_id', user.id)
-      .single()
+    const project = await withCache({
+      key: cacheKeys.rehabProjectById(user.id, projectId),
+      ttlSeconds: CACHE_TTL_SECONDS.PORTFOLIO_METRICS,
+      loader: async () => {
+        // Get project with all related data
+        const { data: project, error } = await supabase
+          .from('rehab_projects')
+          .select(`
+            *,
+            scope_items:rehab_scope_items(*),
+            assessments:property_assessments(*),
+            comparables:market_comparables(*),
+            recommendations:rehab_recommendations(*)
+          `)
+          .eq('id', projectId)
+          .eq('user_id', user.id)
+          .single()
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Project not found' },
-          { status: 404 }
-        )
-      }
-      console.error('Error fetching project:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch project' },
-        { status: 500 }
-      )
-    }
+        if (error) throw error
+        return project
+      },
+    })
 
     return NextResponse.json({
       success: true,
       data: project
     })
   } catch (error) {
+    // Preserve existing not-found handling
+    const maybe = error as { code?: string }
+    if (maybe?.code === 'PGRST116') {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+    }
+
     console.error('Error in GET /api/rehab/projects/[id]:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -67,10 +75,13 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     
     if (authError || !user) {
       return NextResponse.json(
@@ -115,6 +126,9 @@ export async function PUT(
       )
     }
 
+    await invalidateRehabProjectsCache(user.id, projectId)
+    await invalidateComputedCache('rehab-project', projectId)
+
     return NextResponse.json({
       success: true,
       data: project
@@ -130,14 +144,17 @@ export async function PUT(
 
 // DELETE /api/rehab/projects/[id] - Delete project
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     
     if (authError || !user) {
       return NextResponse.json(
@@ -162,6 +179,9 @@ export async function DELETE(
         { status: 500 }
       )
     }
+
+    await invalidateRehabProjectsCache(user.id, projectId)
+    await invalidateComputedCache('rehab-project', projectId)
 
     return NextResponse.json({
       success: true,
