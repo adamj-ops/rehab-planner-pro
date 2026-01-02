@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { revalidateTag } from 'next/cache'
+import { invalidateSearchCache } from '@/server/cache'
+
+export const runtime = 'nodejs'
 
 // GET a single vendor by ID
 export async function GET(
@@ -92,8 +94,8 @@ export async function PUT(
       return NextResponse.json({ error: error.message, success: false }, { status: 500 })
     }
 
-    // Invalidate user's vendor cache
-    revalidateTag(`user-vendors-${user.id}`)
+    // Invalidate cached vendor search/list results for this user
+    await invalidateSearchCache(user.id, 'vendors')
 
     return NextResponse.json({ data, success: true })
   } catch (error) {
@@ -135,8 +137,8 @@ export async function DELETE(
       return NextResponse.json({ error: error.message, success: false }, { status: 500 })
     }
 
-    // Invalidate user's vendor cache
-    revalidateTag(`user-vendors-${user.id}`)
+    // Invalidate cached vendor search/list results for this user
+    await invalidateSearchCache(user.id, 'vendors')
 
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { CACHE_TTL_SECONDS, cacheKeys, invalidateDealsCache, withCache } from '@/server/cache'
+
+export const runtime = 'nodejs'
 
 export async function GET() {
   const supabase = await createClient()
@@ -13,17 +16,30 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { data, error } = await supabase
-    .from('property_leads')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+  try {
+    const data = await withCache({
+      key: cacheKeys.dealsList(user.id),
+      ttlSeconds: CACHE_TTL_SECONDS.PROPERTY_LISTS,
+      loader: async () => {
+        const { data, error } = await supabase
+          .from('property_leads')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
 
-  if (error) {
-    return NextResponse.json({ error: error.message ?? 'Failed to load deals' }, { status: 500 })
+        if (error) {
+          throw new Error(error.message ?? 'Failed to load deals')
+        }
+
+        return data ?? []
+      },
+    })
+
+    return NextResponse.json(data ?? [])
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to load deals'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  return NextResponse.json(data ?? [])
 }
 
 export async function POST(request: Request) {
@@ -57,6 +73,9 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message ?? 'Failed to create lead' }, { status: 500 })
   }
+
+  // Invalidate cached list/detail for this user
+  await invalidateDealsCache(user.id)
 
   return NextResponse.json(data, { status: 201 })
 }

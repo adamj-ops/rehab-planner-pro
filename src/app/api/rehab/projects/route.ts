@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { projectService } from '@/lib/supabase/database'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
+import { CACHE_TTL_SECONDS, cacheKeys, invalidateRehabProjectsCache, withCache } from '@/server/cache'
+
+export const runtime = 'nodejs'
 
 // GET /api/rehab/projects - List all user projects
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    
+    const supabase = await createClient()
+
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     
     if (authError || !user) {
       return NextResponse.json(
@@ -16,25 +22,26 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get user's projects
-    const { data: projects, error } = await supabase
-      .from('rehab_projects')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('updated_at', { ascending: false })
+    const projects = await withCache({
+      key: cacheKeys.rehabProjectsList(user.id),
+      ttlSeconds: CACHE_TTL_SECONDS.PROPERTY_LISTS,
+      loader: async () => {
+        // Get user's projects
+        const { data: projects, error } = await supabase
+          .from('rehab_projects')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('updated_at', { ascending: false })
 
-    if (error) {
-      console.error('Error fetching projects:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch projects' },
-        { status: 500 }
-      )
-    }
+        if (error) {
+          throw error
+        }
 
-    return NextResponse.json({
-      success: true,
-      data: projects
+        return projects ?? []
+      },
     })
+
+    return NextResponse.json({ success: true, data: projects })
   } catch (error) {
     console.error('Error in GET /api/rehab/projects:', error)
     return NextResponse.json(
@@ -47,10 +54,13 @@ export async function GET(request: NextRequest) {
 // POST /api/rehab/projects - Create new project
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     
     if (authError || !user) {
       return NextResponse.json(
@@ -83,6 +93,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    await invalidateRehabProjectsCache(user.id)
 
     return NextResponse.json({
       success: true,
