@@ -28,6 +28,13 @@
 - [x] Quality tier system (budget/standard/premium/luxury)
 - [x] Confidence levels and cost ranges
 
+### 1.X Background Jobs (BullMQ/Redis) ✅
+- [x] Redis connection configuration (`REDIS_URL`, `REDIS_PREFIX`)
+- [x] BullMQ queues: email, notification, compliance, reports
+- [x] Repeatable scheduled jobs registered via `jobs:scheduler`
+- [x] Worker process via `jobs:worker` with retries/backoff
+- [x] Smoke test via `jobs:smoke` (requires Redis)
+
 ---
 
 ## PHASE 2: Design Intelligence ✅ COMPLETE
