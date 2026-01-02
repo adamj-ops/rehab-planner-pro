@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "jobs:worker": "tsx src/server/jobs/worker.ts",
+    "jobs:scheduler": "tsx src/server/jobs/scheduler.ts",
+    "jobs:smoke": "tsx src/server/jobs/smoke.ts"
   },
   "dependencies": {
     "@ai-sdk/react": "^2.0.28",
@@ -92,6 +95,7 @@
     "@use-gesture/react": "^10.3.1",
     "@xyflow/react": "^12.8.6",
     "ai": "^5.0.28",
+    "bullmq": "^5.66.4",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -104,6 +108,7 @@
     "html2canvas": "^1.4.1",
     "html2canvas-pro": "^1.6.2",
     "input-otp": "^1.4.2",
+    "ioredis": "^5.8.2",
     "jspdf": "^3.0.4",
     "lodash": "^4.17.21",
     "lowlight": "^3.3.0",
@@ -154,6 +159,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "tw-animate-css": "^1.3.7",
     "typescript": "5.9.3"
   }

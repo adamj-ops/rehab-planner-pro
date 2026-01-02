@@ -1,5 +1,15 @@
 # 📓 Rehab Estimator Development Notebook
 
+## Session: Jan 2, 2026 - Background Jobs Infrastructure (BullMQ/Redis) ✅
+
+Implemented foundational background job infrastructure for async + scheduled processing:
+
+- Added BullMQ + Redis connection config and 4 queues (email/notification/compliance/reports)
+- Added worker + scheduler entrypoints (`npm run jobs:worker`, `npm run jobs:scheduler`)
+- Added repeatable cron jobs (lease expiration, rent due reminders, late fee calc, etc.) as **stub handlers** pending domain tables
+- Added optional Supabase-backed job run status persistence (`background_job_runs` migration + best-effort upsert)
+- Added `npm run jobs:smoke` to verify end-to-end execution (requires Redis)
+
 ## 🎯 Current Focus: Phase 3 - Multi-Project Workspaces
 
 ### Session: December 29, 2024 - Workspace Foundation Complete ✅

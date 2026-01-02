@@ -87,6 +87,9 @@ All imports updated across the codebase.
 | EVE-73: Market Analysis UI | 🔄 In Progress | EVE-79 remaining |
 | EVE-87: Caching & Webhooks | ✅ Done | Just created |
 
+### Infra Notes
+- **Background jobs (BullMQ/Redis)**: Implemented baseline queues + worker/scheduler entrypoints in `src/server/jobs/*`. Local Redis can be run via `docker-compose.redis.yml` (or any Redis using `REDIS_URL`). Optional job run persistence is in `background_job_runs` (see `supabase/migrations/20260102000000_background_job_runs.sql`).
+
 ---
 
 ## Application Structure
