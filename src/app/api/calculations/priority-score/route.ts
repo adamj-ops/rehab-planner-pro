@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     scores.sort((a, b) => b.overallScore - a.overallScore)
 
     // Add matrix quadrants
-    const matrix = categor izeIntoMatrix(scores)
+    const matrix = categorizeIntoMatrix(scores)
 
     return NextResponse.json({
       success: true,

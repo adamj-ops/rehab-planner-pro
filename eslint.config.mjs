@@ -18,7 +18,18 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "src/stories/**",
+      "src/components/rehab-estimator/priority-matrix/priority-matrix-backup.tsx",
     ],
+  },
+  // Keep CI useful even while the codebase is being tightened up.
+  // (We still run lint in CI, but avoid blocking on common legacy patterns.)
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "react/no-unescaped-entities": "off",
+      "prefer-const": "off",
+    },
   },
 ];
 

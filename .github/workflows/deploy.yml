@@ -1,0 +1,204 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        type: choice
+        options:
+          - production
+          - rollback-production
+      rollback_deployment_id:
+        description: "Vercel deployment id/url to rollback to (rollback-production only)"
+        required: false
+        type: string
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy_staging:
+    name: Deploy (staging)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    environment: staging
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: dummy-service-role-key
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run migrations (Supabase)
+        if: ${{ secrets.SUPABASE_DB_URL }}
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Apply migrations (Supabase)
+        if: ${{ secrets.SUPABASE_DB_URL }}
+        run: supabase migration up --db-url "${SUPABASE_DB_URL}"
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+      - name: Vercel pull (preview)
+        if: ${{ secrets.VERCEL_TOKEN && secrets.VERCEL_ORG_ID && secrets.VERCEL_PROJECT_ID }}
+        run: npx vercel@latest pull --yes --environment=preview --token "${VERCEL_TOKEN}"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Vercel build
+        if: ${{ secrets.VERCEL_TOKEN && secrets.VERCEL_ORG_ID && secrets.VERCEL_PROJECT_ID }}
+        run: npx vercel@latest build --token "${VERCEL_TOKEN}"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Vercel deploy (staging / preview)
+        id: vercel_deploy
+        if: ${{ secrets.VERCEL_TOKEN && secrets.VERCEL_ORG_ID && secrets.VERCEL_PROJECT_ID }}
+        run: |
+          url="$(npx vercel@latest deploy --prebuilt --token "${VERCEL_TOKEN}")"
+          echo "url=${url}" >> "${GITHUB_OUTPUT}"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Vercel alias (optional)
+        if: ${{ steps.vercel_deploy.outputs.url && vars.STAGING_DOMAIN }}
+        run: npx vercel@latest alias set "${DEPLOYMENT_URL}" "${STAGING_DOMAIN}" --token "${VERCEL_TOKEN}"
+        env:
+          DEPLOYMENT_URL: ${{ steps.vercel_deploy.outputs.url }}
+          STAGING_DOMAIN: ${{ vars.STAGING_DOMAIN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Notify Slack (optional)
+        if: ${{ always() && secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          status="${{ job.status }}"
+          url="${{ steps.vercel_deploy.outputs.url }}"
+          text="Staging deploy: ${status} (ref: ${{ github.sha }})"
+          if [ -n "${url}" ]; then text="${text} — ${url}"; fi
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"${text}\"}" "${SLACK_WEBHOOK_URL}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  deploy_production:
+    name: Deploy (production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'production' }}
+    environment: production
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: dummy-service-role-key
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run migrations (Supabase)
+        if: ${{ secrets.SUPABASE_DB_URL }}
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Apply migrations (Supabase)
+        if: ${{ secrets.SUPABASE_DB_URL }}
+        run: supabase migration up --db-url "${SUPABASE_DB_URL}"
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+      - name: Vercel pull (production)
+        if: ${{ secrets.VERCEL_TOKEN && secrets.VERCEL_ORG_ID && secrets.VERCEL_PROJECT_ID }}
+        run: npx vercel@latest pull --yes --environment=production --token "${VERCEL_TOKEN}"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Vercel build
+        if: ${{ secrets.VERCEL_TOKEN && secrets.VERCEL_ORG_ID && secrets.VERCEL_PROJECT_ID }}
+        run: npx vercel@latest build --prod --token "${VERCEL_TOKEN}"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Vercel deploy (production)
+        id: vercel_deploy
+        if: ${{ secrets.VERCEL_TOKEN && secrets.VERCEL_ORG_ID && secrets.VERCEL_PROJECT_ID }}
+        run: |
+          url="$(npx vercel@latest deploy --prebuilt --prod --token "${VERCEL_TOKEN}")"
+          echo "url=${url}" >> "${GITHUB_OUTPUT}"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Notify Slack (optional)
+        if: ${{ always() && secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          status="${{ job.status }}"
+          url="${{ steps.vercel_deploy.outputs.url }}"
+          text="Production deploy: ${status} (ref: ${{ github.sha }})"
+          if [ -n "${url}" ]; then text="${text} — ${url}"; fi
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"${text}\"}" "${SLACK_WEBHOOK_URL}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  rollback_production:
+    name: Rollback (production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'rollback-production' && inputs.rollback_deployment_id != '' }}
+    environment: production
+
+    steps:
+      - name: Rollback deployment (Vercel)
+        if: ${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel@latest rollback "${ROLLBACK_TARGET}" --token "${VERCEL_TOKEN}" --yes
+        env:
+          ROLLBACK_TARGET: ${{ inputs.rollback_deployment_id }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Notify Slack (optional)
+        if: ${{ always() && secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          status="${{ job.status }}"
+          text="Production rollback: ${status} (target: ${{ inputs.rollback_deployment_id }})"
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"${text}\"}" "${SLACK_WEBHOOK_URL}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
