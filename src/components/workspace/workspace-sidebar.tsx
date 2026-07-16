@@ -9,6 +9,7 @@ import {
   IconPalette,
   IconBuildingWarehouse,
   IconBriefcase,
+  IconCalendar,
   IconSettings,
   IconHelp,
 } from "@tabler/icons-react"
@@ -265,6 +266,25 @@ export function WorkspaceSidebar({
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+
+        <SidebarSeparator />
+
+        {/* Planning */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Planning</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={pathname?.startsWith('/scheduler')}>
+                  <Link href="/scheduler">
+                    <IconCalendar className="h-4 w-4" />
+                    <span>Scheduler</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
         <SidebarSeparator />
 
