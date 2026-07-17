@@ -7,7 +7,8 @@ import {
   CircleDollarSign,
   TriangleAlert,
 } from "lucide-react";
-import { useScheduler } from "@/lib/scheduler/store";
+import { useSchedulerProjects, useSetTaskStatus } from "@/hooks/use-scheduler";
+import { isScheduled } from "@/lib/scheduler/map";
 import { projectMetrics, activeToday } from "@/lib/scheduler/derive";
 import {
   PROJECT_STATUS_META,
@@ -17,17 +18,28 @@ import {
 import { fmtDate, fmtMoney, fmtRange } from "@/lib/scheduler/dates";
 import { Avatar, Badge, Dot } from "@/components/scheduler/primitives";
 import { StatusPill } from "@/components/scheduler/status-pill";
+import { ViewMessage, errorMessage } from "@/components/scheduler/view-state";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
 export function Portfolio() {
-  const { projects, tasks, people, setTaskStatus } = useScheduler();
+  const { data, isLoading, isError, error } = useSchedulerProjects();
+  const setTaskStatus = useSetTaskStatus();
+
+  if (isLoading) return <ViewMessage>Loading portfolio…</ViewMessage>;
+  if (isError) return <ViewMessage>{errorMessage(error)}</ViewMessage>;
+
+  const projects = data?.projects ?? [];
+  const tasks = data?.tasks ?? [];
+  const people = data?.people ?? [];
+
+  if (projects.length === 0) return <ViewMessage>No projects yet.</ViewMessage>;
 
   const activeProjects = projects.filter((p) => p.status === "active");
   const totalBudget = projects.reduce((s, p) => s + p.budget, 0);
   const totalSpent = projects.reduce((s, p) => s + p.spent, 0);
   const blocked = tasks.filter((t) => t.status === "blocked").length;
-  const todays = activeToday(tasks);
+  const todays = activeToday(tasks.filter(isScheduled));
 
   return (
     <div className="h-full overflow-y-auto">
@@ -182,7 +194,17 @@ export function Portfolio() {
                         <span>{fmtDate(t.endDate)}</span>
                       </div>
                       <div className="mt-1.5">
-                        <StatusPill status={t.status} onChange={(s) => setTaskStatus(t.id, s)} compact />
+                        <StatusPill
+                          status={t.status}
+                          onChange={(s) =>
+                            setTaskStatus.mutate({
+                              taskId: t.id,
+                              projectId: t.projectId,
+                              status: s,
+                            })
+                          }
+                          compact
+                        />
                       </div>
                     </div>
                     <Avatar person={person} size={22} />

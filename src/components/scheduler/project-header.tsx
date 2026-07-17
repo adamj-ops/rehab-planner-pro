@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { notFound, usePathname } from "next/navigation";
 import { CalendarDays, GanttChartSquare, KanbanSquare, MapPin, Table2 } from "lucide-react";
-import { useScheduler } from "@/lib/scheduler/store";
+import { useSchedulerProject } from "@/hooks/use-scheduler";
 import { projectMetrics } from "@/lib/scheduler/derive";
 import { PROJECT_STATUS_META, PROJECT_TYPE_LABEL } from "@/lib/scheduler/types";
 import { Avatar, Badge, Dot } from "@/components/scheduler/primitives";
@@ -19,10 +19,30 @@ const VIEWS = [
 
 export function ProjectHeader({ projectId }: { projectId: string }) {
   const pathname = usePathname();
-  const { projects, tasks, people } = useScheduler();
-  const project = projects.find((p) => p.id === projectId);
-  if (!project) return notFound();
+  const { data, isLoading, isError } = useSchedulerProject(projectId);
 
+  if (isLoading) {
+    return (
+      <header className="shrink-0 border-b bg-card px-8 py-6">
+        <div className="h-5 w-48 animate-pulse rounded bg-muted" />
+        <div className="mt-2 h-3 w-72 animate-pulse rounded bg-muted" />
+      </header>
+    );
+  }
+
+  const project = data?.project ?? null;
+  // A finished (non-loading) load with no project row => genuine 404.
+  if (!project && !isError) return notFound();
+  if (!project) {
+    return (
+      <header className="shrink-0 border-b bg-card px-8 py-6 text-sm text-muted-foreground">
+        Could not load this project.
+      </header>
+    );
+  }
+
+  const tasks = data?.tasks ?? [];
+  const people = data?.people ?? [];
   const m = projectMetrics(project, tasks);
   const lead = people.find((x) => x.id === project.leadId);
   const statusMeta = PROJECT_STATUS_META[project.status];

@@ -14,7 +14,9 @@ import {
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useProjectData } from "@/lib/scheduler/use-project-data";
+import { isScheduled } from "@/lib/scheduler/map";
 import { Filters, useFilteredTasks } from "@/components/scheduler/filters";
+import { ViewMessage, errorMessage } from "@/components/scheduler/view-state";
 import { TRADE_META, type Task } from "@/lib/scheduler/types";
 import { toDate, TODAY } from "@/lib/scheduler/dates";
 import { cn } from "@/lib/utils";
@@ -22,13 +24,21 @@ import { cn } from "@/lib/utils";
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function CalendarView({ projectId }: { projectId: string }) {
-  const { tasks, people } = useProjectData(projectId);
+  const { tasks, people, isLoading, isError, error } = useProjectData(projectId);
   const filtered = useFilteredTasks(tasks);
   const today = toDate(TODAY);
 
   // start the calendar on the month containing the project's current activity
   const [monthOffset, setMonthOffset] = useState(0);
   const cursor = addMonths(startOfMonth(today), monthOffset);
+
+  // Only tasks with both a start and due date can be placed on the calendar.
+  const scheduled = filtered.filter(isScheduled);
+  const unscheduledCount = filtered.length - scheduled.length;
+
+  if (isLoading) return <ViewMessage>Loading tasks…</ViewMessage>;
+  if (isError) return <ViewMessage>{errorMessage(error)}</ViewMessage>;
+  if (tasks.length === 0) return <ViewMessage>No tasks yet.</ViewMessage>;
 
   const gridStart = startOfWeek(startOfMonth(cursor));
   const gridEnd = endOfWeek(endOfMonth(cursor));
@@ -39,6 +49,11 @@ export function CalendarView({ projectId }: { projectId: string }) {
       <div className="flex items-center justify-between border-b bg-card px-8 py-2.5">
         <Filters projectTasks={tasks} people={people} />
         <div className="flex items-center gap-3">
+          {unscheduledCount > 0 && (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-foreground">
+              {unscheduledCount} unscheduled
+            </span>
+          )}
           <span className="min-w-[130px] text-right text-sm font-semibold">
             {format(cursor, "MMMM yyyy")}
           </span>
@@ -82,7 +97,7 @@ export function CalendarView({ projectId }: { projectId: string }) {
             {days.map((day) => {
               const inMonth = isSameMonth(day, cursor);
               const isToday = format(day, "yyyy-MM-dd") === TODAY;
-              const dayTasks = filtered.filter((t) =>
+              const dayTasks = scheduled.filter((t) =>
                 isWithinInterval(day, {
                   start: toDate(t.startDate),
                   end: toDate(t.endDate),

@@ -3,8 +3,10 @@
 import { Fragment, useMemo } from "react";
 import { addDays, eachDayOfInterval, format, startOfWeek } from "date-fns";
 import { useProjectData } from "@/lib/scheduler/use-project-data";
+import { isScheduled } from "@/lib/scheduler/map";
 import { Filters, useFilteredTasks } from "@/components/scheduler/filters";
 import { Avatar } from "@/components/scheduler/primitives";
+import { ViewMessage, errorMessage } from "@/components/scheduler/view-state";
 import { TASK_STATUS_META, TRADE_META, type Person, type Task } from "@/lib/scheduler/types";
 import { daysBetween, durationDays, toDate, TODAY } from "@/lib/scheduler/dates";
 import { cn } from "@/lib/utils";
@@ -14,17 +16,22 @@ const LABEL_W = 260; // px for the task-name column
 const ROW_H = 38;
 
 export function TimelineView({ projectId }: { projectId: string }) {
-  const { phases, tasks, people } = useProjectData(projectId);
+  const { phases, tasks, people, isLoading, isError, error } =
+    useProjectData(projectId);
   const filtered = useFilteredTasks(tasks);
 
+  // Timeline needs a start + end; unscheduled tasks can't be placed on the grid.
+  const scheduled = useMemo(() => filtered.filter(isScheduled), [filtered]);
+  const unscheduledCount = filtered.length - scheduled.length;
+
   const { days, rangeStart } = useMemo(() => {
-    if (filtered.length === 0) {
+    if (scheduled.length === 0) {
       const s = startOfWeek(toDate(TODAY));
       return { days: eachDayOfInterval({ start: s, end: addDays(s, 27) }), rangeStart: s };
     }
-    let min = toDate(filtered[0].startDate);
-    let max = toDate(filtered[0].endDate);
-    for (const t of filtered) {
+    let min = toDate(scheduled[0].startDate);
+    let max = toDate(scheduled[0].endDate);
+    for (const t of scheduled) {
       const s = toDate(t.startDate);
       const e = toDate(t.endDate);
       if (s < min) min = s;
@@ -33,7 +40,11 @@ export function TimelineView({ projectId }: { projectId: string }) {
     const start = startOfWeek(addDays(min, -2));
     const end = addDays(max, 4);
     return { days: eachDayOfInterval({ start, end }), rangeStart: start };
-  }, [filtered]);
+  }, [scheduled]);
+
+  if (isLoading) return <ViewMessage>Loading tasks…</ViewMessage>;
+  if (isError) return <ViewMessage>{errorMessage(error)}</ViewMessage>;
+  if (tasks.length === 0) return <ViewMessage>No tasks yet.</ViewMessage>;
 
   const gridW = days.length * DAY_W;
   const todayOffset = daysBetween(format(rangeStart, "yyyy-MM-dd"), TODAY);
@@ -44,6 +55,11 @@ export function TimelineView({ projectId }: { projectId: string }) {
       <div className="flex items-center justify-between border-b bg-card px-8 py-2.5">
         <Filters projectTasks={tasks} people={people} />
         <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+          {unscheduledCount > 0 && (
+            <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-foreground">
+              {unscheduledCount} unscheduled
+            </span>
+          )}
           {Object.entries(TASK_STATUS_META).map(([k, v]) => (
             <span key={k} className="inline-flex items-center gap-1">
               <span className="h-2 w-2 rounded-full" style={{ background: v.dot }} />
@@ -114,7 +130,7 @@ export function TimelineView({ projectId }: { projectId: string }) {
 
           {/* Rows grouped by phase */}
           {phases.map((phase) => {
-            const rows = filtered
+            const rows = scheduled
               .filter((t) => t.phaseId === phase.id)
               .sort((a, b) => a.startDate.localeCompare(b.startDate));
             if (rows.length === 0) return null;
@@ -146,9 +162,11 @@ export function TimelineView({ projectId }: { projectId: string }) {
             );
           })}
 
-          {filtered.length === 0 && (
+          {scheduled.length === 0 && (
             <div className="p-10 text-center text-sm text-muted-foreground">
-              No tasks match the current filter.
+              {unscheduledCount > 0
+                ? `${unscheduledCount} task${unscheduledCount === 1 ? "" : "s"} with no dates — set start and due dates to place them here.`
+                : "No tasks match the current filter."}
             </div>
           )}
         </div>

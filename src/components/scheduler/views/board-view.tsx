@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useProjectData } from "@/lib/scheduler/use-project-data";
-import { useScheduler } from "@/lib/scheduler/store";
+import { useSetTaskStatus } from "@/hooks/use-scheduler";
+import { isScheduled } from "@/lib/scheduler/map";
 import { Filters, useFilteredTasks } from "@/components/scheduler/filters";
 import { Avatar, Dot } from "@/components/scheduler/primitives";
+import { ViewMessage, errorMessage } from "@/components/scheduler/view-state";
 import {
   TASK_STATUS_META,
   TASK_STATUS_ORDER,
@@ -17,12 +19,17 @@ import { fmtRange, fmtMoney } from "@/lib/scheduler/dates";
 import { cn } from "@/lib/utils";
 
 export function BoardView({ projectId }: { projectId: string }) {
-  const { phases, tasks, people } = useProjectData(projectId);
-  const setTaskStatus = useScheduler((s) => s.setTaskStatus);
+  const { phases, tasks, people, isLoading, isError, error } =
+    useProjectData(projectId);
+  const setTaskStatus = useSetTaskStatus();
   const filtered = useFilteredTasks(tasks);
 
   const [dragId, setDragId] = useState<string | null>(null);
   const [over, setOver] = useState<TaskStatus | null>(null);
+
+  if (isLoading) return <ViewMessage>Loading tasks…</ViewMessage>;
+  if (isError) return <ViewMessage>{errorMessage(error)}</ViewMessage>;
+  if (tasks.length === 0) return <ViewMessage>No tasks yet.</ViewMessage>;
 
   return (
     <div className="flex h-full flex-col">
@@ -46,7 +53,8 @@ export function BoardView({ projectId }: { projectId: string }) {
                 }}
                 onDragLeave={() => setOver((o) => (o === status ? null : o))}
                 onDrop={() => {
-                  if (dragId) setTaskStatus(dragId, status);
+                  if (dragId)
+                    setTaskStatus.mutate({ taskId: dragId, projectId, status });
                   setDragId(null);
                   setOver(null);
                 }}
@@ -137,7 +145,7 @@ function BoardCard({
         <Avatar person={person} size={22} />
       </div>
       <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-        <span>{fmtRange(task.startDate, task.endDate)}</span>
+        <span>{isScheduled(task) ? fmtRange(task.startDate, task.endDate) : "—"}</span>
         <span className="tabular-nums">{fmtMoney(task.cost, { compact: true })}</span>
       </div>
     </div>
