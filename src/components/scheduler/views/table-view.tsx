@@ -1,17 +1,24 @@
 "use client";
 
 import { useProjectData } from "@/lib/scheduler/use-project-data";
-import { useScheduler } from "@/lib/scheduler/store";
+import { useSetTaskStatus } from "@/hooks/use-scheduler";
+import { isScheduled } from "@/lib/scheduler/map";
 import { Filters, useFilteredTasks } from "@/components/scheduler/filters";
 import { StatusPill } from "@/components/scheduler/status-pill";
 import { Avatar, Badge, Dot } from "@/components/scheduler/primitives";
+import { ViewMessage, errorMessage } from "@/components/scheduler/view-state";
 import { TRADE_META } from "@/lib/scheduler/types";
 import { durationDays, fmtMoney, fmtRange } from "@/lib/scheduler/dates";
 
 export function TableView({ projectId }: { projectId: string }) {
-  const { phases, tasks, people } = useProjectData(projectId);
-  const setTaskStatus = useScheduler((s) => s.setTaskStatus);
+  const { phases, tasks, people, isLoading, isError, error } =
+    useProjectData(projectId);
+  const setTaskStatus = useSetTaskStatus();
   const filtered = useFilteredTasks(tasks);
+
+  if (isLoading) return <ViewMessage>Loading tasks…</ViewMessage>;
+  if (isError) return <ViewMessage>{errorMessage(error)}</ViewMessage>;
+  if (tasks.length === 0) return <ViewMessage>No tasks yet.</ViewMessage>;
 
   return (
     <div className="flex h-full flex-col">
@@ -49,6 +56,7 @@ export function TableView({ projectId }: { projectId: string }) {
                 {rows.map((t) => {
                   const person = people.find((p) => p.id === t.assigneeId);
                   const trade = TRADE_META[t.trade];
+                  const scheduled = isScheduled(t);
                   return (
                     <div
                       key={t.id}
@@ -62,7 +70,12 @@ export function TableView({ projectId }: { projectId: string }) {
                           </div>
                         )}
                       </div>
-                      <StatusPill status={t.status} onChange={(s) => setTaskStatus(t.id, s)} />
+                      <StatusPill
+                        status={t.status}
+                        onChange={(s) =>
+                          setTaskStatus.mutate({ taskId: t.id, projectId, status: s })
+                        }
+                      />
                       <Badge color={trade.color}>
                         <Dot color={trade.color} size={6} />
                         {trade.label}
@@ -74,10 +87,10 @@ export function TableView({ projectId }: { projectId: string }) {
                         </span>
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        {fmtRange(t.startDate, t.endDate)}
+                        {scheduled ? fmtRange(t.startDate, t.endDate) : "—"}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {durationDays(t.startDate, t.endDate)}d
+                        {scheduled ? `${durationDays(t.startDate, t.endDate)}d` : "—"}
                       </span>
                       <span className="text-right text-xs font-medium tabular-nums">
                         {fmtMoney(t.cost, { compact: true })}
